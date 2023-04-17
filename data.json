@@ -7,8 +7,7 @@
             "deffense": 1,
             "skill": {
                 "攻撃": {
-                    "select_probability": 1,
-                    "is_special_message": false
+                    "select_probability": 1
                 }
             }
         },
@@ -35,14 +34,112 @@
         }
     },
     "skill": {
-        "無属性": {
-            "攻撃": {
-                "damage_rate": 1,
-                "mp_consumption": 0
-            }
+        "無属性": "",
+        "攻撃": {
+            "type": "physics",
+            "attribute": "無",
+            "damage_rate": 1,
+            "mp_consumption": 0,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0.1,
+            "critical_probability": 0.05,
+            "message": "の攻撃！"
         },
-        "メラ属性": {
-            "メラ": 1
-        }
+        "痛恨の一撃": {
+            "type": "physics",
+            "attribute": "無",
+            "damage_rate": 1,
+            "mp_consumption": 0,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0,
+            "critical_probability": 1,
+            "message": "の攻撃！痛恨の一撃！"
+        },
+        "大きくなぎ払う": {
+            "type": "physics",
+            "attribute": "無",
+            "damage_rate": 1.5,
+            "mp_consumption": 0,
+            "range": "all",
+            "is_decreasing": true,
+            "miss_probability": 0.1,
+            "critical_probability": 0,
+            "message": "は大きくなぎ払った！"
+        },
+        "メラ属性": "",
+        "メラ": {
+            "type": "magic",
+            "attribute": "メラ",
+            "damage_rate": 2,
+            "mp_consumption": 3,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0,
+            "critical_probability": 0.05,
+            "message": "はメラを唱えた！"
+        },
+        "メラミ": {
+            "type": "magic",
+            "attribute": "メラ",
+            "damage_rate": 2,
+            "mp_consumption": 6,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0,
+            "critical_probability": 0.05,
+            "message": "はメラミを唱えた！"
+        },
+        "火炎斬り": {
+            "type": "physics",
+            "attribute": "メラ",
+            "damage_rate": 1.5,
+            "mp_consumption": 0,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0.1,
+            "critical_probability": 0.05,
+            "message": "は火炎斬りを放った！"
+        },
+        "ヒャド属性": "",
+        "ヒャド": {
+            "type": "magic",
+            "attribute": "ヒャド",
+            "damage_rate": 1.8,
+            "mp_consumption": 2,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0,
+            "critical_probability": 0.05,
+            "message": "はヒャドを唱えた！"
+        },
+        "ヒャダルコ": {
+            "type": "magic",
+            "attribute": "ヒャド",
+            "damage_rate": 2.5,
+            "mp_consumption": 8,
+            "range": "group",
+            "is_decreasing": false,
+            "miss_probability": 0,
+            "critical_probability": 0.05,
+            "message": "はヒャダルコを唱えた！"
+        },
+        "マヒャド斬り": {
+            "type": "physics",
+            "attribute": "ヒャド",
+            "damage_rate": 1.5,
+            "mp_consumption": 0,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0.1,
+            "critical_probability": 0.05,
+            "message": "はマヒャド斬りを放った！"
+        },
+        "バギ属性": "",
+        "イオ属性": "",
+        "ドルマ属性": "",
+        "炎ブレス属性": "",
+        "氷ブレス属性": ""
     }
 }
