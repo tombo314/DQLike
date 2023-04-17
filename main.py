@@ -69,9 +69,8 @@ class Battle:
                     text = f"{mp} / {mp}"
                 )
             i += 1
-            
 
-with open("monster.json", encoding="utf-8") as f:
+with open("data.json", encoding="utf-8") as f:
     data = json.load(f)
     monster = data["monster"]
 
