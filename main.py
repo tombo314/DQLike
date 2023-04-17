@@ -11,9 +11,9 @@ class Battle:
         self.mp_box = [0]*3
         self.mp_text = [0]*3
     
-    def make_element(self, monster: list, type_: str, is_enemy: bool) -> None:
+    def make_element(self, party: list, type_: str, is_enemy: bool) -> None:
         """
-        monster: 敵か味方のモンスター3体の要素の配列
+        party: 敵か味方のモンスター3体の要素の配列
         type: 「名前」「HP」「MP」のいずれか
         is_enemy: 敵の要素であるかどうか
         """
@@ -29,7 +29,7 @@ class Battle:
             color = "#3f3"
             y += 250
         i = 0
-        for name in monster:
+        for mons in party:
             start_x, start_y = 220*i+100, y
             width, height = 160, 40
             end_x, end_y = start_x+width, start_y+height
@@ -42,7 +42,7 @@ class Battle:
                 )
                 self.name_text[i] = canvas.create_text(
                     (start_x+end_x)/2, (start_y+end_y)/2,
-                    text = name
+                    text = mons["name"]
                 )
             elif type_=="HP":
                 self.hp_box[i] = canvas.create_rectangle(
@@ -51,7 +51,7 @@ class Battle:
                     fill = "#ddd",
                     outline = color
                 )
-                hp = monster[name]["hp"]
+                hp = mons["hp"]
                 self.hp_text[i] = canvas.create_text(
                     (start_x+end_x)/2, (start_y+end_y)/2,
                     text = f"{hp} / {hp}"
@@ -63,7 +63,7 @@ class Battle:
                     fill = "#ddd",
                     outline = color
                 )
-                mp = monster[name]["mp"]
+                mp = mons["mp"]
                 self.mp_text[i] = canvas.create_text(
                     (start_x+end_x)/2, (start_y+end_y)/2,
                     text = f"{mp} / {mp}"
@@ -73,6 +73,7 @@ class Battle:
 with open("data.json", encoding="utf-8") as f:
     data = json.load(f)
     monster = data["monster"]
+    skill = data["skill"]
 
 app = tk.Tk()
 
@@ -83,15 +84,28 @@ canvas = tk.Canvas(
 )
 canvas.pack()
 
-def battle():
+def battle(party_friend: list, party_enemy: list):
+    """
+    
+    """
     btl = Battle()
-    btl.make_element(monster, "名前", True)
-    btl.make_element(monster, "HP", True)
-    btl.make_element(monster, "MP", True)
-    btl.make_element(monster, "名前", False)
-    btl.make_element(monster, "HP", False)
-    btl.make_element(monster, "MP", False)
+    btl.make_element(party_enemy, "名前", True)
+    btl.make_element(party_enemy, "HP", True)
+    btl.make_element(party_enemy, "MP", True)
+    btl.make_element(party_friend, "名前", False)
+    btl.make_element(party_friend, "HP", False)
+    btl.make_element(party_friend, "MP", False)
 
-battle()
+battle([
+        monster["スライム"],
+        monster["ドラキー"],
+        monster["ゴースト"]
+    ],
+    [
+        monster["ドラキー"],
+        monster["スライム"],
+        monster["ゴースト"]
+    ]
+)
 
 app.mainloop()
