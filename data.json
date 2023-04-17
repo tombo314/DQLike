@@ -1,0 +1,48 @@
+{
+    "monster": {
+        "スライム": {
+            "hp": 10,
+            "mp": 0,
+            "attack": 3,
+            "deffense": 1,
+            "skill": {
+                "攻撃": {
+                    "select_probability": 1,
+                    "is_special_message": false
+                }
+            }
+        },
+        "ドラキー": {
+            "hp": 12,
+            "mp": 0,
+            "skill": {
+                "攻撃": {
+                    "select_probability": 1
+                }
+            }
+        },
+        "ゴースト": {
+            "hp": 7,
+            "mp": 3,
+            "skill": {
+                "攻撃": {
+                    "select_probability": 0.7
+                },
+                "メラ": {
+                    "select_probability": 0.3
+                }
+            }
+        }
+    },
+    "skill": {
+        "無属性": {
+            "攻撃": {
+                "damage_rate": 1,
+                "mp_consumption": 0
+            }
+        },
+        "メラ属性": {
+            "メラ": 1
+        }
+    }
+}
