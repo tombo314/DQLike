@@ -8,9 +8,11 @@ class Battle:
     def __init__(self, enemy:list, friend: list) -> None:
         """
         バトルのインスタンスを生成する
-        enemy: 敵のパーティーの配列
-        friend: 味方のパーティーの配列
+        enemy: 敵のパーティー
+        friend: 味方のパーティー
         """
+        self.enemy = enemy
+        self.friend = friend
         # UIを生成する
         # 0がenemy, 1がfriend
         self.name_box = [
@@ -68,11 +70,15 @@ class Battle:
             {mons["name"]: mons["agility"] for mons in enemy},
             {mons["name"]: mons["agility"] for mons in friend}
         ]
+        self.dead = [
+            {mons["name"]: False for mons in enemy},
+            {mons["name"]: False for mons in friend}
+        ]
     
     def __make_element(self, party: list, type_: str, is_friend: bool) -> None:
         """
         敵と味方のUIを生成する
-        party: 敵か味方のモンスター3体の要素の配列
+        party: 敵か味方のモンスター3体
         type: 「name」「hp」「mp」のいずれか
         is_enemy: 敵の要素であるかどうか
         """
@@ -118,7 +124,17 @@ class Battle:
         """
         バトルを開始する（自動）
         """
-        pass
+        # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
+        while any([self.dead[0][mons["name"]]==False for mons in self.enemy]) and any([self.dead[1][mons["name"]]==False for mons in self.friend]):
+            # 各ターンの処理
+            order = []
+            for mons in self.enemy:
+                r = uniform(0.8, 1.2)
+                order.append([r*mons["agility"], mons["name"]])
+            for mons in self.friend:
+                order.append([r*mons["agility"], mons["name"]])
+            order.sort(reverse=True)
+            
     
     def battle_start_manual(self):
         """
@@ -147,17 +163,29 @@ def is_n_percent(prob: int) -> bool:
 def select_skill(skill: dict) -> str:
     """
     スキルを選択する
-    skill: keyにスキル、valueに確率を取る連想配列
+    skill: keyにスキル名、valueに確率
     """
     return np.random.choice(list(skill.keys()), p=list(skill.values()))
+
+def calc_damage(skill_name: str, attack: int, magic_attack: int, deffense: int, attribute_damage: dict, is_physics: bool) -> int:
+    """
+    ダメージを計算する
+    skill_name: スキル名
+    attack: 物理攻撃力
+    magic_attack: 呪文攻撃力
+    deffense: 物理防御力
+    attribute_damage: 属性耐性
+    is_physics: 物理攻撃かどうか
+    """
 
 with open("data.json", encoding="utf-8") as f:
     data = json.load(f)
     monster = data["monster"]
     skill = data["skill"]
 
+# Tkinterの初期設定
 app = tk.Tk()
-
+app.title("DQLike")
 canvas = tk.Canvas(
     app,
     width = 850,
