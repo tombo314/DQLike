@@ -5,33 +5,81 @@
             "hp": 10,
             "mp": 0,
             "attack": 3,
-            "deffense": 1,
+            "magic_attack": 1,
+            "deffense": 2,
+            "agility": 5,
             "skill": {
                 "攻撃": {
                     "select_probability": 1
                 }
+            },
+            "attribute_damage": {
+                "メラ": 1.3,
+                "ヒャド": 0.8,
+                "バギ": 1,
+                "イオ": 1.2,
+                "ドルマ": 1.2
             }
         },
         "ドラキー": {
             "name": "ドラキー",
             "hp": 12,
             "mp": 0,
+            "attack": 4,
+            "magic_attack": 2,
+            "deffense": 2,
+            "agility": 3,
             "skill": {
                 "攻撃": {
                     "select_probability": 1
                 }
+            },
+            "attribute_damage": {
+                "メラ": 1,
+                "ヒャド": 1,
+                "バギ": 0.5,
+                "イオ": 1,
+                "ドルマ": 0.8
             }
         },
         "ゴースト": {
             "name": "ゴースト",
             "hp": 7,
             "mp": 3,
+            "attack": 1,
+            "magic_attack": 5,
+            "deffense": 1,
+            "agility": 4,
             "skill": {
                 "攻撃": {
                     "select_probability": 0.7
                 },
                 "メラ": {
                     "select_probability": 0.3
+                }
+            },
+            "attribute_damage": {
+                "メラ": 0.3,
+                "ヒャド": 1.3,
+                "バギ": 1,
+                "イオ": 0.9,
+                "ドルマ": 1
+            }
+        },
+        "ボストロール": {
+            "name": "ボストロール",
+            "hp": 18,
+            "mp": 0,
+            "attack": 7,
+            "magic_attack": 0,
+            "deffense": 3,
+            "agility": 1,
+            "skill": {
+                "攻撃": {
+                    "select_probability": 0.3
+                },
+                "ミス": {
+                    
                 }
             }
         }
@@ -48,6 +96,17 @@
             "miss_probability": 0.1,
             "critical_probability": 0.05,
             "message": "の攻撃！"
+        },
+        "ミス": {
+            "type": "null",
+            "attribute": "null",
+            "damage_rate": 0,
+            "mp_consumption": 0,
+            "range": "null",
+            "is_decreasing": false,
+            "miss_probability": 1,
+            "critical_probability": 0,
+            "message": "の攻撃！ミス！"
         },
         "痛恨の一撃": {
             "type": "physics",
@@ -141,8 +200,6 @@
         },
         "バギ属性": "",
         "イオ属性": "",
-        "ドルマ属性": "",
-        "炎ブレス属性": "",
-        "氷ブレス属性": ""
+        "ドルマ属性": ""
     }
 }
