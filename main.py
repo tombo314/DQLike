@@ -5,30 +5,47 @@ import json
 import numpy as np
 
 class Battle:
-    def __init__(self) -> None:
-        self.name_box = [0]*3
-        self.name_text = [0]*3
-        self.hp_box = [0]*3
-        self.hp_text = [0]*3
-        self.mp_box = [0]*3
-        self.mp_text = [0]*3
-    
-    def make_element(self, party: list, type_: str, is_enemy: bool) -> None:
+    def __init__(self, enemy:list, friend: list) -> None:
         """
-        要素を生成する
+        バトルのインスタンスを生成する
+        enemy: 敵のパーティーの配列
+        friend: 味方のパーティーの配列
+        """
+        # UIを生成する
+        # 0がenemy, 1がfriend
+        self.name_box = [[0, 0]]*3
+        self.name_text = [[0, 0]]*3
+        self.hp_box = [[0, 0]]*3
+        self.hp_text = [[0, 0]]*3
+        self.mp_box = [[0, 0]]*3
+        self.mp_text = [[0, 0]]*3
+        self.__make_element(enemy, "名前", False)
+        self.__make_element(enemy, "HP", False)
+        self.__make_element(enemy, "MP", False)
+        self.__make_element(friend, "名前", True)
+        self.__make_element(friend, "HP", True)
+        self.__make_element(friend, "MP", True)
+        # バトル時のパラメータ
+        self.
+    
+    def __make_element(self, party: list, type_: str, is_friend: bool) -> None:
+        """
+        敵と味方のUIを生成する
         party: 敵か味方のモンスター3体の要素の配列
         type: 「名前」「HP」「MP」のいずれか
         is_enemy: 敵の要素であるかどうか
         """
+        y = -1
+        color = ""
         if type_=="名前":
             y = 100
         elif type_=="HP":
             y = 160
         elif type_=="MP":
             y = 220
-        if is_enemy==True:
+        if is_friend==True:
             color = "#f33"
-        elif is_enemy==False:
+        elif is_friend==False:
             color = "#3f3"
             y += 250
         i = 0
@@ -37,55 +54,52 @@ class Battle:
             width, height = 160, 40
             end_x, end_y = start_x+width, start_y+height
             if type_=="名前":
-                self.name_box[i] = canvas.create_rectangle(
+                self.name_box[i][is_friend] = canvas.create_rectangle(
                     start_x, start_y,
                     end_x, end_y,
                     fill = "#ddd",
                     outline = color
                 )
-                self.name_text[i] = canvas.create_text(
+                self.name_text[i][is_friend] = canvas.create_text(
                     (start_x+end_x)/2, (start_y+end_y)/2,
                     text = mons["name"]
                 )
             elif type_=="HP":
-                self.hp_box[i] = canvas.create_rectangle(
+                self.hp_box[i][is_friend] = canvas.create_rectangle(
                     start_x, start_y,
                     end_x, end_y,
                     fill = "#ddd",
                     outline = color
                 )
                 hp = mons["hp"]
-                self.hp_text[i] = canvas.create_text(
+                self.hp_text[i][is_friend] = canvas.create_text(
                     (start_x+end_x)/2, (start_y+end_y)/2,
                     text = f"{hp} / {hp}"
                 )
             elif type_=="MP":
-                self.mp_box[i] = canvas.create_rectangle(
+                self.mp_box[i][is_friend] = canvas.create_rectangle(
                     start_x, start_y,
                     end_x, end_y,
                     fill = "#ddd",
                     outline = color
                 )
                 mp = mons["mp"]
-                self.mp_text[i] = canvas.create_text(
+                self.mp_text[i][is_friend] = canvas.create_text(
                     (start_x+end_x)/2, (start_y+end_y)/2,
                     text = f"{mp} / {mp}"
                 )
             i += 1
 
+    def battle_start():
+        
+
 def battle(party_enemy: list, party_friend: list) -> None:
     """
     バトルを行う
-    party_enemy: 敵パーティー
-    party_friend: 味方パーティー
+    party_enemy: 敵のパーティーの配列
+    party_friend: 味方のパーティーの配列
     """
-    btl = Battle()
-    btl.make_element(party_enemy, "名前", True)
-    btl.make_element(party_enemy, "HP", True)
-    btl.make_element(party_enemy, "MP", True)
-    btl.make_element(party_friend, "名前", False)
-    btl.make_element(party_friend, "HP", False)
-    btl.make_element(party_friend, "MP", False)
+    btl = Battle(party_enemy, party_friend)
 
 def is_n_percent(prob: int) -> bool:
     """
@@ -126,8 +140,8 @@ battle([
     [
         monster["スライム"],
         monster["ドラキー"],
-        monster["ゴースト"]
+        monster["ボストロール"]
     ]
 )
 
-# app.mainloop()
+app.mainloop()
