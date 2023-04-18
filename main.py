@@ -1,8 +1,10 @@
 from pprint import pprint
 from random import randint, uniform
+from time import sleep
+from math import ceil
+from json import load
+from numpy.random import choice
 import tkinter as tk
-import json
-import numpy as np
 
 class Battle:
     def __init__(self, enemy:list, friend: list) -> None:
@@ -13,8 +15,7 @@ class Battle:
         """
         self.enemy = enemy
         self.friend = friend
-        # UIを生成する
-        # 0がenemy, 1がfriend
+        # 0がenemyのUI, 1がfriendのUI
         self.name_box = [
             {mons["name"]: 0 for mons in enemy},
             {mons["name"]: 0 for mons in friend}
@@ -39,12 +40,16 @@ class Battle:
             {mons["name"]: 0 for mons in enemy},
             {mons["name"]: 0 for mons in friend}
         ]
-        self.__make_element(enemy, "name", False)
-        self.__make_element(enemy, "hp", False)
-        self.__make_element(enemy, "mp", False)
-        self.__make_element(friend, "name", True)
-        self.__make_element(friend, "hp", True)
-        self.__make_element(friend, "mp", True)
+        # モンスタ―とUIの座標の対応関係
+        # (monster_name, is_friend): (start_x, start_y)
+        self.elem_coord = {}
+        # 敵と味方のUIを生成する
+        self.__make_party(enemy, "name", False)
+        self.__make_party(enemy, "hp", False)
+        self.__make_party(enemy, "mp", False)
+        self.__make_party(friend, "name", True)
+        self.__make_party(friend, "hp", True)
+        self.__make_party(friend, "mp", True)
         # バトル時のパラメータ
         self.hp = [
             {mons["name"]: mons["hp"] for mons in enemy},
@@ -75,12 +80,34 @@ class Battle:
             {mons["name"]: False for mons in friend}
         ]
     
-    def __make_element(self, party: list, type_: str, is_friend: bool) -> None:
+    def __draw_ui(self, start_x, start_y, type_: str, is_friend: bool) -> None:
+        pass
+        # width, height = 160, 40
+        # end_x, end_y = start_x+width, start_y+height
+        # # 四角形を表示する
+        # self.name_box[is_friend][mons[type_]] = canvas.create_rectangle(
+        #     start_x, start_y,
+        #     end_x, end_y,
+        #     fill = "#ddd",
+        #     outline = color
+        # )
+        # content = ""
+        # if type_=="name":
+        #     content = mons[type_]
+        # elif type_=="hp" or type_=="mp":
+        #     content = f"{mons[type_]} / {mons[type_]}"
+        # # テキストを表示する
+        # self.name_text[is_friend][mons[type_]] = canvas.create_text(
+        #     (start_x+end_x)/2, (start_y+end_y)/2,
+        #     text = content
+        # )
+    
+    def __make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
         """
-        敵と味方のUIを生成する
+        UIを生成する
         party: 敵か味方のモンスター3体
         type: 「name」「hp」「mp」のいずれか
-        is_enemy: 敵の要素であるかどうか
+        is_friend: 敵の要素であるかどうか
         """
         y = -1
         color = ""
@@ -99,6 +126,8 @@ class Battle:
         # パーティーのモンスターのUIを表示する
         for mons in party:
             start_x, start_y = 220*i+100, y
+            # モンスター名とモンスターの敵・味方の区分と、UIの座標を対応付ける
+            self.elem_coord.update({(mons["name"], type_, is_friend): (start_x, start_y)})
             width, height = 160, 40
             end_x, end_y = start_x+width, start_y+height
             # 四角形を表示する
@@ -120,7 +149,44 @@ class Battle:
             )
             i += 1
 
-    def battle_start_auto(self):
+    def __kill_monster(self, monster_name: str, is_friend: bool) -> None:
+        """
+        モンスターが死亡する
+        monster_name: モンスターの名前
+        is_friend: 味方であるかどうか
+        """
+        self.dead[is_friend][monster_name] = True
+        canvas.delete(self.name_box[is_friend][monster_name])
+    
+    def __revive_monster(self, monster_name: str, is_friend: bool) -> None:
+        """
+        モンスターが復活する
+        monster_name: モンスターの名前
+        is_friend: 味方であるかどうか
+        """
+        # self.dead[is_friend][monster_name] = False
+        # width, height = 160, 40
+        # start_x, start_y = self.elem_coord[]
+        # end_x, end_y = start_x+width, start_y+height
+        # # 四角形を表示する
+        # self.name_box[is_friend][mons[type_]] = canvas.create_rectangle(
+        #     start_x, start_y,
+        #     end_x, end_y,
+        #     fill = "#ddd",
+        #     outline = color
+        # )
+        # content = ""
+        # if type_=="name":
+        #     content = mons[type_]
+        # elif type_=="hp" or type_=="mp":
+        #     content = f"{mons[type_]} / {mons[type_]}"
+        # # テキストを表示する
+        # self.name_text[is_friend][mons[type_]] = canvas.create_text(
+        #     (start_x+end_x)/2, (start_y+end_y)/2,
+        #     text = content
+        # )
+
+    def battle_start_auto(self) -> None:
         """
         バトルを開始する（自動）
         """
@@ -130,13 +196,21 @@ class Battle:
             order = []
             for mons in self.enemy:
                 r = uniform(0.8, 1.2)
-                order.append([r*mons["agility"], mons["name"]])
+                order.append([r*mons["agility"], mons["name"], "enemy"])
             for mons in self.friend:
-                order.append([r*mons["agility"], mons["name"]])
+                order.append([r*mons["agility"], mons["name"], "friend"])
             order.sort(reverse=True)
-            
+            canvas.update()
+            sleep(1)
+            canvas.delete(self.name_text[0]["スライム"])
+            canvas.delete(self.name_box[0]["スライム"])
+            canvas.update()
+            sleep(1)
+            canvas.delete(self.name_text[1]["スライム"])
+            canvas.delete(self.name_box[1]["スライム"])
+            break
     
-    def battle_start_manual(self):
+    def battle_start_manual(self) -> None:
         """
         バトルを開始する（手動）
         """
@@ -165,7 +239,7 @@ def select_skill(skill: dict) -> str:
     スキルを選択する
     skill: keyにスキル名、valueに確率
     """
-    return np.random.choice(list(skill.keys()), p=list(skill.values()))
+    return choice(list(skill.keys()), p=list(skill.values()))
 
 def calc_damage(skill_name: str, attack: int, magic_attack: int, deffense: int, attribute_damage: dict, is_physics: bool) -> int:
     """
@@ -178,8 +252,14 @@ def calc_damage(skill_name: str, attack: int, magic_attack: int, deffense: int, 
     is_physics: 物理攻撃かどうか
     """
 
+def param_level_up(param: int) -> int:
+    """
+    パラメータを強化する
+    """
+    return ceil(param*1.05)
+
 with open("data.json", encoding="utf-8") as f:
-    data = json.load(f)
+    data = load(f)
     monster = data["monster"]
     skill = data["skill"]
 
@@ -193,16 +273,22 @@ canvas = tk.Canvas(
 )
 canvas.pack()
 
-battle([
-        monster["スライム"],
-        monster["ドラキー"],
-        monster["ゴースト"]
-    ],
-    [
-        monster["スライム"],
-        monster["ドラキー"],
-        monster["ボストロール"]
-    ]
-)
+if 1:
+    battle([
+            monster["スライム"],
+            monster["ドラキー"],
+            monster["ゴースト"]
+        ],
+        [
+            monster["スライム"],
+            monster["ドラキー"],
+            monster["ボストロール"]
+        ]
+    )
+    app.mainloop()
 
-app.mainloop()
+"""
+メモ
+
+・モンスターの重複禁止
+"""
