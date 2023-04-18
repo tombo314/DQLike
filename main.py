@@ -2,9 +2,10 @@ from pprint import pprint
 from random import randint
 import tkinter as tk
 import json
+import numpy as np
 
 class Battle:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name_box = [0]*3
         self.name_text = [0]*3
         self.hp_box = [0]*3
@@ -12,8 +13,9 @@ class Battle:
         self.mp_box = [0]*3
         self.mp_text = [0]*3
     
-    def make_element(self, party: list, type_: str, is_enemy: bool):
+    def make_element(self, party: list, type_: str, is_enemy: bool) -> None:
         """
+        要素を生成する
         party: 敵か味方のモンスター3体の要素の配列
         type: 「名前」「HP」「MP」のいずれか
         is_enemy: 敵の要素であるかどうか
@@ -71,7 +73,7 @@ class Battle:
                 )
             i += 1
 
-def battle(party_enemy: list, party_friend: list):
+def battle(party_enemy: list, party_friend: list) -> None:
     """
     バトルを行う
     party_enemy: 敵パーティー
@@ -85,7 +87,7 @@ def battle(party_enemy: list, party_friend: list):
     btl.make_element(party_friend, "HP", False)
     btl.make_element(party_friend, "MP", False)
 
-def is_n_percent(prob: int):
+def is_n_percent(prob: int) -> bool:
     """
     probパーセントの確率でTrueを返す
     prob: Trueが返ってくる確率(0~100)
@@ -94,6 +96,13 @@ def is_n_percent(prob: int):
     if r<=prob:
         return True
     return False
+
+def select_skill(skill: dict) -> str:
+    """
+    スキルを選択する
+    skill: keyにスキル、valueに確率を取る連想配列
+    """
+    return np.random.choice(list(skill.keys()), p=list(skill.values()))
 
 with open("data.json", encoding="utf-8") as f:
     data = json.load(f)
