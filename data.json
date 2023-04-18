@@ -76,11 +76,21 @@
             "agility": 1,
             "skill": {
                 "攻撃": {
-                    "select_probability": 0.3
+                    "select_probability": 0.1
                 },
                 "ミス": {
-                    
+                    "select_probability": 0.7
+                },
+                "痛恨の一撃": {
+                    "select_probability": 0.2
                 }
+            },
+            "attribute_damage": {
+                "メラ": 1.2,
+                "ヒャド": 1.2,
+                "バギ": 1.2,
+                "イオ": 1.2,
+                "ドルマ": 1.2
             }
         }
     },
