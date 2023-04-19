@@ -8,12 +8,10 @@
             "magic_attack": 1,
             "deffense": 2,
             "agility": 5,
-            "skill": {
-                "攻撃": {
-                    "select_probability": 1
-                }
+            "skill_select_probability": {
+                "攻撃": 1
             },
-            "attribute_damage": {
+            "attribute_damage_rate": {
                 "メラ": 1.3,
                 "ヒャド": 0.8,
                 "バギ": 1,
@@ -29,12 +27,10 @@
             "magic_attack": 2,
             "deffense": 2,
             "agility": 3,
-            "skill": {
-                "攻撃": {
-                    "select_probability": 1
-                }
+            "skill_select_probability": {
+                "攻撃": 1
             },
-            "attribute_damage": {
+            "attribute_damage_rate": {
                 "メラ": 1,
                 "ヒャド": 1,
                 "バギ": 0.5,
@@ -50,15 +46,11 @@
             "magic_attack": 5,
             "deffense": 1,
             "agility": 4,
-            "skill": {
-                "攻撃": {
-                    "select_probability": 0.7
-                },
-                "メラ": {
-                    "select_probability": 0.3
-                }
+            "skill_select_probability": {
+                "攻撃": 0.7,
+                "メラ": 0.3
             },
-            "attribute_damage": {
+            "attribute_damage_rate": {
                 "メラ": 0.3,
                 "ヒャド": 1.3,
                 "バギ": 1,
@@ -74,18 +66,12 @@
             "magic_attack": 0,
             "deffense": 3,
             "agility": 1,
-            "skill": {
-                "攻撃": {
-                    "select_probability": 0.1
-                },
-                "ミス": {
-                    "select_probability": 0.7
-                },
-                "痛恨の一撃": {
-                    "select_probability": 0.2
-                }
+            "skill_select_probability": {
+                "攻撃": 0.1,
+                "ミス": 0.7,
+                "痛恨の一撃": 0.2
             },
-            "attribute_damage": {
+            "attribute_damage_rate": {
                 "メラ": 1.2,
                 "ヒャド": 1.2,
                 "バギ": 1.2,
