@@ -6,6 +6,61 @@ from json import load
 from numpy.random import choice
 import tkinter as tk
 
+class Window:
+    def __init__(self) -> None:
+        self.message_box = None
+        self.message_text = None
+    
+    def make_message_box(self) -> None:
+        """
+        メッセージボックスを生成する
+        """
+        start_x, start_y = 70, 275
+        width, height = 700, 60
+        end_x, end_y = start_x+width, start_y+height
+        self.message_box = canvas.create_rectangle(
+            start_x, start_y,
+            end_x, end_y,
+            fill = "#eee",
+            outline = "#777"
+        )
+        canvas.update()
+    
+    def delete_message_box(self) -> None:
+        """
+        メッセージボックスを削除する
+        """
+        if self.message_box!=None:
+            canvas.delete(self.message_box)
+            canvas.update()
+    
+    def show_message(self, message: str) -> None:
+        """
+        メッセージを表示（変更）する
+        message: 表示するメッセージ
+        """
+        start_x, start_y = 70, 275
+        width, height = 700, 60
+        end_x, end_y = start_x+width, start_y+height
+        # すでにメッセージが書いてある場合は消去する
+        if self.message_text!="":
+            canvas.delete(self.message_text)
+        # メッセージを表示する
+        self.message_text = canvas.create_text(
+            (start_x+end_x)/2, (start_y+end_y)/2,
+            font = ("helvetica", 18),
+            text = message
+        )
+        canvas.update()
+
+    def delete_message(self) -> None:
+        """
+        メッセージを削除する
+        """
+        if self.message_text!=None:
+            canvas.delete(self.message_text)
+            canvas.update()
+
 class Battle:
     def __init__(self, enemy:list, friend: list) -> None:
         """
@@ -44,12 +99,12 @@ class Battle:
         # (monster_name, is_friend): (start_x, start_y)
         self.elem_coord = {}
         # 敵と味方のUIを生成する
-        self.__make_party(enemy, "name", False)
-        self.__make_party(enemy, "hp", False)
-        self.__make_party(enemy, "mp", False)
-        self.__make_party(friend, "name", True)
-        self.__make_party(friend, "hp", True)
-        self.__make_party(friend, "mp", True)
+        self.make_party(enemy, "name", False)
+        self.make_party(enemy, "hp", False)
+        self.make_party(enemy, "mp", False)
+        self.make_party(friend, "name", True)
+        self.make_party(friend, "hp", True)
+        self.make_party(friend, "mp", True)
         # バトル時のパラメータ
         self.hp = [
             {monster[name]["name"]: monster[name]["hp"] for name in enemy},
@@ -80,7 +135,7 @@ class Battle:
             {monster[name]["name"]: False for name in friend}
         ]
     
-    def __make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
+    def make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
         """
         UIを生成する
         party: 敵か味方のモンスター3体
@@ -126,27 +181,25 @@ class Battle:
                 text = content
             )
             i += 1
+        canvas.update()
 
-    def __kill_monster(self, monster_name: str, is_friend: bool) -> None:
+    def kill_monster(self, monster_name: str, is_friend: bool) -> None:
         """
         モンスターが死亡する
         monster_name: モンスターの名前
         is_friend: 味方であるかどうか
         """
-        canvas.update()
-        sleep(1)
         self.dead[is_friend][monster_name] = True
         canvas.delete(self.name_box[is_friend][monster_name])
         canvas.delete(self.name_text[is_friend][monster_name])
+        canvas.update()
     
-    def __revive_monster(self, name: str, is_friend: bool) -> None:
+    def revive_monster(self, name: str, is_friend: bool) -> None:
         """
         モンスターが復活する
         name: モンスターの名前
         is_friend: 味方であるかどうか
         """
-        canvas.update()
-        sleep(1)
         self.dead[is_friend][name] = False
         width, height = 160, 40
         start_x, start_y = self.elem_coord[(name, "name", is_friend)]
@@ -167,6 +220,7 @@ class Battle:
             (start_x+end_x)/2, (start_y+end_y)/2,
             text = name
         )
+        canvas.update()
 
     def battle_start_auto(self) -> None:
         """
@@ -217,7 +271,7 @@ def select_skill(skill: dict) -> str:
 
 def param_level_up(param: int) -> int:
     """
-    パラメータを強化する
+    レベルアップ後のパラメータを返す
     """
     return ceil(param*1.05)
 
@@ -236,6 +290,11 @@ canvas = tk.Canvas(
 )
 canvas.pack()
 
+# システムウィンドウのインスタンス
+window = Window()
+window.make_message_box()
+
+# debug
 if 1:
     battle(
         ["スライム", "ドラキー", "ゴースト"],
@@ -248,4 +307,3 @@ if 1:
 
 ・モンスターの重複禁止
 """
-
