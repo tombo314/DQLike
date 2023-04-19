@@ -1,10 +1,10 @@
 from pprint import pprint
 from random import randint, uniform
 from time import sleep
-from math import ceil
 from json import load
 from numpy.random import choice
 import tkinter as tk
+import math
 
 class Window:
     def __init__(self) -> None:
@@ -122,9 +122,9 @@ class Battle:
             {monster[name]["name"]: monster[name]["magic_attack"] for name in enemy},
             {monster[name]["name"]: monster[name]["magic_attack"] for name in friend}
         ]
-        self.deffense = [
-            {monster[name]["name"]: monster[name]["deffense"] for name in enemy},
-            {monster[name]["name"]: monster[name]["deffense"] for name in friend}
+        self.defense = [
+            {monster[name]["name"]: monster[name]["defense"] for name in enemy},
+            {monster[name]["name"]: monster[name]["defense"] for name in friend}
         ]
         self.agility = [
             {monster[name]["name"]: monster[name]["agility"] for name in enemy},
@@ -222,6 +222,54 @@ class Battle:
         )
         canvas.update()
 
+    def is_n_percent(prob: int) -> bool:
+        """
+        probパーセントの確率でTrueを返す
+        prob: Trueが返ってくる確率(0~100)
+        """
+        r = randint(1, 100)
+        if r<=prob:
+            return True
+        return False
+
+    def calc_damage(self, skill_name: str, attack: int, magic_attack: int, defense: int, attribute_damage_rate: dict) -> int:
+        """
+        ダメージを計算する
+        skill_name: 使うスキルの名前
+        attack: 攻撃側の物理攻撃力
+        magic_attack: 攻撃側の呪文攻撃力
+        defense: 防御側の物理防御力
+        attribute_damage_rate: 防御側の属性耐性 {属性: ダメージ倍率}
+        """
+        damage = 0
+        using_skill = skill[skill_name]
+        if using_skill["type"]=="physics":
+            damage += attack-defense//2
+        elif using_skill["type"]=="magic":
+            damage += magic_attack
+        if using_skill["attribute"]!="無":
+            damage *= attribute_damage_rate[using_skill["attribute"]]
+        return max(0, math.ceil(damage))
+
+    def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, defense_is_friend: bool) -> int:
+        """
+        モンスターからモンスターに攻撃する
+        offense_name: 攻撃側のモンスターの名前
+        offense_is_friend: 攻撃側のモンスターが味方であるかどうか
+        defense_name: 防御側のモンスターの名前
+        defense_is_friend: 防御側のモンスターが味方であるかどうか
+        """
+        attacking_monster = monster[offense_name]
+        defending_monster = monster[defense_name]
+        self.hp[defense_name][defense_is_friend] -= self.calc_damage(
+            skill_name,
+            attacking_monster["attack"],
+            attacking_monster["magic_attack"],
+            defending_monster["defense"],
+            defending_monster["attribute_damage_rate"]
+        )
+        self.mp[offense_name][offense_is_friend] -= skill[skill_name]["mp_consumption"]
+    
     def battle_start_auto(self) -> None:
         """
         バトルを開始する（自動）
@@ -252,16 +300,6 @@ def battle(party_enemy: list, party_friend: list) -> None:
     btl = Battle(party_enemy, party_friend)
     btl.battle_start_auto()
 
-def is_n_percent(prob: int) -> bool:
-    """
-    probパーセントの確率でTrueを返す
-    prob: Trueが返ってくる確率(0~100)
-    """
-    r = randint(1, 100)
-    if r<=prob:
-        return True
-    return False
-
 def select_skill(skill: dict) -> str:
     """
     スキルを選択する
@@ -273,7 +311,7 @@ def param_level_up(param: int) -> int:
     """
     レベルアップ後のパラメータを返す
     """
-    return ceil(param*1.05)
+    return math.ceil(param*1.05)
 
 with open("data.json", encoding="utf-8") as f:
     data = load(f)
@@ -305,5 +343,5 @@ if 1:
 """
 メモ
 
-・モンスターの重複禁止
+・パーティー内のモンスターの重複禁止
 """
