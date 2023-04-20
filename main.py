@@ -183,15 +183,15 @@ class Battle:
             i += 1
         canvas.update()
 
-    def kill_monster(self, monster_name: str, is_friend: bool) -> None:
+    def kill_monster(self, name: str, is_friend: bool) -> None:
         """
         モンスターが死亡する
-        monster_name: モンスターの名前
+        name: モンスターの名前
         is_friend: 味方であるかどうか
         """
-        self.dead[is_friend][monster_name] = True
-        canvas.delete(self.name_box[is_friend][monster_name])
-        canvas.delete(self.name_text[is_friend][monster_name])
+        self.dead[is_friend][name] = True
+        canvas.delete(self.name_box[is_friend][name])
+        canvas.delete(self.name_text[is_friend][name])
         canvas.update()
     
     def revive_monster(self, name: str, is_friend: bool) -> None:
@@ -222,6 +222,32 @@ class Battle:
         )
         canvas.update()
 
+    def update_text(self, name: str, is_friend: bool, type_: str, param: int) -> None:
+        """
+        hpまたはmpの表示を更新する
+        name: モンスターの名前
+        is_friend: 味方かどうか
+        type_: 「hp」「mp」のいずれか
+        param: 更新したあとの数字
+        """
+        if type_=="hp":
+            canvas.delete(self.hp_text[is_friend][name])
+        elif type_=="mp":
+            canvas.delete(self.mp_text[is_friend][name])
+        start_x, start_y = self.elem_coord[(name, type_, is_friend)]
+        width, height = 160, 40
+        end_x, end_y = start_x+width, start_y+height
+        # テキストを表示する
+        elem = canvas.create_text(
+            (start_x+end_x)/2, (start_y+end_y)/2,
+            text = f"{param} / {monster[name][type_]}"
+        )
+        if type_=="hp":
+            self.hp_text[is_friend][monster[name][type_]] = elem
+        elif type_=="mp":
+            self.mp_text[is_friend][monster[name][type_]] = elem
+        canvas.update()
+
     def is_n_percent(prob: int) -> bool:
         """
         probパーセントの確率でTrueを返す
@@ -241,19 +267,23 @@ class Battle:
         defense: 防御側の物理防御力
         attribute_damage_rate: 防御側の属性耐性 {属性: ダメージ倍率}
         """
-        damage = 0
+        physics_damage = 0
+        magic_damage = 0
+        damage_rate = 1
         using_skill = skill[skill_name]
         if using_skill["type"]=="physics":
-            damage += attack-defense//2
+            physics_damage += attack-defense//2
         elif using_skill["type"]=="magic":
-            damage += magic_attack
+            magic_damage += magic_attack
         if using_skill["attribute"]!="無":
-            damage *= attribute_damage_rate[using_skill["attribute"]]
+            damage_rate *= attribute_damage_rate[using_skill["attribute"]]
+        damage = (physics_damage+magic_damage)*damage_rate*uniform(0.95, 1.05)
         return max(0, math.ceil(damage))
 
     def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, defense_is_friend: bool) -> None:
         """
         モンスターからモンスターに攻撃する
+        skill_name: 技の名前
         offense_name: 攻撃側のモンスターの名前
         offense_is_friend: 攻撃側のモンスターが味方であるかどうか
         defense_name: 防御側のモンスターの名前
@@ -261,14 +291,15 @@ class Battle:
         """
         attacking_monster = monster[offense_name]
         defending_monster = monster[defense_name]
-        self.hp[defense_name][defense_is_friend] -= self.calc_damage(
+        self.hp[defense_is_friend][defense_name] -= self.calc_damage(
             skill_name,
             attacking_monster["attack"],
             attacking_monster["magic_attack"],
             defending_monster["defense"],
             defending_monster["attribute_damage_rate"]
         )
-        self.mp[offense_name][offense_is_friend] -= skill[skill_name]["mp_consumption"]
+        self.mp[offense_is_friend][offense_name] -= skill[skill_name]["mp_consumption"]
+        self.update_text(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
     
     def battle_start_auto(self) -> None:
         """
@@ -284,6 +315,8 @@ class Battle:
             for name in self.friend:
                 order.append([r*monster[name]["agility"], monster[name]["name"], "friend"])
             order.sort(reverse=True)
+            canvas.delete(self.hp_text[False]["スライム"])
+            # self.attack_on_monster("攻撃", "スライム", True, "スライム", False)
             break
     
     def battle_start_manual(self) -> None:
