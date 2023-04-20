@@ -164,22 +164,34 @@ class Battle:
             width, height = 160, 40
             end_x, end_y = start_x+width, start_y+height
             # 四角形を表示する
-            self.name_box[is_friend][monster[name][type_]] = canvas.create_rectangle(
+            elem = canvas.create_rectangle(
                 start_x, start_y,
                 end_x, end_y,
                 fill = "#ddd",
                 outline = color
             )
+            if type_=="name":
+                self.name_box[is_friend][name] = elem
+            elif type_=="hp":
+                self.hp_box[is_friend][name] = elem
+            elif type_=="mp":
+                self.mp_box[is_friend][name] = elem
+            # テキストを表示する
             content = ""
             if type_=="name":
-                content = monster[name][type_]
+                content = name
             elif type_=="hp" or type_=="mp":
                 content = f"{monster[name][type_]} / {monster[name][type_]}"
-            # テキストを表示する
-            self.name_text[is_friend][monster[name][type_]] = canvas.create_text(
+            elem = canvas.create_text(
                 (start_x+end_x)/2, (start_y+end_y)/2,
                 text = content
             )
+            if type_=="name":
+                self.name_text[is_friend][name] = elem
+            elif type_=="hp":
+                self.hp_text[is_friend][name] = elem
+            elif type_=="mp":
+                self.mp_text[is_friend][name] = elem
             i += 1
         canvas.update()
 
@@ -222,7 +234,7 @@ class Battle:
         )
         canvas.update()
 
-    def update_text(self, name: str, is_friend: bool, type_: str, param: int) -> None:
+    def update_hp_mp(self, name: str, is_friend: bool, type_: str, param: int) -> None:
         """
         hpまたはmpの表示を更新する
         name: モンスターの名前
@@ -289,6 +301,7 @@ class Battle:
         defense_name: 防御側のモンスターの名前
         defense_is_friend: 防御側のモンスターが味方であるかどうか
         """
+        window.show_message(f"{offense_name}の攻撃！")
         attacking_monster = monster[offense_name]
         defending_monster = monster[defense_name]
         self.hp[defense_is_friend][defense_name] -= self.calc_damage(
@@ -299,7 +312,7 @@ class Battle:
             defending_monster["attribute_damage_rate"]
         )
         self.mp[offense_is_friend][offense_name] -= skill[skill_name]["mp_consumption"]
-        self.update_text(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
+        self.update_hp_mp(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
     
     def battle_start_auto(self) -> None:
         """
@@ -315,8 +328,7 @@ class Battle:
             for name in self.friend:
                 order.append([r*monster[name]["agility"], monster[name]["name"], "friend"])
             order.sort(reverse=True)
-            canvas.delete(self.hp_text[False]["スライム"])
-            # self.attack_on_monster("攻撃", "スライム", True, "スライム", False)
+            self.attack_on_monster("攻撃", "スライム", True, "スライム", False)
             break
     
     def battle_start_manual(self) -> None:
