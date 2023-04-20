@@ -6,7 +6,7 @@
             "mp": 0,
             "attack": 3,
             "magic_attack": 1,
-            "deffense": 2,
+            "defense": 2,
             "agility": 5,
             "skill_select_probability": {
                 "攻撃": 1
@@ -25,7 +25,7 @@
             "mp": 0,
             "attack": 4,
             "magic_attack": 2,
-            "deffense": 2,
+            "defense": 2,
             "agility": 3,
             "skill_select_probability": {
                 "攻撃": 1
@@ -44,7 +44,7 @@
             "mp": 3,
             "attack": 1,
             "magic_attack": 5,
-            "deffense": 1,
+            "defense": 1,
             "agility": 4,
             "skill_select_probability": {
                 "攻撃": 0.7,
@@ -64,7 +64,7 @@
             "mp": 0,
             "attack": 7,
             "magic_attack": 0,
-            "deffense": 3,
+            "defense": 3,
             "agility": 1,
             "skill_select_probability": {
                 "攻撃": 0.1,
