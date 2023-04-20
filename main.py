@@ -301,7 +301,7 @@ class Battle:
         defense_name: 防御側のモンスターの名前
         defense_is_friend: 防御側のモンスターが味方であるかどうか
         """
-        window.show_message(f"{offense_name}の攻撃！")
+        window.show_message(offense_name+skill[skill_name]["message"])
         attacking_monster = monster[offense_name]
         defending_monster = monster[defense_name]
         self.hp[defense_is_friend][defense_name] -= self.calc_damage(
@@ -328,7 +328,7 @@ class Battle:
             for name in self.friend:
                 order.append([r*monster[name]["agility"], monster[name]["name"], "friend"])
             order.sort(reverse=True)
-            self.attack_on_monster("攻撃", "スライム", True, "スライム", False)
+            self.attack_on_monster("メラ", "ゴースト", False, "スライム", True)
             break
     
     def battle_start_manual(self) -> None:
