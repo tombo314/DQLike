@@ -251,7 +251,7 @@ class Battle:
             damage *= attribute_damage_rate[using_skill["attribute"]]
         return max(0, math.ceil(damage))
 
-    def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, defense_is_friend: bool) -> int:
+    def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, defense_is_friend: bool) -> None:
         """
         モンスターからモンスターに攻撃する
         offense_name: 攻撃側のモンスターの名前
