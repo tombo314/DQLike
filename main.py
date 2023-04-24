@@ -260,7 +260,7 @@ class Battle:
             self.mp_text[is_friend][monster[name][type_]] = elem
         canvas.update()
 
-    def is_n_percent(prob: int) -> bool:
+    def is_n_percent(self, prob: int) -> bool:
         """
         probパーセントの確率でTrueを返す
         prob: Trueが返ってくる確率(0~100)
@@ -269,6 +269,13 @@ class Battle:
         if r<=prob:
             return True
         return False
+
+    def select_skill(self, skill: dict) -> str:
+        """
+        スキルを選択する
+        skill: keyにスキル名、valueに確率
+        """
+        return np.random.choice(list(skill.keys()), p=list(skill.values()))
 
     def select_monster_at_random(self, enemy_or_friend: str) -> str:
         """
@@ -298,12 +305,12 @@ class Battle:
         elif using_skill["type"]=="magic":
             magic_damage += magic_attack
         damage_rate *= using_skill["damage_rate"]
-        if using_skill["attribute"]!="無":
+        if using_skill["attribute"]!="無" and using_skill["attribute"]!="null":
             damage_rate *= attribute_damage_rate[using_skill["attribute"]]
         damage = (physics_damage+magic_damage)*damage_rate*rd.uniform(0.95, 1.05)
         return max(0, math.ceil(damage))
 
-    def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, defense_is_friend: bool) -> None:
+    def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str) -> None:
         """
         モンスターからモンスターに攻撃する
         skill_name: 技の名前
@@ -315,6 +322,10 @@ class Battle:
         offensing_monster = monster[offense_name]
         defending_monster = monster[defense_name]
         using_skill = skill[skill_name]
+        if offense_is_friend==True:
+            defense_is_friend = False
+        elif offense_is_friend==False:
+            defense_is_friend = True
         # メッセージを表示
         enemy_or_friend = ""
         if offense_is_friend==True:
@@ -325,7 +336,8 @@ class Battle:
         sleep(1.2)
         # MPが足りない場合はキャンセル
         if self.mp[offense_is_friend][offense_name]<using_skill["mp_consumption"]:
-            pass
+            window.show_message("しかしMPが足りない！")
+            return False
         # ダメージの処理とHP・MPの減少
         damage = self.calc_damage(
             skill_name,
@@ -334,7 +346,7 @@ class Battle:
             defending_monster["defense"],
             defending_monster["attribute_damage_rate"]
         )
-        self_damage = max(0, math.ceil(damage*using_skill["damage_ratio_to_calc_damage"]))
+        self_damage = max(0, math.ceil(damage*using_skill["self_damage_ratio_to_calc_damage"]))
         self.hp[defense_is_friend][defense_name] -= damage
         self.mp[offense_is_friend][offense_name] -= skill[skill_name]["mp_consumption"]
         self.update_hp_mp(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
@@ -368,22 +380,27 @@ class Battle:
             for name in self.friend:
                 order.append([r*monster[name]["agility"], monster[name]["name"], "friend"])
             order.sort(reverse=True)
-            # for mons in order:
-            #     agility, name, enemy_or_friend = mons
-            #     offensing_monster = name
-            #     defensing_monster = self.select_monster_at_random(enemy_or_friend)
-            #     offense_is_friend = None
-            #     if enemy_or_friend=="enemy":
-            #         offense_is_friend = False
-            #     elif enemy_or_friend=="friend":
-            #         offense_is_friend = True
-            #     self.attack_on_monster(
-            #         "tmp",
-            #         offensing_monster,
-            #         offense_is_friend,
-            #         defensing_monster,
-            #     )
-            self.attack_on_monster("もろば斬り", "スライム", True, "ゴースト", False)
+            for mons in order:
+                agility, name, offense_enemy_or_friend = mons
+                deffense_enemy_or_friend = ""
+                if offense_enemy_or_friend=="enemy":
+                    deffense_enemy_or_friend = "friend"
+                elif offense_enemy_or_friend=="friend":
+                    deffense_enemy_or_friend = "enemy"
+                offensing_monster = name
+                defensing_monster = self.select_monster_at_random(deffense_enemy_or_friend)
+                offense_is_friend = None
+                if offense_enemy_or_friend=="enemy":
+                    offense_is_friend = False
+                elif offense_enemy_or_friend=="friend":
+                    offense_is_friend = True
+                skill_name = self.select_skill(monster[offensing_monster]["skill_select_probability"][offense_enemy_or_friend])
+                self.attack_on_monster(
+                    skill_name,
+                    offensing_monster,
+                    offense_is_friend,
+                    defensing_monster
+                )
             break
     
     def battle_start_manual(self) -> None:
@@ -400,17 +417,14 @@ def battle(party_enemy: list, party_friend: list) -> None:
     btl = Battle(party_enemy, party_friend)
     btl.battle_start_auto()
 
-def select_skill(skill: dict) -> str:
-    """
-    スキルを選択する
-    skill: keyにスキル名、valueに確率
-    """
-    return np.random.choice(list(skill.keys()), p=list(skill.values()))
-
-def param_level_up(param: int) -> int:
+def param_level_up(param: int, is_mp) -> int:
     """
     レベルアップ後のパラメータを返す
+    param: 強化される前の値
+    is_mp: MPかどうか
     """
+    if is_mp and param==0:
+        return 2
     return math.ceil(param*1.05)
 
 with open("data.json", encoding="utf-8") as f:
@@ -444,4 +458,5 @@ if 1:
 メモ
 
 ・パーティー内のモンスターの重複禁止
+・MP不足はそのターンにMPを減少させられた場合にのみ起こり得る。
 """
