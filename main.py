@@ -1,10 +1,10 @@
 from pprint import pprint
-from random import randint, uniform
 from time import sleep
 from json import load
-from numpy.random import choice
 import tkinter as tk
 import math
+import numpy as np
+import random as rd
 
 class Window:
     def __init__(self) -> None:
@@ -139,7 +139,7 @@ class Battle:
         """
         UIを生成する
         party: 敵か味方のモンスター3体
-        type: 「name」「hp」「mp」のいずれか
+        type: 「name」「hp」「mp」のどれか
         is_friend: 敵の要素であるかどうか
         """
         y = -1
@@ -239,7 +239,7 @@ class Battle:
         hpまたはmpの表示を更新する
         name: モンスターの名前
         is_friend: 味方かどうか
-        type_: 「hp」「mp」のいずれか
+        type_: 「hp」「mp」のどちらか
         param: 更新したあとの数字
         """
         if type_=="hp":
@@ -265,10 +265,20 @@ class Battle:
         probパーセントの確率でTrueを返す
         prob: Trueが返ってくる確率(0~100)
         """
-        r = randint(1, 100)
+        r = rd.randint(1, 100)
         if r<=prob:
             return True
         return False
+
+    def select_monster_at_random(self, enemy_or_friend: str) -> str:
+        """
+        パーティーの中からランダムに1体選ぶ
+        enemy_or_friend: 「enemy」「friend」のどちらか
+        """
+        if enemy_or_friend=="enemy":
+            return rd.choice(self.enemy)
+        elif enemy_or_friend=="friend":
+            return rd.choice(self.friend)
 
     def calc_damage(self, skill_name: str, attack: int, magic_attack: int, defense: int, attribute_damage_rate: dict) -> int:
         """
@@ -287,9 +297,10 @@ class Battle:
             physics_damage += attack-defense//2
         elif using_skill["type"]=="magic":
             magic_damage += magic_attack
+        damage_rate *= using_skill["damage_rate"]
         if using_skill["attribute"]!="無":
             damage_rate *= attribute_damage_rate[using_skill["attribute"]]
-        damage = (physics_damage+magic_damage)*damage_rate*uniform(0.95, 1.05)
+        damage = (physics_damage+magic_damage)*damage_rate*rd.uniform(0.95, 1.05)
         return max(0, math.ceil(damage))
 
     def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, defense_is_friend: bool) -> None:
@@ -301,18 +312,47 @@ class Battle:
         defense_name: 防御側のモンスターの名前
         defense_is_friend: 防御側のモンスターが味方であるかどうか
         """
-        window.show_message(offense_name+skill[skill_name]["message"])
-        attacking_monster = monster[offense_name]
+        offensing_monster = monster[offense_name]
         defending_monster = monster[defense_name]
-        self.hp[defense_is_friend][defense_name] -= self.calc_damage(
+        using_skill = skill[skill_name]
+        # メッセージを表示
+        enemy_or_friend = ""
+        if offense_is_friend==True:
+            enemy_or_friend = "味方の"
+        elif offense_is_friend==False:
+            enemy_or_friend = "敵の"
+        window.show_message(enemy_or_friend+offense_name+skill[skill_name]["message"])
+        sleep(1.2)
+        # MPが足りない場合はキャンセル
+        if self.mp[offense_is_friend][offense_name]<using_skill["mp_consumption"]:
+            pass
+        # ダメージの処理とHP・MPの減少
+        damage = self.calc_damage(
             skill_name,
-            attacking_monster["attack"],
-            attacking_monster["magic_attack"],
+            offensing_monster["attack"],
+            offensing_monster["magic_attack"],
             defending_monster["defense"],
             defending_monster["attribute_damage_rate"]
         )
+        self_damage = max(0, math.ceil(damage*using_skill["damage_ratio_to_calc_damage"]))
+        self.hp[defense_is_friend][defense_name] -= damage
         self.mp[offense_is_friend][offense_name] -= skill[skill_name]["mp_consumption"]
         self.update_hp_mp(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
+        # メッセージを表示
+        enemy_or_friend = ""
+        if defense_is_friend==True:
+            enemy_or_friend = "味方の"
+        elif defense_is_friend==False:
+            enemy_or_friend = "敵の"
+        window.show_message(f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！")
+        sleep(1.2)
+        # 自傷ダメージ
+        if self_damage>0:
+            self.hp[offense_is_friend][offense_name] -= self_damage
+            self.update_hp_mp(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
+            # メッセージを表示
+            window.show_message(f"自分に{self_damage}のダメージ！")
+            sleep(1.2)
     
     def battle_start_auto(self) -> None:
         """
@@ -323,12 +363,27 @@ class Battle:
             # 各ターンの処理
             order = []
             for name in self.enemy:
-                r = uniform(0.8, 1.2)
+                r = rd.uniform(0.8, 1.2)
                 order.append([r*monster[name]["agility"], monster[name]["name"], "enemy"])
             for name in self.friend:
                 order.append([r*monster[name]["agility"], monster[name]["name"], "friend"])
             order.sort(reverse=True)
-            self.attack_on_monster("メラ", "ゴースト", False, "スライム", True)
+            # for mons in order:
+            #     agility, name, enemy_or_friend = mons
+            #     offensing_monster = name
+            #     defensing_monster = self.select_monster_at_random(enemy_or_friend)
+            #     offense_is_friend = None
+            #     if enemy_or_friend=="enemy":
+            #         offense_is_friend = False
+            #     elif enemy_or_friend=="friend":
+            #         offense_is_friend = True
+            #     self.attack_on_monster(
+            #         "tmp",
+            #         offensing_monster,
+            #         offense_is_friend,
+            #         defensing_monster,
+            #     )
+            self.attack_on_monster("もろば斬り", "スライム", True, "ゴースト", False)
             break
     
     def battle_start_manual(self) -> None:
@@ -350,7 +405,7 @@ def select_skill(skill: dict) -> str:
     スキルを選択する
     skill: keyにスキル名、valueに確率
     """
-    return choice(list(skill.keys()), p=list(skill.values()))
+    return np.random.choice(list(skill.keys()), p=list(skill.values()))
 
 def param_level_up(param: int) -> int:
     """
