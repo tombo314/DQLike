@@ -8,7 +8,11 @@
             "magic_attack": 1,
             "defense": 2,
             "agility": 5,
-            "skill_select_probability": {
+            "skill_select_probability_friend": {
+                "攻撃": 0.8,
+                "メラ": 0.2
+            },
+            "skill_select_probability_enemy": {
                 "攻撃": 1
             },
             "attribute_damage_rate": {
@@ -27,7 +31,11 @@
             "magic_attack": 2,
             "defense": 2,
             "agility": 3,
-            "skill_select_probability": {
+            "skill_select_probability_friend": {
+                "攻撃": 0.8,
+                "バギ": 0.2
+            },
+            "skill_select_probability_enemy": {
                 "攻撃": 1
             },
             "attribute_damage_rate": {
@@ -46,7 +54,11 @@
             "magic_attack": 5,
             "defense": 1,
             "agility": 4,
-            "skill_select_probability": {
+            "skill_select_probability_friend": {
+                "攻撃": 0.7,
+                "メラ": 0.3
+            },
+            "skill_select_probability_enemy": {
                 "攻撃": 0.7,
                 "メラ": 0.3
             },
@@ -66,7 +78,11 @@
             "magic_attack": 0,
             "defense": 3,
             "agility": 1,
-            "skill_select_probability": {
+            "skill_select_probability_friend": {
+                "ミス": 0.7,
+                "会心の一撃": 0.3
+            },
+            "skill_select_probability_enemy": {
                 "攻撃": 0.1,
                 "ミス": 0.7,
                 "痛恨の一撃": 0.2
@@ -105,6 +121,18 @@
             "miss_probability": 1,
             "critical_probability": 0,
             "message": "の攻撃！ミス！"
+        },
+        "会心の一撃": {
+            "type": "physics",
+            "attribute": "無",
+            "damage_rate": 1,
+            "damage_ratio_to_calc_damage": 0,
+            "mp_consumption": 0,
+            "range": "single",
+            "is_decreasing": false,
+            "miss_probability": 0,
+            "critical_probability": 1,
+            "message": "の攻撃！会心の一撃！"
         },
         "痛恨の一撃": {
             "type": "physics",
