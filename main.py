@@ -6,6 +6,8 @@ import math
 import numpy as np
 import random as rd
 
+SHOW_DURATION = 2
+
 class Window:
     def __init__(self) -> None:
         self.message_box = None
@@ -52,6 +54,7 @@ class Window:
             text = message
         )
         canvas.update()
+        sleep(SHOW_DURATION)
 
     def delete_message(self) -> None:
         """
@@ -184,7 +187,8 @@ class Battle:
                 content = f"{monster[name][type_]} / {monster[name][type_]}"
             elem = canvas.create_text(
                 (start_x+end_x)/2, (start_y+end_y)/2,
-                text = content
+                text = content,
+                font = ("", 12)
             )
             if type_=="name":
                 self.name_text[is_friend][name] = elem
@@ -230,11 +234,12 @@ class Battle:
         # テキストを表示する
         self.name_text[is_friend][name] = canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
-            text = name
+            text = name,
+            font = ("", 12)
         )
         canvas.update()
 
-    def update_hp_mp(self, name: str, is_friend: bool, type_: str, param: int) -> None:
+    def update_hp_mp_text(self, name: str, is_friend: bool, type_: str, param: int) -> None:
         """
         hpまたはmpの表示を更新する
         name: モンスターの名前
@@ -242,6 +247,7 @@ class Battle:
         type_: 「hp」「mp」のどちらか
         param: 更新したあとの数字
         """
+        # 前のテキストを削除する
         if type_=="hp":
             canvas.delete(self.hp_text[is_friend][name])
         elif type_=="mp":
@@ -252,12 +258,13 @@ class Battle:
         # テキストを表示する
         elem = canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
-            text = f"{param} / {monster[name][type_]}"
+            text = f"{param} / {monster[name][type_]}",
+            font = ("", 12)
         )
         if type_=="hp":
-            self.hp_text[is_friend][monster[name][type_]] = elem
+            self.hp_text[is_friend][name] = elem
         elif type_=="mp":
-            self.mp_text[is_friend][monster[name][type_]] = elem
+            self.mp_text[is_friend][name] = elem
         canvas.update()
 
     def is_n_percent(self, prob: int) -> bool:
@@ -282,10 +289,15 @@ class Battle:
         パーティーの中からランダムに1体選ぶ
         enemy_or_friend: 「enemy」「friend」のどちらか
         """
+        mons = None
         if enemy_or_friend=="enemy":
-            return rd.choice(self.enemy)
+            while mons==None or self.dead[0][mons]==True:
+                mons = rd.choice(self.enemy)
+            return mons
         elif enemy_or_friend=="friend":
-            return rd.choice(self.friend)
+            while mons==None or self.dead[1][mons]==True:
+                mons = rd.choice(self.friend)
+            return mons
 
     def calc_damage(self, skill_name: str, attack: int, magic_attack: int, defense: int, attribute_damage_rate: dict) -> int:
         """
@@ -326,19 +338,18 @@ class Battle:
             defense_is_friend = False
         elif offense_is_friend==False:
             defense_is_friend = True
-        # メッセージを表示
+        # 攻撃時のメッセージを表示
         enemy_or_friend = ""
         if offense_is_friend==True:
             enemy_or_friend = "味方の"
         elif offense_is_friend==False:
             enemy_or_friend = "敵の"
-        window.show_message(enemy_or_friend+offense_name+skill[skill_name]["message"])
-        sleep(1.2)
-        # MPが足りない場合はキャンセル
+        window.show_message(enemy_or_friend+offense_name+using_skill["message"])
+        # 攻撃側のMPが足りない場合は攻撃をキャンセル
         if self.mp[offense_is_friend][offense_name]<using_skill["mp_consumption"]:
             window.show_message("しかしMPが足りない！")
-            return False
-        # ダメージの処理とHP・MPの減少
+            return None
+        # 攻撃側の与ダメージと自傷ダメージを計算する
         damage = self.calc_damage(
             skill_name,
             offensing_monster["attack"],
@@ -347,31 +358,53 @@ class Battle:
             defending_monster["attribute_damage_rate"]
         )
         self_damage = max(0, math.ceil(damage*using_skill["self_damage_ratio_to_calc_damage"]))
-        self.hp[defense_is_friend][defense_name] -= damage
-        self.mp[offense_is_friend][offense_name] -= skill[skill_name]["mp_consumption"]
-        self.update_hp_mp(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
-        # メッセージを表示
+        # 防御側のHPと攻撃側のMPを減らす
+        self.hp[defense_is_friend][defense_name] = max(self.hp[defense_is_friend][defense_name]-damage, 0)
+        self.mp[offense_is_friend][offense_name] -= using_skill["mp_consumption"]
+        # 攻撃側のMPの表示を変更する
+        self.update_hp_mp_text(offense_name, offense_is_friend, "mp", self.mp[offense_is_friend][offense_name])
+        # 防御側の被ダメージ時のメッセージを表示
         enemy_or_friend = ""
         if defense_is_friend==True:
             enemy_or_friend = "味方の"
         elif defense_is_friend==False:
             enemy_or_friend = "敵の"
         window.show_message(f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！")
-        sleep(1.2)
+        # 防御側のHPの表示を変更する
+        self.update_hp_mp_text(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
+        # 防御側のdeadフラグを更新して、死亡時のメッセージを表示
+        if self.hp[defense_is_friend][defense_name]==0:
+            self.dead[defense_is_friend][defense_name] = True
+            window.show_message(f"{defense_name}は力尽きた...")
         # 自傷ダメージ
         if self_damage>0:
+            # 攻撃側のHPを減らす
             self.hp[offense_is_friend][offense_name] -= self_damage
-            self.update_hp_mp(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
-            # メッセージを表示
-            window.show_message(f"自分に{self_damage}のダメージ！")
-            sleep(1.2)
+            self.update_hp_mp_text(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
+            # 攻撃側の被ダメージ時のメッセージを表示
+            if offense_is_friend==True:
+                enemy_or_friend = "味方の"
+            elif offense_is_friend==False:
+                enemy_or_friend = "敵の"
+            window.show_message(f"{enemy_or_friend}{offense_name}に{self_damage}のダメージ！")
+            # 攻撃側のHPの表示を変更する
+            self.update_hp_mp_text(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
+            # 攻撃側のdeadフラグを更新して、死亡時のメッセージを表示
+            if self.hp[offense_is_friend][offense_name]==0:
+                self.dead[offense_is_friend][offense_name] = True
+                window.show_message(f"{offense_name}は力尽きた...")
+        # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
+        # Falseで終了
+        if any([self.dead[0][name]==False for name in self.enemy]) and any([self.dead[1][name]==False for name in self.friend]):
+            return True
+        return False
     
     def battle_start_auto(self) -> None:
         """
         バトルを開始する（自動）
         """
-        # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
-        while any([self.dead[0][monster[name]["name"]]==False for name in self.enemy]) and any([self.dead[1][monster[name]["name"]]==False for name in self.friend]):
+        break_ = False
+        while True:
             # 各ターンの処理
             order = []
             for name in self.enemy:
@@ -382,6 +415,15 @@ class Battle:
             order.sort(reverse=True)
             for mons in order:
                 agility, name, offense_enemy_or_friend = mons
+                # 死んでいたら行動できない
+                is_friend = None
+                if offense_enemy_or_friend=="enemy":
+                    is_friend = False
+                elif offense_enemy_or_friend=="friend":
+                    is_friend = True
+                if self.dead[is_friend][name]==True:
+                    continue
+                # 攻撃する
                 deffense_enemy_or_friend = ""
                 if offense_enemy_or_friend=="enemy":
                     deffense_enemy_or_friend = "friend"
@@ -395,13 +437,22 @@ class Battle:
                 elif offense_enemy_or_friend=="friend":
                     offense_is_friend = True
                 skill_name = self.select_skill(monster[offensing_monster]["skill_select_probability"][offense_enemy_or_friend])
-                self.attack_on_monster(
+                continue_ = self.attack_on_monster(
                     skill_name,
                     offensing_monster,
                     offense_is_friend,
                     defensing_monster
                 )
-            break
+                # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する                
+                if continue_==False:
+                    if all([self.dead[0][name] for name in self.dead[0]]):
+                        window.show_message("バトルに勝利した！")
+                    elif all([self.dead[1][name] for name in self.dead[1]]):
+                        window.show_message("全滅してしまった...")
+                    break_ = True
+                    break
+            if break_:
+                break
     
     def battle_start_manual(self) -> None:
         """
@@ -449,7 +500,7 @@ window.make_message_box()
 # debug
 if 1:
     battle(
-        ["スライム", "ドラキー", "ゴースト"],
+        ["スライム", "ゴーレム", "ゴースト"],
         ["スライム", "ドラキー", "ボストロール"]
     )
     app.mainloop()
@@ -458,5 +509,9 @@ if 1:
 メモ
 
 ・パーティー内のモンスターの重複禁止
-・MP不足はそのターンにMPを減少させられた場合にのみ起こり得る。
+・MP不足はそのターンにMPを減少させられた場合にのみ起こり得る
+    -> うまくいかない
+・MPの更新がされない
+・バトル終了時に両方のチームが生きている
+    -> MPが足りない のところでバトルが終了する
 """
