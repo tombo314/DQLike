@@ -74,7 +74,7 @@ class Battle:
         self.enemy = enemy
         self.friend = friend
         # 画像データ
-        self.image = None
+        self.image = [0]*6
         # 0がenemyのUI, 1がfriendのUI
         self.name_box = [
             {monster[name]["name"]: 0 for name in enemy},
@@ -103,13 +103,15 @@ class Battle:
         # モンスタ―とUIの座標の対応関係
         # (monster_name, is_friend): (start_x, start_y)
         self.elem_coord = {}
-        # 敵と味方のUIを生成する
+        # 敵と味方の名前、HP、MPを表示する
         self.make_party(enemy, "name", False)
         self.make_party(enemy, "hp", False)
         self.make_party(enemy, "mp", False)
         self.make_party(friend, "name", True)
         self.make_party(friend, "hp", True)
         self.make_party(friend, "mp", True)
+        # 敵と味方の画像を表示する
+        self.plot_image_all()
         # バトル時のパラメータ
         self.hp = [
             {monster[name]["name"]: monster[name]["hp"] for name in enemy},
@@ -201,15 +203,32 @@ class Battle:
             i += 1
         canvas.update()
 
-    def plot_image(self, path: str) -> None:
+    def plot_image(self, path: str, x: int, y: int, i: int) -> None:
         """
         画像を表示
         path: 画像のパス
+        x: x座標
+        y: y座標
+        i: index
         """
         # イメージ作成
-        self.image = tk.PhotoImage(file=path, width=600, height=600)
+        self.image[i] = tk.PhotoImage(file=path, width=100, height=110)
         # キャンバスにイメージを表示
-        canvas.create_image(30, 30, image=self.image, anchor=tk.NW)
+        canvas.create_image(x, y, image=self.image[i], anchor=tk.NW)
+
+    def plot_image_all(self) -> None:
+        """
+        敵と味方のパーティーの画像を表示
+        """
+        i = 0
+        for name in self.enemy:
+            self.plot_image(f"images/png_resized/{name}_resized.png", 130+220*i, 8, i)
+            i += 1
+        i = 0
+        for name in self.friend:
+            self.plot_image(f"images/png_resized/{name}_resized.png", 130+220*i, 520, 3+i)
+            i += 1
+        canvas.update()
 
     def kill_monster(self, name: str, is_friend: bool) -> None:
         """
@@ -474,7 +493,6 @@ def battle(party_enemy: list, party_friend: list) -> None:
     party_friend: 味方のパーティーの配列
     """
     btl = Battle(party_enemy, party_friend)
-    btl.plot_image("images/png/ゴーレム.png")
     btl.battle_start_auto()
 
 def param_level_up(param: int, is_mp) -> int:
