@@ -73,6 +73,8 @@ class Battle:
         """
         self.enemy = enemy
         self.friend = friend
+        # 画像データ
+        self.image = None
         # 0がenemyのUI, 1がfriendのUI
         self.name_box = [
             {monster[name]["name"]: 0 for name in enemy},
@@ -198,6 +200,16 @@ class Battle:
                 self.mp_text[is_friend][name] = elem
             i += 1
         canvas.update()
+
+    def plot_image(self, path: str) -> None:
+        """
+        画像を表示
+        path: 画像のパス
+        """
+        # イメージ作成
+        self.image = tk.PhotoImage(file=path, width=600, height=600)
+        # キャンバスにイメージを表示
+        canvas.create_image(30, 30, image=self.image, anchor=tk.NW)
 
     def kill_monster(self, name: str, is_friend: bool) -> None:
         """
@@ -454,10 +466,6 @@ class Battle:
             if break_:
                 break
     
-    def battle_start_manual(self) -> None:
-        """
-        バトルを開始する（手動）
-        """
 
 def battle(party_enemy: list, party_friend: list) -> None:
     """
@@ -466,6 +474,7 @@ def battle(party_enemy: list, party_friend: list) -> None:
     party_friend: 味方のパーティーの配列
     """
     btl = Battle(party_enemy, party_friend)
+    btl.plot_image("images/png/ゴーレム.png")
     btl.battle_start_auto()
 
 def param_level_up(param: int, is_mp) -> int:
