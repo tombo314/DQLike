@@ -14,10 +14,10 @@ for file in files:
     name = file[11:-4]
     img = Image.open(file)
     img = np.array(img)
-    if name=="ドラキー":
-        width = 100
+    if name=="ドラキー" or name=="ボストロール":
+        width = 130
     else:
-        width = 100
+        width = 90
     height = 90
     img = cv2.resize(img, dsize=[width, height])
     img = Image.fromarray(img)
