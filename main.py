@@ -212,7 +212,7 @@ class Battle:
         i: index
         """
         # イメージ作成
-        self.image[i] = tk.PhotoImage(file=path, width=100, height=110)
+        self.image[i] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
         canvas.create_image(x, y, image=self.image[i], anchor=tk.NW)
 
@@ -222,11 +222,19 @@ class Battle:
         """
         i = 0
         for name in self.enemy:
-            self.plot_image(f"images/png_resized/{name}_resized.png", 130+220*i, 8, i)
+            width = 130+220*i
+            if name=="ドラキー" or name=="ボストロール":
+                width -= 13
+            height = 8
+            self.plot_image(f"images/png_resized/{name}_resized.png", width, height, i)
             i += 1
         i = 0
         for name in self.friend:
-            self.plot_image(f"images/png_resized/{name}_resized.png", 130+220*i, 520, 3+i)
+            width = 130+220*i
+            if name=="ドラキー" or name=="ボストロール":
+                width -= 13
+            height = 520
+            self.plot_image(f"images/png_resized/{name}_resized.png", width, height, 3+i)
             i += 1
         canvas.update()
 
@@ -484,7 +492,6 @@ class Battle:
                     break
             if break_:
                 break
-    
 
 def battle(party_enemy: list, party_friend: list) -> None:
     """
@@ -495,7 +502,7 @@ def battle(party_enemy: list, party_friend: list) -> None:
     btl = Battle(party_enemy, party_friend)
     btl.battle_start_auto()
 
-def param_level_up(param: int, is_mp) -> int:
+def param_level_up(param: int, is_mp: bool) -> int:
     """
     レベルアップ後のパラメータを返す
     param: 強化される前の値
@@ -503,6 +510,8 @@ def param_level_up(param: int, is_mp) -> int:
     """
     if is_mp and param==0:
         return 2
+    if is_mp:
+        return max(999, math.ceil(param*1.05))
     return math.ceil(param*1.05)
 
 with open("data.json", encoding="utf-8") as f:
@@ -516,7 +525,7 @@ app.title("DQLike")
 canvas = tk.Canvas(
     app,
     width = 850,
-    height = 600
+    height = 670
 )
 canvas.pack()
 
@@ -527,8 +536,8 @@ window.make_message_box()
 # debug
 if 1:
     battle(
-        ["スライム", "ゴーレム", "ゴースト"],
-        ["スライム", "ドラキー", "ボストロール"]
+        ["おばけキノコ", "ゴーレム", "ドラキー"],
+        ["スライム", "ドラキー", "ゴースト"]
     )
     app.mainloop()
 
@@ -538,7 +547,4 @@ if 1:
 ・パーティー内のモンスターの重複禁止
 ・MP不足はそのターンにMPを減少させられた場合にのみ起こり得る
     -> うまくいかない
-・MPの更新がされない
-・バトル終了時に両方のチームが生きている
-    -> MPが足りない のところでバトルが終了する
 """
