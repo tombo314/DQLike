@@ -8,6 +8,7 @@ import numpy as np
 import random as rd
 
 SHOW_DURATION = 1.5
+BATTLE_START_DURATION = 2
 BATTLE_FINISH_DURATION = 2
 
 class Window:
@@ -122,6 +123,64 @@ class Battle:
         # モンスタ―とUIの座標の対応関係
         # (monster_name, is_friend): (start_x, start_y)
         self.elem_coord = {}
+        # バトル時のパラメータ
+        self.hp = [
+            {monster[name]["name"]: monster[name]["hp"] for name in enemy},
+            {monster[name]["name"]: monster[name]["hp"] for name in friend}
+        ]
+        self.hp_init = [
+            {monster[name]["name"]: monster[name]["hp"] for name in enemy},
+            {monster[name]["name"]: monster[name]["hp"] for name in friend}
+        ]
+        self.mp = [
+            {monster[name]["name"]: monster[name]["mp"] for name in enemy},
+            {monster[name]["name"]: monster[name]["mp"] for name in friend}
+        ]
+        self.mp_init = [
+            {monster[name]["name"]: monster[name]["mp"] for name in enemy},
+            {monster[name]["name"]: monster[name]["mp"] for name in friend}
+        ]
+        self.attack = [
+            {monster[name]["name"]: monster[name]["attack"] for name in enemy},
+            {monster[name]["name"]: monster[name]["attack"] for name in friend}
+        ]
+        self.attack_init = [
+            {monster[name]["name"]: monster[name]["attack"] for name in enemy},
+            {monster[name]["name"]: monster[name]["attack"] for name in friend}
+        ]
+        self.magic_attack = [
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in enemy},
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in friend}
+        ]
+        self.magic_attack_init = [
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in enemy},
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in friend}
+        ]
+        self.defense = [
+            {monster[name]["name"]: monster[name]["defense"] for name in enemy},
+            {monster[name]["name"]: monster[name]["defense"] for name in friend}
+        ]
+        self.defense_init = [
+            {monster[name]["name"]: monster[name]["defense"] for name in enemy},
+            {monster[name]["name"]: monster[name]["defense"] for name in friend}
+        ]
+        self.agility = [
+            {monster[name]["name"]: monster[name]["agility"] for name in enemy},
+            {monster[name]["name"]: monster[name]["agility"] for name in friend}
+        ]
+        self.agility_init = [
+            {monster[name]["name"]: monster[name]["agility"] for name in enemy},
+            {monster[name]["name"]: monster[name]["agility"] for name in friend}
+        ]
+        self.dead = [
+            {monster[name]["name"]: False for name in enemy},
+            {monster[name]["name"]: False for name in friend}
+        ]
+        # レベルに合わせてパラメータを変更する
+        for name in enemy:
+            self.reflect_level(name, False, monster[name]["level"])
+        for name in friend:
+            self.reflect_level(name, True, monster[name]["level"])
         # 敵と味方の名前、HP、MPを表示する
         self.make_party(enemy, "name", False)
         self.make_party(enemy, "hp", False)
@@ -131,35 +190,7 @@ class Battle:
         self.make_party(friend, "mp", True)
         # 敵と味方の画像を表示する
         self.plot_image_all()
-        # バトル時のパラメータ
-        self.hp = [
-            {monster[name]["name"]: monster[name]["hp"] for name in enemy},
-            {monster[name]["name"]: monster[name]["hp"] for name in friend}
-        ]
-        self.mp = [
-            {monster[name]["name"]: monster[name]["mp"] for name in enemy},
-            {monster[name]["name"]: monster[name]["mp"] for name in friend}
-        ]
-        self.attack = [
-            {monster[name]["name"]: monster[name]["attack"] for name in enemy},
-            {monster[name]["name"]: monster[name]["attack"] for name in friend}
-        ]
-        self.magic_attack = [
-            {monster[name]["name"]: monster[name]["magic_attack"] for name in enemy},
-            {monster[name]["name"]: monster[name]["magic_attack"] for name in friend}
-        ]
-        self.defense = [
-            {monster[name]["name"]: monster[name]["defense"] for name in enemy},
-            {monster[name]["name"]: monster[name]["defense"] for name in friend}
-        ]
-        self.agility = [
-            {monster[name]["name"]: monster[name]["agility"] for name in enemy},
-            {monster[name]["name"]: monster[name]["agility"] for name in friend}
-        ]
-        self.dead = [
-            {monster[name]["name"]: False for name in enemy},
-            {monster[name]["name"]: False for name in friend}
-        ]
+        canvas.update()
     
     def make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
         """
@@ -206,8 +237,10 @@ class Battle:
             content = ""
             if type_=="name":
                 content = name
-            elif type_=="hp" or type_=="mp":
-                content = f"{monster[name][type_]} / {monster[name][type_]}"
+            elif type_=="hp":
+                content = f"{self.hp[is_friend][name]} / {self.hp_init[is_friend][name]}"
+            elif type_=="mp":
+                content = f"{self.mp[is_friend][name]} / {self.mp_init[is_friend][name]}"
             elem = canvas.create_text(
                 (start_x+end_x)/2, (start_y+end_y)/2,
                 text = content,
@@ -226,7 +259,7 @@ class Battle:
         """
         画像を表示
         name: モンスターの名前
-        is_friend: 味方かどうか
+        is_friend: 味方であるかどうか
         path: 画像のパス
         x: x座標
         y: y座標
@@ -263,9 +296,42 @@ class Battle:
         """
         画像を削除する
         name: モンスターの名前
-        is_friend: 味方かどうか
+        is_friend: 味方であるかどうか
         """
         self.image[is_friend][name] = None
+
+    def reflect_level(self, name: str, is_friend: bool, level: int) -> None:
+        """
+        モンスターのレベルを、パラメータに反映させる
+        name: モンスターの名前
+        is_friend: 味方であるかどうか
+        level: モンスターのレベル
+        """
+        for _ in range(level-1):
+            self.hp_init[is_friend][name] = self.param_level_up(self.hp_init[is_friend][name], False)
+            self.mp_init[is_friend][name] = self.param_level_up(self.mp_init[is_friend][name], True)
+            self.attack_init[is_friend][name] = self.param_level_up(self.attack_init[is_friend][name], False)
+            self.magic_attack_init[is_friend][name] = self.param_level_up(self.magic_attack_init[is_friend][name], False)
+            self.defense_init[is_friend][name] = self.param_level_up(self.defense_init[is_friend][name], False)
+            self.agility_init[is_friend][name] = self.param_level_up(self.agility_init[is_friend][name], False)
+        self.hp[is_friend][name] = self.hp_init[is_friend][name]
+        self.mp[is_friend][name] = self.mp_init[is_friend][name]
+        self.attack[is_friend][name] = self.attack_init[is_friend][name]
+        self.magic_attack[is_friend][name] = self.magic_attack_init[is_friend][name]
+        self.defense[is_friend][name] = self.defense_init[is_friend][name]
+        self.agility[is_friend][name] = self.agility_init[is_friend][name]
+
+    def param_level_up(self, param: int, is_mp: bool) -> int:
+        """
+        レベルの上昇に伴って、パラメータを強化する
+        param: 強化前のパラメータ
+        is_mp: パラメータの種類がMPであるかどうか
+        """
+        if is_mp and param==0:
+            return 2
+        if is_mp:
+            return min(999, math.ceil(param*1.05))
+        return math.ceil(param*1.05)
 
     def kill_monster(self, name: str, is_friend: bool) -> None:
         """
@@ -319,7 +385,7 @@ class Battle:
         """
         hpまたはmpの表示を更新する
         name: モンスターの名前
-        is_friend: 味方かどうか
+        is_friend: 味方であるかどうか
         type_: 「hp」「mp」のどちらか
         param: 更新したあとの数字
         """
@@ -332,9 +398,14 @@ class Battle:
         width, height = 160, 40
         end_x, end_y = start_x+width, start_y+height
         # テキストを表示する
+        max_val = None
+        if type_=="hp":
+            max_val = self.hp_init[is_friend][name]
+        elif type_=="mp":
+            max_val = self.mp_init[is_friend][name]
         elem = canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
-            text = f"{param} / {monster[name][type_]}",
+            text = f"{param} / {max_val}",
             font = ("", 12)
         )
         if type_=="hp":
@@ -409,13 +480,20 @@ class Battle:
         mp_consume: MPを消費するかどうか（全体攻撃で最初の攻撃かどうか）
         show_fast: 表示間隔を短くするかどうか（全体攻撃かどうか）
         """
-        offensing_monster = monster[offense_name]
-        defending_monster = monster[defense_name]
-        using_skill = skill[skill_name]
         if offense_is_friend==True:
             defense_is_friend = False
         elif offense_is_friend==False:
             defense_is_friend = True
+        offensing_monster = {
+            "attack": self.attack[offense_is_friend][offense_name],
+            "magic_attack": self.magic_attack[offense_is_friend][offense_name]
+        }
+        defending_monster = {
+            "name": defense_name,
+            "defense": self.defense[defense_is_friend][defense_name],
+            "attribute_damage_rate": monster[defense_name]["attribute_damage_rate"]
+        }
+        using_skill = skill[skill_name]
         # 攻撃時のメッセージを表示
         if mp_consume==True:
             enemy_or_friend = ""
@@ -578,19 +656,8 @@ def battle(party_enemy: list, party_friend: list) -> None:
     party_friend: 味方のパーティーの配列
     """
     btl = Battle(party_enemy, party_friend)
+    sleep(BATTLE_START_DURATION)
     btl.battle_start_auto()
-
-def param_level_up(param: int, is_mp: bool) -> int:
-    """
-    レベルアップ後のパラメータを返す
-    param: 強化される前の値
-    is_mp: MPかどうか
-    """
-    if is_mp and param==0:
-        return 2
-    if is_mp:
-        return max(999, math.ceil(param*1.05))
-    return math.ceil(param*1.05)
 
 with open("data.json", encoding="utf-8") as f:
     data = load(f)
@@ -614,8 +681,8 @@ window.make_message_box()
 # debug
 if 1:
     battle(
-        ["スライム", "おばけキノコ", "ボストロール"],
-        ["ドラキー", "スライム", "ボストロール"]
+        ["スライム", "ドラキー", "ゴースト"],
+        ["スライム", "ドラキー", "ゴースト"]
     )
     app.mainloop()
 
