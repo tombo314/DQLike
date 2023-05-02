@@ -73,6 +73,16 @@ class Battle:
         """
         self.enemy = enemy
         self.friend = friend
+        # パーティー内でモンスターの重複があったら終了
+        is_deplicated = False
+        if len(set(enemy))<=2:
+            is_deplicated = True
+            print("敵パーティー内でモンスターが重複しています。")
+        if len(set(friend))<=2:
+            is_deplicated = True
+            print("味方パーティー内でモンスターが重複しています。")
+        if is_deplicated:
+            exit()
         # 画像データ
         self.image = [0]*6
         # 0がenemyのUI, 1がfriendのUI
@@ -536,8 +546,8 @@ window.make_message_box()
 # debug
 if 1:
     battle(
-        ["おばけキノコ", "ゴーレム", "ドラキー"],
-        ["スライム", "ドラキー", "ゴースト"]
+        ["スライム", "おばけキノコ", "ボストロール"],
+        ["ドラキー", "スライム", "ボストロール"]
     )
     app.mainloop()
 
@@ -545,6 +555,4 @@ if 1:
 メモ
 
 ・パーティー内のモンスターの重複禁止
-・MP不足はそのターンにMPを減少させられた場合にのみ起こり得る
-    -> うまくいかない
 """
