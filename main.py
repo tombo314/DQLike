@@ -6,7 +6,7 @@ import math
 import numpy as np
 import random as rd
 
-SHOW_DURATION = 0.01
+SHOW_DURATION = 0.5
 BATTLE_FINISH_DURATION = 3
 
 class Window:
@@ -84,8 +84,6 @@ class Battle:
             print("味方パーティー内でモンスターが重複しています。")
         if is_deplicated:
             exit()
-        # 画像データ
-        self.image = [0]*6
         # 0がenemyのUI, 1がfriendのUI
         self.name_box = [
             {monster[name]["name"]: 0 for name in enemy},
@@ -110,6 +108,11 @@ class Battle:
         self.mp_text = [
             {monster[name]["name"]: 0 for name in enemy},
             {monster[name]["name"]: 0 for name in friend}
+        ]
+        # 画像データ
+        self.image = [
+            {monster[name]["name"]: 0 for name in enemy},
+            {monster[name]["name"]: 0 for name in friend},
         ]
         # モンスタ―とUIの座標の対応関係
         # (monster_name, is_friend): (start_x, start_y)
@@ -214,18 +217,20 @@ class Battle:
             i += 1
         canvas.update()
 
-    def plot_image(self, path: str, x: int, y: int, i: int) -> None:
+    def plot_image(self, name: str, is_friend: bool, path: str, x: int, y: int, i: int) -> None:
         """
         画像を表示
+        name: モンスターの名前
+        is_friend: 味方かどうか
         path: 画像のパス
         x: x座標
         y: y座標
         i: index
         """
         # イメージ作成
-        self.image[i] = tk.PhotoImage(file=path, width=130, height=130)
+        self.image[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
-        canvas.create_image(x, y, image=self.image[i], anchor=tk.NW)
+        canvas.create_image(x, y, image=self.image[is_friend][name], anchor=tk.NW)
 
     def plot_image_all(self) -> None:
         """
@@ -237,7 +242,7 @@ class Battle:
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 8
-            self.plot_image(f"images/png_resized/{name}_resized.png", width, height, i)
+            self.plot_image(name, False, f"images/png_resized/{name}_resized.png", width, height, i)
             i += 1
         i = 0
         for name in self.friend:
@@ -245,9 +250,17 @@ class Battle:
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 520
-            self.plot_image(f"images/png_resized/{name}_resized.png", width, height, 3+i)
+            self.plot_image(name, True, f"images/png_resized/{name}_resized.png", width, height, 3+i)
             i += 1
         canvas.update()
+
+    def delete_image(self, name: str, is_friend) -> None:
+        """
+        画像を削除する
+        name: モンスターの名前
+        is_friend: 味方かどうか
+        """
+        self.image[is_friend][name] = None
 
     def kill_monster(self, name: str, is_friend: bool) -> None:
         """
@@ -264,11 +277,8 @@ class Battle:
         window.show_message(f"{enemy_or_friend}{name}は力尽きた...")
         # deadフラグを更新
         self.dead[is_friend][name] = True
-        # 名前を削除
-        canvas.delete(self.name_box[is_friend][name])
-        canvas.delete(self.name_text[is_friend][name])
         # 画像を削除
-        # debug
+        self.delete_image(name, is_friend)
         canvas.update()
     
     def revive_monster(self, name: str, is_friend: bool) -> None:
@@ -562,6 +572,12 @@ if 1:
     )
     app.mainloop()
 
+
+"""
+To Do
+
+・range: allの処理を実装する
+"""
 """
 メモ
 
