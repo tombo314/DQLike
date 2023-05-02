@@ -6,7 +6,8 @@ import math
 import numpy as np
 import random as rd
 
-SHOW_DURATION = 2
+SHOW_DURATION = 0.01
+BATTLE_FINISH_DURATION = 3
 
 class Window:
     def __init__(self) -> None:
@@ -254,9 +255,20 @@ class Battle:
         name: モンスターの名前
         is_friend: 味方であるかどうか
         """
+        # メッセージを表示
+        enemy_or_friend = None
+        if is_friend==True:
+            enemy_or_friend = "味方の"
+        elif is_friend==False:
+            enemy_or_friend = "敵の"
+        window.show_message(f"{enemy_or_friend}{name}は力尽きた...")
+        # deadフラグを更新
         self.dead[is_friend][name] = True
+        # 名前を削除
         canvas.delete(self.name_box[is_friend][name])
         canvas.delete(self.name_text[is_friend][name])
+        # 画像を削除
+        # debug
         canvas.update()
     
     def revive_monster(self, name: str, is_friend: bool) -> None:
@@ -423,8 +435,7 @@ class Battle:
         self.update_hp_mp_text(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
         # 防御側のdeadフラグを更新して、死亡時のメッセージを表示
         if self.hp[defense_is_friend][defense_name]==0:
-            self.dead[defense_is_friend][defense_name] = True
-            window.show_message(f"{defense_name}は力尽きた...")
+            self.kill_monster(defense_name, defense_is_friend)
         # 自傷ダメージ
         if self_damage>0:
             # 攻撃側のHPを減らす
@@ -440,8 +451,7 @@ class Battle:
             self.update_hp_mp_text(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
             # 攻撃側のdeadフラグを更新して、死亡時のメッセージを表示
             if self.hp[offense_is_friend][offense_name]==0:
-                self.dead[offense_is_friend][offense_name] = True
-                window.show_message(f"{offense_name}は力尽きた...")
+                self.kill_monster(offense_name, offense_is_friend)
         # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
         # Falseで終了
         if any([self.dead[0][name]==False for name in self.enemy]) and any([self.dead[1][name]==False for name in self.friend]):
@@ -498,6 +508,7 @@ class Battle:
                         window.show_message("バトルに勝利した！")
                     elif all([self.dead[1][name] for name in self.dead[1]]):
                         window.show_message("全滅してしまった...")
+                    sleep(BATTLE_FINISH_DURATION)
                     break_ = True
                     break
             if break_:
