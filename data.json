@@ -2,6 +2,7 @@
     "monster": {
         "スライム": {
             "name": "スライム",
+            "level": 50,
             "hp": 10,
             "mp": 0,
             "attack": 4,
@@ -38,6 +39,7 @@
         },
         "ドラキー": {
             "name": "ドラキー",
+            "level": 50,
             "hp": 12,
             "mp": 999,
             "attack": 4,
@@ -46,11 +48,12 @@
             "agility": 3,
             "skill_select_probability": {
                 "enemy": {
-                    "攻撃": 1
+                    "攻撃": 0.7,
+                    "バギ": 0.3
                 },
                 "friend": {
-                    "攻撃": 0,
-                    "バギ": 1
+                    "攻撃": 0.7,
+                    "バギ": 0.3
                 }
             },
             "attribute_damage_rate": {
@@ -73,6 +76,7 @@
         },
         "ゴースト": {
             "name": "ゴースト",
+            "level": 50,
             "hp": 7,
             "mp": 8,
             "attack": 1,
@@ -109,6 +113,7 @@
         },
         "ボストロール": {
             "name": "ボストロール",
+            "level": 1,
             "hp": 18,
             "mp": 0,
             "attack": 7,
@@ -146,6 +151,7 @@
         },
         "ゴーレム": {
             "name": "ゴーレム",
+            "level": 1,
             "hp": 15,
             "mp": 4,
             "attack": 6,
@@ -182,6 +188,7 @@
         },
         "おばけキノコ": {
             "name": "おばけキノコ",
+            "level": 1,
             "hp": 7,
             "mp": 10,
             "attack": 4,
@@ -218,6 +225,7 @@
         },
         "ギュメイ将軍": {
             "name": "ギュメイ将軍",
+            "level": 1,
             "hp": 120,
             "mp": 40,
             "attack": 30,
@@ -226,12 +234,14 @@
             "agility": 45,
             "skill_select_probability": {
                 "enemy": {
-                    "攻撃": 0.6,
-                    "魔神斬り": 0.4
+                    "攻撃": 0.5,
+                    "魔神斬り": 0.3,
+                    "さみだれ斬り": 0.2
                 },
                 "friend": {
-                    "攻撃": 0.6,
-                    "魔神斬り": 0.4
+                    "攻撃": 0,
+                    "魔神斬り": 0,
+                    "さみだれ斬り": 1
                 }
             },
             "attribute_damage_rate": {
@@ -254,6 +264,7 @@
         },
         "ゲルニック将軍": {
             "name": "ゲルニック将軍",
+            "level": 1,
             "hp": 90,
             "mp": 100,
             "attack": 10,
@@ -346,7 +357,7 @@
         "大きくなぎ払う": {
             "type": "physics",
             "attribute": "無",
-            "damage_rate": 1.2,
+            "damage_rate": 1,
             "self_damage_ratio_to_calc_damage": 0,
             "mp_consumption": 0,
             "range": "all",
@@ -378,6 +389,18 @@
             "critical_probability": 1,
             "miss_probability": 0.5,
             "message": "は魔神のごとく斬りかかった！"
+        },
+        "さみだれ斬り": {
+            "type": "physics",
+            "attribute": "無",
+            "damage_rate": 1,
+            "self_damage_ratio_to_calc_damage": 0,
+            "mp_consumption": 4,
+            "range": "all",
+            "is_decreasing": true,
+            "miss_probability": 0.1,
+            "critical_probability": 0,
+            "message": "はさみだれ斬りを放った！"
         },
         "メラ属性": "",
         "メラ": {
