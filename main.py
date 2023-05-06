@@ -1,20 +1,23 @@
-from pprint import pprint
 from time import sleep
 from json import load
 from typing import Union
 import tkinter as tk
+import tkinter.ttk as ttk
 import math
 import numpy as np
 import random as rd
 
 SHOW_DURATION = 1.5
-BATTLE_START_DURATION = 2
+BATTLE_START_DURATION = 1
 BATTLE_FINISH_DURATION = 2
 
 class Window:
     def __init__(self) -> None:
         self.message_box = None
         self.message_text = None
+        self.button = [None]*3
+        self.enemy = [None]*3
+        self.friend = [None]*3
     
     def make_message_box(self) -> None:
         """
@@ -70,6 +73,49 @@ class Window:
         if self.message_text!=None:
             canvas.delete(self.message_text)
             canvas.update()
+    
+    def set_monster(self, enemy: list[str], friend: list[str]) -> None:
+        """
+        敵と味方のパーティーを設定する
+        """
+        self.enemy = enemy
+        self.friend = friend
+    
+    def encounter(self, event) -> None:
+        """
+        敵と遭遇する
+        """
+        # ボタンを削除する
+        for i in range(3):
+            self.button[i].destroy()
+        # バトルを開始する
+        battle(self.enemy, self.friend)
+    
+    def make_three_buttons(self, text: list[str]) -> None:
+        """
+        前、左、右の三方向に進むボタンを表示する
+        """
+        for i in range(3):
+            self.button[i] = tk.Button(
+                app,
+                text=text[i],
+                font=("", 20),
+                width=13,
+                height=3
+            )
+            self.button[i].pack()
+            self.button[i].place(x=230*i+100, y=200)
+            self.button[i].bind("<1>", self.encounter)
+    
+    def make_yes_no_buttons(self) -> None:
+        """
+        「はい」と「いいえ」のボタンを表示する
+        """
+    
+    def delete_yes_no_buttons(self) -> None:
+        """
+        「はい」と「いいえ」のボタンを削除する
+        """
 
 class Battle:
     def __init__(self, enemy:list, friend: list) -> None:
@@ -80,6 +126,8 @@ class Battle:
         """
         self.enemy = enemy
         self.friend = friend
+        # メッセージボックスを作成
+        window.make_message_box()
         # パーティー内でモンスターの重複があったら終了
         is_deplicated = False
         if len(set(enemy))<=2:
@@ -637,7 +685,7 @@ class Battle:
                     sleep(SHOW_DURATION*0.5)
                     # 防御側のパーティーが全滅したかどうか
                     continue_ = all(judge!=False for judge in continue_tmp)
-                # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する                
+                # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
                 if continue_==False:
                     if all([self.dead[0][name] for name in self.dead[0]]):
                         window.show_message("バトルに勝利した！", False)
@@ -649,15 +697,21 @@ class Battle:
             if break_:
                 break
 
-def battle(party_enemy: list, party_friend: list) -> None:
+def battle(party_enemy: list[str], party_friend: list[str]) -> None:
     """
     バトルを行う
     party_enemy: 敵のパーティーの配列
     party_friend: 味方のパーティーの配列
     """
-    btl = Battle(party_enemy, party_friend)
+    battle_ = Battle(party_enemy, party_friend)
+    window.show_message("魔物の群れが現れた！", False)
     sleep(BATTLE_START_DURATION)
-    btl.battle_start_auto()
+    battle_.battle_start_auto()
+
+def game_start() -> None:
+    """
+    ゲーム全体を開始する
+    """
 
 with open("data.json", encoding="utf-8") as f:
     data = load(f)
@@ -676,20 +730,23 @@ canvas.pack()
 
 # システムウィンドウのインスタンス
 window = Window()
-window.make_message_box()
 
-# debug
-if 1:
-    battle(
-        ["スライム", "ドラキー", "ゴースト"],
-        ["スライム", "ドラキー", "ゲルニック将軍"]
-    )
-    app.mainloop()
+#debug
+window.set_monster(
+    ["スライム", "ドラキー", "ゴーレム"],
+    ["ボストロール", "スライム", "ギュメイ将軍"]
+)
+window.make_three_buttons(["右に進む", "前に進む", "左に進む"])
+
+app.mainloop()
 
 
 """
 To Do
 
+・ゲルニック将軍を実装する
+    ・ルカナン
+    ・ドルマ
 """
 """
 メモ
