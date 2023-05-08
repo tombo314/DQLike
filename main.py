@@ -1,8 +1,7 @@
 from time import sleep
-from json import load
 from typing import Union
 import tkinter as tk
-import tkinter.ttk as ttk
+import json
 import math
 import numpy as np
 import random as rd
@@ -713,10 +712,12 @@ def game_start() -> None:
     ゲーム全体を開始する
     """
 
-with open("data.json", encoding="utf-8") as f:
-    data = load(f)
-    monster = data["monster"]
-    skill = data["skill"]
+with open("data/monster.json", encoding="utf-8") as data:
+    monster = json.load(data)
+with open("data/skill.json", encoding="utf-8") as data:
+    skill = json.load(data)
+with open("data/fusion.json", encoding="utf-8") as data:
+    fusion_tree = json.load(data)
 
 # Tkinterの初期設定
 app = tk.Tk()
