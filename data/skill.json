@@ -13,12 +13,12 @@
         "message": "の攻撃！"
     },
     "ミス": {
-        "type": "null",
-        "attribute": "null",
+        "type": null,
+        "attribute": null,
         "damage_rate": 0,
         "self_damage_ratio_to_calc_damage": 0,
         "mp_consumption": 0,
-        "range": "null",
+        "range": null,
         "is_decreasing": false,
         "miss_probability": 1,
         "critical_probability": 0,
