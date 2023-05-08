@@ -6,17 +6,36 @@ import math
 import numpy as np
 import random as rd
 
-SHOW_DURATION = 1.5
-BATTLE_START_DURATION = 1
+if 0:
+    SHOW_DURATION = 1.5
+    BATTLE_START_DURATION = 1
+else:
+    SHOW_DURATION = 0.3
+    BATTLE_START_DURATION = 0.5
 BATTLE_FINISH_DURATION = 2
+
+class SelfInfo:
+    def __init__(self) -> None:
+        """
+        プレイヤーに関する情報を持つ
+        """
+        self.friend = [None]*3
+
+    def set_friend(self, friend: list[str]) -> None:
+        """
+        自分のパーティーを設定する
+        """
+        self.friend = friend
 
 class Window:
     def __init__(self) -> None:
+        """
+        画面にUIを表示する
+        """
         self.message_box = None
         self.message_text = None
         self.button = [None]*3
         self.enemy = [None]*3
-        self.friend = [None]*3
     
     def make_message_box(self) -> None:
         """
@@ -73,12 +92,11 @@ class Window:
             canvas.delete(self.message_text)
             canvas.update()
     
-    def set_monster(self, enemy: list[str], friend: list[str]) -> None:
+    def set_enemy(self, enemy: list[str]) -> None:
         """
-        敵と味方のパーティーを設定する
+        敵のパーティーを設定する
         """
         self.enemy = enemy
-        self.friend = friend
     
     def encounter(self, event) -> None:
         """
@@ -88,7 +106,7 @@ class Window:
         for i in range(3):
             self.button[i].destroy()
         # バトルを開始する
-        battle(self.enemy, self.friend)
+        battle(self.enemy, self_info.friend)
     
     def make_three_buttons(self, text: list[str]) -> None:
         """
@@ -104,7 +122,7 @@ class Window:
             )
             self.button[i].pack()
             self.button[i].place(x=230*i+100, y=200)
-            self.button[i].bind("<1>", self.encounter)
+            # self.button[i].bind("<1>", self.encounter)
     
     def make_yes_no_buttons(self) -> None:
         """
@@ -119,7 +137,7 @@ class Window:
 class Battle:
     def __init__(self, enemy:list, friend: list) -> None:
         """
-        バトルのインスタンスを生成する
+        バトルを行う
         enemy: 敵のパーティー
         friend: 味方のパーティー
         """
@@ -696,6 +714,18 @@ class Battle:
             if break_:
                 break
 
+class Fusion:
+    def __init__(self) -> None:
+        """
+        モンスターの配合に関する情報を持つ
+        """
+    
+    def fusion_monster(self, monster: list[str]) -> None:
+        """
+        モンスターを配合する
+        """
+        return 
+
 def battle(party_enemy: list[str], party_friend: list[str]) -> None:
     """
     バトルを行う
@@ -712,11 +742,12 @@ def game_start() -> None:
     ゲーム全体を開始する
     """
 
+# JSONデータを読み込む
 with open("data/monster.json", encoding="utf-8") as data:
     monster = json.load(data)
 with open("data/skill.json", encoding="utf-8") as data:
     skill = json.load(data)
-with open("data/fusion.json", encoding="utf-8") as data:
+with open("data/fusion_tree.json", encoding="utf-8") as data:
     fusion_tree = json.load(data)
 
 # Tkinterの初期設定
@@ -729,18 +760,18 @@ canvas = tk.Canvas(
 )
 canvas.pack()
 
-# システムウィンドウのインスタンス
+# UIのインスタンス
 window = Window()
 
-#debug
-window.set_monster(
-    ["スライム", "ドラキー", "ゴーレム"],
-    ["ボストロール", "スライム", "ギュメイ将軍"]
-)
-window.make_three_buttons(["右に進む", "前に進む", "左に進む"])
+# 自分の情報のインスタンス
+self_info = SelfInfo()
+self_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
+
+# debug
+window.set_enemy(["スライム", "ボストロール", "おばけキノコ"])
+window.make_three_buttons(["左", "前", "右"])
 
 app.mainloop()
-
 
 """
 To Do
