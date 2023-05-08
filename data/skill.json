@@ -186,6 +186,18 @@
     "イオ属性": "",
     "デイン属性": "",
     "ドルマ属性": "",
+    "ドルマ": {
+        "type": "magic",
+        "attribute_damage_rate": "ドルマ",
+        "damage_rate": 1.1,
+        "self_damage_ratio_to_calc_damage": 0,
+        "mp_consumption": 4,
+        "range": "single",
+        "is_decreasing": false,
+        "miss_probability": 0,
+        "critical_probability": 0.05,
+        "message": "はドルマを唱えた！"
+    },
     "毒属性": "",
     "眠り属性": "",
     "あまい息": {
