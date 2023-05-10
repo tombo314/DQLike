@@ -31,40 +31,60 @@ class UserInfo:
         """
         self.friend = friend
     
-    def plot_image(self, name: str, is_friend: bool, path: str, x: int, y: int, i: int) -> None:
+    def plot_image(self, name: str, path: str, x: int, y: int, i: int) -> None:
         """
         画像を表示
         name: モンスターの名前
-        is_friend: 味方であるかどうか
         path: 画像のパス
         x: x座標
         y: y座標
         i: index
         """
         # イメージ作成
-        self.image[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
+        self.image[name] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
-        canvas.create_image(x, y, image=self.image[is_friend][name], anchor=tk.NW)
+        canvas.create_image(x, y, image=self.image[name], anchor=tk.NW)
     
-    def show_monster(self) -> None:
+    def show_all_monster(self) -> None:
         """
         自分が持っているモンスターを表示する
         """
         canvas.delete("all")
-        for i in range(len(user["monster"])):
+        # テキストを表示
+        start_x, start_y = 270, 20
+        width, height = 300, 60
+        end_x, end_y = start_x+width, start_y+height
+        canvas.create_text(
+            (start_x+end_x)/2, (start_y+end_y)/2,
+            text = "所持モンスター一覧",
+            font = ("", 22)
+        )
+        for i,name in enumerate(user["monster"]):
+            # 画像を表示
+            width = 190*(i%4)+110
+            if name=="ドラキー" or name=="ボストロール":
+                width -= 13
+            height = 200*(i//4)+100
+            self.plot_image(name, f"images/png_resized/{name}_resized.png", width, height, i)
+            # 詳細ボタンを表示
+            # debug
             self.button_monster[i] = tk.Button(
                 app,
-                text="スライム",
-                font=("", 20),
-                width=13,
-                height=3
+                text=name,
+                font=("", 18),
+                width=10,
+                height=1,
+                command="スクロールする関数"
             )
-            self.button_monster[i].place(x=230*i+100, y=90*i+125)
+            self.button_monster[i].place(x=190*(i%4)+90, y=200*(i//4)+210)
             # debug
-            # self.button[i].bind("<1>", self.encounter)
+            # self.button_monster[i].bind("<1>", self.show_monster_info)
         canvas.update()
 
-    def show_monster_detail
+    def show_monster_info(self, event) -> None:
+        """
+        自分が持っているモンスターの詳細を表示する
+        """
     
     def show_user_info(self) -> None:
         """
@@ -807,20 +827,16 @@ with open("data/user.json", encoding="utf-8") as data:
 # Tkinterの初期設定
 app = tk.Tk()
 app.title("DQLike")
-xbar = tk.Scrollbar(app, orient=tk.HORIZONTAL)
 ybar = tk.Scrollbar(app, orient=tk.VERTICAL)
 canvas = tk.Canvas(
     app,
     width = 850,
-    height = 670,
-    scrollregion=(0, 0, 1000, 1000),
-    xscrollcommand=xbar.set,
+    height = 620,
+    scrollregion=(0, 0, 0, 1000),
     yscrollcommand=ybar.set
 )
 canvas.grid(row=0, column=0)
-xbar.grid(row=1, column=0, sticky=tk.W+tk.E)
 ybar.grid(row=0, column=1, sticky=tk.N+tk.S)
-xbar["command"] = canvas.xview
 ybar["command"] = canvas.yview
 
 # UIのインスタンス
@@ -831,7 +847,7 @@ user_info = UserInfo()
 user_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
 
 # debug
-user_info.show_monster()
+user_info.show_all_monster()
 
 # debug
 # window.set_enemy(["スライム", "ボストロール", "ドラキー"])
@@ -845,6 +861,7 @@ To Do
 
 ・ゲルニック将軍を実装する
     ・ルカナン
+・Button()にもスクロールバーを登録する
 """
 """
 メモ
