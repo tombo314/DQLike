@@ -1,0 +1,17 @@
+{
+    "username": "tombo314",
+    "monster": {
+        "スライム": {
+            "level": 1,
+            "gear": null
+        },
+        "ドラキー": {
+            "level": 1,
+            "gear": null
+        },
+        "ゴースト": {
+            "level": 1,
+            "gear": null
+        }
+    }
+}
