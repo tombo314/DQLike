@@ -20,6 +20,10 @@ class UserInfo:
         プレイヤーに関する情報を持つ
         """
         self.friend = [None]*3
+        # モンスターの詳細に遷移するボタン
+        self.button_monster = [None]*100
+        # 画像データ
+        self.image = {monster[name]["name"]: 0 for name in user["monster"]}
 
     def set_friend(self, friend: list[str]) -> None:
         """
@@ -27,20 +31,40 @@ class UserInfo:
         """
         self.friend = friend
     
+    def plot_image(self, name: str, is_friend: bool, path: str, x: int, y: int, i: int) -> None:
+        """
+        画像を表示
+        name: モンスターの名前
+        is_friend: 味方であるかどうか
+        path: 画像のパス
+        x: x座標
+        y: y座標
+        i: index
+        """
+        # イメージ作成
+        self.image[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
+        # キャンバスにイメージを表示
+        canvas.create_image(x, y, image=self.image[is_friend][name], anchor=tk.NW)
+    
     def show_monster(self) -> None:
         """
         自分が持っているモンスターを表示する
         """
-        start_x, start_y = 70, 275
-        width, height = 700, 60
-        end_x, end_y = start_x+width, start_y+height
-        self.message_box = canvas.create_rectangle(
-            start_x, start_y,
-            end_x, end_y,
-            fill = "#eee",
-            outline = "#777"
-        )
+        canvas.delete("all")
+        for i in range(len(user["monster"])):
+            self.button_monster[i] = tk.Button(
+                app,
+                text="スライム",
+                font=("", 20),
+                width=13,
+                height=3
+            )
+            self.button_monster[i].place(x=230*i+100, y=90*i+125)
+            # debug
+            # self.button[i].bind("<1>", self.encounter)
         canvas.update()
+
+    def show_monster_detail
     
     def show_user_info(self) -> None:
         """
@@ -142,7 +166,6 @@ class Window:
                 width=13,
                 height=3
             )
-            self.button[i].pack()
             self.button[i].place(x=230*i+100, y=200)
             # debug
             self.button[i].bind("<1>", self.encounter)
@@ -778,16 +801,27 @@ with open("data/skill.json", encoding="utf-8") as data:
     skill = json.load(data)
 with open("data/fusion_tree.json", encoding="utf-8") as data:
     fusion_tree = json.load(data)
+with open("data/user.json", encoding="utf-8") as data:
+    user = json.load(data)
 
 # Tkinterの初期設定
 app = tk.Tk()
 app.title("DQLike")
+xbar = tk.Scrollbar(app, orient=tk.HORIZONTAL)
+ybar = tk.Scrollbar(app, orient=tk.VERTICAL)
 canvas = tk.Canvas(
     app,
     width = 850,
-    height = 670
+    height = 670,
+    scrollregion=(0, 0, 1000, 1000),
+    xscrollcommand=xbar.set,
+    yscrollcommand=ybar.set
 )
-canvas.pack()
+canvas.grid(row=0, column=0)
+xbar.grid(row=1, column=0, sticky=tk.W+tk.E)
+ybar.grid(row=0, column=1, sticky=tk.N+tk.S)
+xbar["command"] = canvas.xview
+ybar["command"] = canvas.yview
 
 # UIのインスタンス
 window = Window()
