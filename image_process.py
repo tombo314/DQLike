@@ -10,7 +10,6 @@ for file in files:
     img = Image.open(file)
     img.save(file[:7]+"png/"+file[12:-5]+".png")
 
-
 width = None
 height = None
 
