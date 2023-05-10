@@ -12,6 +12,18 @@
         "ゴースト": {
             "level": 1,
             "gear": null
+        },
+        "ゴーレム": {
+            "level": 1,
+            "gear": null
+        },
+        "ボストロール": {
+            "level": 1,
+            "gear": null
+        },
+        "ギュメイ将軍": {
+            "level": 1,
+            "gear": null
         }
     }
 }
