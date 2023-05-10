@@ -14,7 +14,7 @@ else:
     BATTLE_START_DURATION = 0.5
 BATTLE_FINISH_DURATION = 2
 
-class SelfInfo:
+class UserInfo:
     def __init__(self) -> None:
         """
         プレイヤーに関する情報を持つ
@@ -26,6 +26,27 @@ class SelfInfo:
         自分のパーティーを設定する
         """
         self.friend = friend
+    
+    def show_monster(self) -> None:
+        """
+        自分が持っているモンスターを表示する
+        """
+        start_x, start_y = 70, 275
+        width, height = 700, 60
+        end_x, end_y = start_x+width, start_y+height
+        self.message_box = canvas.create_rectangle(
+            start_x, start_y,
+            end_x, end_y,
+            fill = "#eee",
+            outline = "#777"
+        )
+        canvas.update()
+    
+    def show_user_info(self) -> None:
+        """
+        自分の情報を表示する
+        """
+        canvas.delete("all")
 
 class Window:
     def __init__(self) -> None:
@@ -106,12 +127,13 @@ class Window:
         for i in range(3):
             self.button[i].destroy()
         # バトルを開始する
-        battle(self.enemy, self_info.friend)
+        start_battle(self.enemy)
     
     def make_three_buttons(self, text: list[str]) -> None:
         """
         前、左、右の三方向に進むボタンを表示する
         """
+        canvas.delete("all")
         for i in range(3):
             self.button[i] = tk.Button(
                 app,
@@ -122,7 +144,8 @@ class Window:
             )
             self.button[i].pack()
             self.button[i].place(x=230*i+100, y=200)
-            # self.button[i].bind("<1>", self.encounter)
+            # debug
+            self.button[i].bind("<1>", self.encounter)
     
     def make_yes_no_buttons(self) -> None:
         """
@@ -143,6 +166,7 @@ class Battle:
         """
         self.enemy = enemy
         self.friend = friend
+        canvas.delete("all")
         # メッセージボックスを作成
         window.make_message_box()
         # パーティー内でモンスターの重複があったら終了
@@ -720,22 +744,27 @@ class Fusion:
         モンスターの配合に関する情報を持つ
         """
     
-    def fusion_monster(self, monster: list[str]) -> None:
+    def show_fusion_screen(self) -> None:
         """
-        モンスターを配合する
+        配合画面を表示する
         """
-        return 
+    
+    def get_makeable_monster(self, monster: str) -> None:
+        """
+        モンスターの配合候補を返す
+        monster: 親の片方となるモンスター
+        """
+        return fusion_tree[monster]
 
-def battle(party_enemy: list[str], party_friend: list[str]) -> None:
+def start_battle(party_enemy: list[str]) -> None:
     """
     バトルを行う
-    party_enemy: 敵のパーティーの配列
-    party_friend: 味方のパーティーの配列
+    party_enemy: 敵のパーティー
     """
-    battle_ = Battle(party_enemy, party_friend)
+    battle = Battle(party_enemy, user_info.friend)
     window.show_message("魔物の群れが現れた！", False)
     sleep(BATTLE_START_DURATION)
-    battle_.battle_start_auto()
+    battle.battle_start_auto()
 
 def game_start() -> None:
     """
@@ -764,13 +793,17 @@ canvas.pack()
 window = Window()
 
 # 自分の情報のインスタンス
-self_info = SelfInfo()
-self_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
+user_info = UserInfo()
+user_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
 
 # debug
-window.set_enemy(["スライム", "ボストロール", "おばけキノコ"])
-window.make_three_buttons(["左", "前", "右"])
+user_info.show_monster()
 
+# debug
+# window.set_enemy(["スライム", "ボストロール", "ドラキー"])
+# window.make_three_buttons([1,2,3])
+
+# 画面を表示
 app.mainloop()
 
 """
@@ -778,7 +811,6 @@ To Do
 
 ・ゲルニック将軍を実装する
     ・ルカナン
-    ・ドルマ
 """
 """
 メモ
