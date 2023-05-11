@@ -24,6 +24,8 @@ class UserInfo:
         self.button_monster = [None]*100
         # 画像データ
         self.image = {monster[name]["name"]: 0 for name in user["monster"]}
+        # 次のページに遷移するボタン
+        self.button_next_page = [None]*10
 
     def set_friend(self, friend: list[str]) -> None:
         """
@@ -31,23 +33,23 @@ class UserInfo:
         """
         self.friend = friend
     
-    def plot_image(self, name: str, path: str, x: int, y: int, i: int) -> None:
+    def plot_image(self, name: str, path: str, x: int, y: int) -> None:
         """
         画像を表示
         name: モンスターの名前
         path: 画像のパス
         x: x座標
         y: y座標
-        i: index
         """
         # イメージ作成
         self.image[name] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
         canvas.create_image(x, y, image=self.image[name], anchor=tk.NW)
     
-    def show_all_monster(self) -> None:
+    def show_all_monster(self, page: int) -> None:
         """
         自分が持っているモンスターを表示する
+        page: 何ページ目か(0-indexed)
         """
         canvas.delete("all")
         # テキストを表示
@@ -61,11 +63,12 @@ class UserInfo:
         )
         for i,name in enumerate(user["monster"]):
             # 画像を表示
+            # width = 190*(i%4)+110
             width = 190*(i%4)+110
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 200*(i//4)+100
-            self.plot_image(name, f"images/png_resized/{name}_resized.png", width, height, i)
+            self.plot_image(name, f"images/png_resized/{name}_resized.png", width, height)
             # 詳細ボタンを表示
             # debug
             self.button_monster[i] = tk.Button(
@@ -73,12 +76,22 @@ class UserInfo:
                 text=name,
                 font=("", 18),
                 width=10,
-                height=1,
-                command="スクロールする関数"
+                height=1
             )
-            self.button_monster[i].place(x=190*(i%4)+90, y=200*(i//4)+210)
+            self.button_monster[i].pack()
+            self.button_monster[i].place(relx=app.winfo_screenwidth()/100, rely=0.33*(i//4)+0.33)
             # debug
             # self.button_monster[i].bind("<1>", self.show_monster_info)
+        # 次のページに遷移するボタンを表示
+        self.button_next_page[page] = tk.Button(
+            app,
+            text = ">",
+            font=("", 18),
+            width=2,
+            height=7
+        )
+        self.button_next_page[page].pack()
+        self.button_next_page[page].place(x=810, y=240)
         canvas.update()
 
     def show_monster_info(self, event) -> None:
@@ -186,6 +199,7 @@ class Window:
                 width=13,
                 height=3
             )
+            self.button[i].pack()
             self.button[i].place(x=230*i+100, y=200)
             # debug
             self.button[i].bind("<1>", self.encounter)
@@ -387,7 +401,7 @@ class Battle:
             i += 1
         canvas.update()
 
-    def plot_image(self, name: str, is_friend: bool, path: str, x: int, y: int, i: int) -> None:
+    def plot_image(self, name: str, is_friend: bool, path: str, x: int, y: int) -> None:
         """
         画像を表示
         name: モンスターの名前
@@ -395,7 +409,6 @@ class Battle:
         path: 画像のパス
         x: x座標
         y: y座標
-        i: index
         """
         # イメージ作成
         self.image[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
@@ -408,11 +421,11 @@ class Battle:
         """
         i = 0
         for name in self.enemy:
-            width = 130+220*i
+            width = 220*i+130
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 8
-            self.plot_image(name, False, f"images/png_resized/{name}_resized.png", width, height, i)
+            self.plot_image(name, False, f"images/png_resized/{name}_resized.png", width, height)
             i += 1
         i = 0
         for name in self.friend:
@@ -420,7 +433,7 @@ class Battle:
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 520
-            self.plot_image(name, True, f"images/png_resized/{name}_resized.png", width, height, 3+i)
+            self.plot_image(name, True, f"images/png_resized/{name}_resized.png", width, height)
             i += 1
         canvas.update()
 
@@ -827,27 +840,25 @@ with open("data/user.json", encoding="utf-8") as data:
 # Tkinterの初期設定
 app = tk.Tk()
 app.title("DQLike")
-ybar = tk.Scrollbar(app, orient=tk.VERTICAL)
+app.geometry("850x620+200+30")
 canvas = tk.Canvas(
     app,
     width = 850,
-    height = 620,
-    scrollregion=(0, 0, 0, 1000),
-    yscrollcommand=ybar.set
+    height = 620
 )
-canvas.grid(row=0, column=0)
-ybar.grid(row=0, column=1, sticky=tk.N+tk.S)
-ybar["command"] = canvas.yview
+canvas.pack()
 
 # UIのインスタンス
 window = Window()
 
 # 自分の情報のインスタンス
 user_info = UserInfo()
+
+# debug
 user_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
 
 # debug
-user_info.show_all_monster()
+user_info.show_all_monster(0)
 
 # debug
 # window.set_enemy(["スライム", "ボストロール", "ドラキー"])
