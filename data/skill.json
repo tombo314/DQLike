@@ -22,7 +22,7 @@
         "is_decreasing": false,
         "miss_probability": 1,
         "critical_probability": 0,
-        "message": "の攻撃！ミス！"
+        "message": "の攻撃！"
     },
     "会心の一撃": {
         "type": "physics",
