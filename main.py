@@ -21,11 +21,28 @@ class UserInfo:
         """
         self.friend = [None]*3
         # モンスターの詳細に遷移するボタン
-        self.button_monster = [None]*100
+        self.button_monster = [None]*12
         # 画像データ
-        self.image = {monster[name]["name"]: 0 for name in user["monster"]}
-        # 次のページに遷移するボタン
-        self.button_next_page = [None]*10
+        self.image = {name: [] for name in monster}
+        # 次のページに進むボタン
+        self.button_page_next = None
+        # 前のページに戻るボタン
+        self.button_page_back = None
+        # モンスター一覧のページ数
+        self.page = 0
+
+    def delete_all_ui(self) -> None:
+        """
+        すべてのUIを削除する
+        """
+        canvas.delete("all")
+        if self.button_page_next is not None:
+            self.button_page_next.destroy()
+        if self.button_page_back is not None:
+            self.button_page_back.destroy()
+        for i in range(12):
+            if self.button_monster[i] is not None:
+                self.button_monster[i].destroy()
 
     def set_friend(self, friend: list[str]) -> None:
         """
@@ -42,16 +59,22 @@ class UserInfo:
         y: y座標
         """
         # イメージ作成
-        self.image[name] = tk.PhotoImage(file=path, width=130, height=130)
+        self.image[name].append(tk.PhotoImage(file=path, width=130, height=130))
         # キャンバスにイメージを表示
-        canvas.create_image(x, y, image=self.image[name], anchor=tk.NW)
-    
-    def show_all_monster(self, page: int) -> None:
+        canvas.create_image(x, y, image=self.image[name][-1], anchor=tk.NW)
+        
+    def show_all_monster(self) -> None:
         """
         自分が持っているモンスターを表示する
-        page: 何ページ目か(0-indexed)
         """
-        canvas.delete("all")
+        self.page = 0
+        self.show_monster()
+
+    def show_monster(self) -> None:
+        """
+        モンスターを1ページ分表示する
+        """
+        self.delete_all_ui()
         # テキストを表示
         start_x, start_y = 270, 20
         width, height = 300, 60
@@ -61,38 +84,75 @@ class UserInfo:
             text = "所持モンスター一覧",
             font = ("", 22)
         )
-        for i,name in enumerate(user["monster"]):
+        for i in range(self.page*12, min((self.page+1)*12, len(user["monster"]))):
+            name = user["monster"][i]["name"]
             # 画像を表示
-            # width = 190*(i%4)+110
-            width = 190*(i%4)+110
+            width = 215*(i%4)+110
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
-            height = 200*(i//4)+100
+            height = (170*(i//4)+90)%510
             self.plot_image(name, f"images/png_resized/{name}_resized.png", width, height)
             # 詳細ボタンを表示
-            # debug
-            self.button_monster[i] = tk.Button(
+            self.button_monster[i%12] = tk.Button(
                 app,
                 text=name,
                 font=("", 18),
-                width=10,
+                width=12,
                 height=1
             )
-            self.button_monster[i].pack()
-            self.button_monster[i].place(relx=app.winfo_screenwidth()/100, rely=0.33*(i//4)+0.33)
+            self.button_monster[i%12].pack()
+            relx = 0.225*(i%4)+0.075
+            rely = (0.27*(i//4))%0.81+0.3
+            self.button_monster[i%12].place(relx=relx, rely=rely)
             # debug
             # self.button_monster[i].bind("<1>", self.show_monster_info)
-        # 次のページに遷移するボタンを表示
-        self.button_next_page[page] = tk.Button(
-            app,
-            text = ">",
-            font=("", 18),
-            width=2,
-            height=7
-        )
-        self.button_next_page[page].pack()
-        self.button_next_page[page].place(x=810, y=240)
+            i += 1
+        # 次のページに進むボタンを表示
+        if (self.page+1)*12<len(user["monster"]):
+            self.button_page_next = tk.Button(
+                app,
+                text = ">",
+                font=("", 18),
+                width=2,
+                height=7
+            )
+            self.button_page_next.pack()
+            self.button_page_next.place(x=900, y=240)
+            self.button_page_next.bind("<1>", self.show_next_page)
+        # 最後のページだったら進むボタンを削除
+        elif (self.page+1)*12>=len(user["monster"]):
+            self.button_page_next.destroy()
+        # 前のページに戻るボタンを表示
+        if 0<self.page*12<len(user["monster"]):
+            self.button_page_back = tk.Button(
+                app,
+                text = "<",
+                font=("", 18),
+                width=2,
+                height=7
+            )
+            self.button_page_back.pack()
+            self.button_page_back.place(x=20, y=240)
+            self.button_page_back.bind("<1>", self.show_previous_page)
+        # 最初のページだったら進むボタンを削除
+        elif self.page==0:
+            if self.button_page_back is not None:
+                self.button_page_back.destroy()
         canvas.update()
+
+    def show_next_page(self, event) -> None:
+        """
+        次のページを表示する
+        """
+        self.page += 1
+        self.show_monster()
+    
+    def show_previous_page(self, event) -> None:
+        """
+        前のページを表示する
+        """
+        self.page -= 1
+        self.show_monster()
 
     def show_monster_info(self, event) -> None:
         """
@@ -840,10 +900,11 @@ with open("data/user.json", encoding="utf-8") as data:
 # Tkinterの初期設定
 app = tk.Tk()
 app.title("DQLike")
-app.geometry("850x620+200+30")
+app.geometry("960x620+200+30")
+app.resizable(0, 0)
 canvas = tk.Canvas(
     app,
-    width = 850,
+    width = 960,
     height = 620
 )
 canvas.pack()
@@ -857,11 +918,13 @@ user_info = UserInfo()
 # debug
 user_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
 
-# debug
-user_info.show_all_monster(0)
+# debug print
 
 # debug
-# window.set_enemy(["スライム", "ボストロール", "ドラキー"])
+user_info.show_all_monster()
+
+# debug
+# window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
 # window.make_three_buttons([1,2,3])
 
 # 画面を表示
@@ -872,9 +935,10 @@ To Do
 
 ・ゲルニック将軍を実装する
     ・ルカナン
-・Button()にもスクロールバーを登録する
+・モンスター一覧のページをめくれるようにする
 """
 """
+
 メモ
 
 ・パーティー内のモンスターの重複禁止
