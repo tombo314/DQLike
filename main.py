@@ -900,12 +900,14 @@ with open("data/user.json", encoding="utf-8") as data:
 # Tkinterの初期設定
 app = tk.Tk()
 app.title("DQLike")
-app.geometry("960x620+200+30")
+width = 960
+height = 620
+app.geometry(f"{width}x{height}+200+30")
 app.resizable(0, 0)
 canvas = tk.Canvas(
     app,
-    width = 960,
-    height = 620
+    width = width,
+    height = height
 )
 canvas.pack()
 
