@@ -1,29 +1,115 @@
 {
     "username": "tombo314",
-    "monster": {
-        "スライム": {
+    "monster": [
+        {
+            "name": "スライム",
             "level": 1,
             "gear": null
         },
-        "ドラキー": {
+        {
+            "name": "ドラキー",
             "level": 1,
             "gear": null
         },
-        "ゴースト": {
+        {
+            "name": "スライム",
             "level": 1,
             "gear": null
         },
-        "ゴーレム": {
+        {
+            "name": "スライム",
             "level": 1,
             "gear": null
         },
-        "ボストロール": {
+        {
+            "name": "スライム",
             "level": 1,
             "gear": null
         },
-        "ギュメイ将軍": {
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "ゴースト",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "ゴーレム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "ギュメイ将軍",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "スライム",
+            "level": 1,
+            "gear": null
+        },
+        {
+            "name": "ボストロール",
             "level": 1,
             "gear": null
         }
-    }
+    ]
 }
