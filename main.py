@@ -77,12 +77,12 @@ class UserInfo:
         """
         self.delete_all_ui()
         # テキストを表示
-        start_x, start_y = 270, 20
+        start_x, start_y = 325, 20
         width, height = 300, 60
         end_x, end_y = start_x+width, start_y+height
         canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
-            text = "所持モンスター一覧",
+            text = "モンスターボックス",
             font = ("", 22)
         )
         for i in range(self.page*12, min((self.page+1)*12, len(user["monster"]))):
@@ -261,7 +261,7 @@ class Window:
                 height=3
             )
             self.button[i].pack()
-            self.button[i].place(x=230*i+100, y=200)
+            self.button[i].place(x=230*i+130, y=200)
             # debug
             self.button[i].bind("<1>", self.encounter)
     
@@ -935,11 +935,11 @@ user_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
 # debug print
 
 # debug
-# user_info.show_all_monster()
+user_info.show_all_monster()
 
 # debug
-window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
-window.make_three_buttons([1,2,3])
+# window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
+# window.make_three_buttons([1,2,3])
 
 # 画面を表示
 app.mainloop()
