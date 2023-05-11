@@ -6,10 +6,11 @@ import math
 import numpy as np
 import random as rd
 
-if 0:
-    SHOW_DURATION = 1.5
+mode = "debug"
+if mode=="release":
+    SHOW_DURATION = 1.7
     BATTLE_START_DURATION = 1
-else:
+elif mode=="debug":
     SHOW_DURATION = 0.3
     BATTLE_START_DURATION = 0.5
 BATTLE_FINISH_DURATION = 2
@@ -163,7 +164,7 @@ class UserInfo:
         """
         自分の情報を表示する
         """
-        canvas.delete("all")
+        self.delete_all_ui()
 
 class Window:
     def __init__(self) -> None:
@@ -179,7 +180,7 @@ class Window:
         """
         メッセージボックスを生成する
         """
-        start_x, start_y = 70, 275
+        start_x, start_y = 90, 275
         width, height = 700, 60
         end_x, end_y = start_x+width, start_y+height
         self.message_box = canvas.create_rectangle(
@@ -421,7 +422,7 @@ class Battle:
         i = 0
         # パーティーのモンスターのUIを表示する
         for name in party:
-            start_x, start_y = 220*i+100, y
+            start_x, start_y = 220*i+140, y
             # モンスター名とモンスターの敵・味方の区分と、UIの座標を対応付ける
             self.elem_coord.update({(name, type_, is_friend): (start_x, start_y)})
             width, height = 160, 40
@@ -481,7 +482,7 @@ class Battle:
         """
         i = 0
         for name in self.enemy:
-            width = 220*i+130
+            width = 212*i+175
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 8
@@ -489,7 +490,7 @@ class Battle:
             i += 1
         i = 0
         for name in self.friend:
-            width = 130+220*i
+            width = 222*i+170
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 520
@@ -711,6 +712,16 @@ class Battle:
         if mp_consume==True and self.mp[offense_is_friend][offense_name]<using_skill["mp_consumption"]:
             window.show_message("しかしMPが足りない！", False)
             return None
+        # 防御側の被ダメージ時のメッセージを表示
+        enemy_or_friend = ""
+        if defense_is_friend==True:
+            enemy_or_friend = "味方の"
+        elif defense_is_friend==False:
+            enemy_or_friend = "敵の"
+        # skill「ミス」を使用した場合
+        if skill_name=="ミス":
+            window.show_message(f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！", show_fast)
+            return None
         # 攻撃側の与ダメージと自傷ダメージを計算する
         damage = self.calc_damage(
             skill_name,
@@ -726,14 +737,12 @@ class Battle:
             self.mp[offense_is_friend][offense_name] -= using_skill["mp_consumption"]
             # 攻撃側のMPの表示を変更する
             self.update_hp_mp_text(offense_name, offense_is_friend, "mp", self.mp[offense_is_friend][offense_name])
-        # 防御側の被ダメージ時のメッセージを表示
-        enemy_or_friend = ""
-        if defense_is_friend==True:
-            enemy_or_friend = "味方の"
-        elif defense_is_friend==False:
-            enemy_or_friend = "敵の"
         # 全体攻撃のときは表示間隔を短くする
-        window.show_message(f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！", show_fast)
+        if damage>0:
+            window.show_message(f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！", show_fast)
+        # ダメージを無効化した、または攻撃を回避した
+        else:
+            window.show_message(f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！", show_fast)
         # 防御側のHPの表示を変更する
         self.update_hp_mp_text(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
         # 防御側のdeadフラグを更新して、死亡時のメッセージを表示
@@ -800,7 +809,7 @@ class Battle:
                 skill_name = self.select_skill(monster[offensing_monster]["skill_select_probability"][offense_enemy_or_friend])
                 continue_ = None
                 # 単体攻撃
-                if skill[skill_name]["range"]=="single":
+                if skill[skill_name]["range"]=="single" or skill[skill_name]["range"] is None:
                     defending_monster = self.select_monster_at_random(deffense_enemy_or_friend)
                     # 防御側のパーティーが全滅したかどうか
                     continue_ = self.attack_on_monster(
@@ -838,6 +847,9 @@ class Battle:
                         )
                         if is_continue!=None:
                             first_attack = False
+                        else:
+                            continue_tmp = [True]*3
+                            break
                         continue_tmp.append(is_continue)
                     sleep(SHOW_DURATION*0.5)
                     # 防御側のパーティーが全滅したかどうか
@@ -923,24 +935,25 @@ user_info.set_friend(["スライム", "ドラキー", "ゴーレム"])
 # debug print
 
 # debug
-user_info.show_all_monster()
+# user_info.show_all_monster()
 
 # debug
-# window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
-# window.make_three_buttons([1,2,3])
+window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
+window.make_three_buttons([1,2,3])
 
 # 画面を表示
 app.mainloop()
+
 
 """
 To Do
 
 ・ゲルニック将軍を実装する
     ・ルカナン
-・モンスター一覧のページをめくれるようにする
+・全体攻撃の処理を、battle_start_auto()からattack_on_monster()に移す
+    -> MPが足りなかったときに、3回試行せずにキャンセルできるようにするため
 """
 """
-
 メモ
 
 ・パーティー内のモンスターの重複禁止
