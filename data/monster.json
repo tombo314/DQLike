@@ -42,7 +42,7 @@
         "hp": 12,
         "mp": 4,
         "attack": 4,
-        "magic_attack": 2,
+        "magic_attack": 4,
         "defense": 2,
         "agility": 3,
         "skill_select_probability": {
@@ -266,21 +266,21 @@
         "name": "ゲルニック将軍",
         "level": 1,
         "hp": 100,
-        "mp": 100,
-        "attack": 10,
-        "magic_attack": 40,
+        "mp": 80,
+        "attack": 16,
+        "magic_attack": 35,
         "defense": 15,
         "agility": 30,
         "skill_select_probability": {
             "enemy": {
-                "攻撃": 0.5,
-                "メラミ": 0.5,
+                "攻撃": 0.4,
+                "メラミ": 0.6,
                 "ルカナン": 0,
                 "ドルマ": 0
             },
             "friend": {
-                "攻撃": 0.5,
-                "メラミ": 0.5,
+                "攻撃": 0.4,
+                "メラミ": 0.6,
                 "ルカナン": 0,
                 "ドルマ": 0
             }
