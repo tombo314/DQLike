@@ -77,7 +77,7 @@ class UserInfo:
         """
         self.delete_all_ui()
         # テキストを表示
-        start_x, start_y = 325, 20
+        start_x, start_y = 425, 20
         width, height = 300, 60
         end_x, end_y = start_x+width, start_y+height
         canvas.create_text(
@@ -88,7 +88,7 @@ class UserInfo:
         for i in range(self.page*12, min((self.page+1)*12, len(user["monster"]))):
             name = user["monster"][i]["name"]
             # 画像を表示
-            width = 215*(i%4)+110
+            width = 240*(i%4)+180
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = (170*(i//4)+90)%510
@@ -102,7 +102,7 @@ class UserInfo:
                 height=1
             )
             self.button_monster[i%12].pack()
-            relx = 0.225*(i%4)+0.075
+            relx = 0.2*(i%4)+0.12
             rely = (0.27*(i//4))%0.81+0.3
             self.button_monster[i%12].place(relx=relx, rely=rely)
             # debug
@@ -118,7 +118,7 @@ class UserInfo:
                 height=7
             )
             self.button_page_next.pack()
-            self.button_page_next.place(x=900, y=240)
+            self.button_page_next.place(x=1140, y=240)
             self.button_page_next.bind("<1>", self.show_next_page)
         # 最後のページだったら進むボタンを削除
         elif (self.page+1)*12>=len(user["monster"]):
@@ -199,17 +199,19 @@ class Window:
             canvas.delete(self.message_box)
             canvas.update()
     
-    def show_message(self, message: str, is_fast: bool) -> None:
+    def show_message(self, message: str, is_fast: bool, log_list: list[str], print_log: bool) -> None:
         """
         メッセージを表示（変更）する
         message: 表示するメッセージ
         is_fast: 表示間隔を短くするかどうか
+        log_list: 表示するログのリスト
+        print_log: ログを表示するかどうか
         """
         start_x, start_y = 70, 275
         width, height = 700, 60
         end_x, end_y = start_x+width, start_y+height
         # すでにメッセージが書いてある場合は消去する
-        if self.message_text!="":
+        if self.message_text is not None:
             canvas.delete(self.message_text)
         # メッセージを表示する
         self.message_text = canvas.create_text(
@@ -217,6 +219,11 @@ class Window:
             font = ("helvetica", 18),
             text = message
         )
+        # ログを出力する
+        if print_log==True:
+            log_list.append(message)
+            if len(self.log)>10:
+                self.log.pop(0)
         canvas.update()
         if is_fast==True:
             sleep(SHOW_DURATION*0.3)
@@ -284,6 +291,8 @@ class Battle:
         """
         self.enemy = enemy
         self.friend = friend
+        # バトル時のログ
+        self.log = []
         canvas.delete("all")
         # メッセージボックスを作成
         window.make_message_box()
@@ -548,7 +557,12 @@ class Battle:
             enemy_or_friend = "味方の"
         elif is_friend==False:
             enemy_or_friend = "敵の"
-        window.show_message(f"{enemy_or_friend}{name}は力尽きた...", False)
+        message = f"{enemy_or_friend}{name}は力尽きた..."
+        window.show_message(message, False)
+        # ログを出力
+        self.log.append(message)
+        if len(self.log)>10:
+            self.log.pop(0)
         # deadフラグを更新
         self.dead[is_friend][name] = True
         # 画像を削除
@@ -638,6 +652,7 @@ class Battle:
         パーティーの中からランダムに1体選ぶ
         enemy_or_friend: 「enemy」「friend」のどちらか
         """
+        mons = None
         if enemy_or_friend=="enemy":
             # 死んでいたら攻撃の対象にならない
             while mons==None or self.dead[0][mons]==True:
@@ -649,7 +664,7 @@ class Battle:
                 mons = rd.choice(self.friend)
             return mons
 
-    def calc_damage(self, skill_name: str, attack: int, magic_attack: int, defense: int, attribute_damage_rate: dict) -> int:
+    def calc_damage(self, skill_name: str, attack: int, magic_attack: int, defense: int, attribute_damage_rate: dict, is_critical: bool) -> int:
         """
         ダメージを計算する
         skill_name: 使うスキルの名前
@@ -657,19 +672,43 @@ class Battle:
         magic_attack: 攻撃側の呪文攻撃力
         defense: 防御側の物理防御力
         attribute_damage_rate: 防御側の属性耐性 {属性: ダメージ倍率}
+        is_critical: 会心の一撃かどうか
         """
         physics_damage = 0
         magic_damage = 0
         damage_rate = 1
         using_skill = skill[skill_name]
+        # 物理ダメージ
         if using_skill["type"]=="physics":
-            physics_damage += attack-defense//2
+            # 会心の一撃が発生する
+            if is_critical==True:
+                # 相手の物理防御力を無視
+                physics_damage += attack
+                # ダメージが増える
+                damage_rate *= rd.uniform(1.4, 1.6)
+            # 会心の一撃が発生しない
+            else:
+                physics_damage += attack-defense//2
+        # 呪文ダメージ
         elif using_skill["type"]=="magic":
             magic_damage += magic_attack
+            # 会心の一撃が発生する
+            if is_critical==True:
+                # ダメージが増える
+                damage_rate *= rd.uniform(1.4, 1.6)
         damage_rate *= using_skill["damage_rate"]
-        if using_skill["attribute"]!="無" and using_skill["attribute"]!="null":
-            damage_rate *= attribute_damage_rate[using_skill["attribute"]]
+        # 属性耐性を計算する
+        if using_skill["attribute"]!="無" and using_skill["attribute"] is not None:
+            # 会心の一撃発生時、属性貫通率が増える
+            if is_critical==True:
+                damage_rate *= attribute_damage_rate[using_skill["attribute"]]+0.2
+            # 会心の一撃が発生しない
+            elif is_critical==False:
+                damage_rate *= attribute_damage_rate[using_skill["attribute"]]
+        # ダメージを計算する
         damage = (physics_damage+magic_damage)*damage_rate*rd.uniform(0.95, 1.05)
+        # ダメージは0以上
+        # 小数点以下切り上げ
         return max(0, math.ceil(damage))
 
     def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, is_all: bool) -> Union[bool, None]:
@@ -682,71 +721,142 @@ class Battle:
         defense_name: 防御側のモンスターの名前
         is_all: 全体攻撃かどうか
         """
+        # 攻撃側と防御側を設定
         if offense_is_friend==True:
             defense_is_friend = False
         elif offense_is_friend==False:
             defense_is_friend = True
+        # 攻撃を受ける相手のモンスターを設定
+        if is_all==True: 
+            if offense_is_friend==True:
+                defending_side = self.enemy.copy()
+            elif offense_is_friend==False:
+                defending_side = self.friend.copy()
+        elif is_all==False:
+            defending_side = [defense_name]
+        # 攻撃側の情報を設定
         offensing_monster = {
             "attack": self.attack[offense_is_friend][offense_name],
             "magic_attack": self.magic_attack[offense_is_friend][offense_name]
         }
-        if not is_all:
-            defending_monster = {
-                "name": defense_name,
-                "defense": self.defense[defense_is_friend][defense_name],
-                "attribute_damage_rate": monster[defense_name]["attribute_damage_rate"]
+        # 防御側の情報を設定
+        for i,name in enumerate(defending_side):
+            defending_side[i] = {
+                "name": name,
+                "defense": self.defense[defense_is_friend][name],
+                "attribute_damage_rate": monster[name]["attribute_damage_rate"]
             }
+        # 使うスキルを設定
         using_skill = skill[skill_name]
         # 攻撃時のメッセージを表示
         if offense_is_friend==True:
             enemy_or_friend = "味方の"
         elif offense_is_friend==False:
             enemy_or_friend = "敵の"
-        window.show_message(enemy_or_friend+offense_name+using_skill["message"], False)
+        message = enemy_or_friend+offense_name+using_skill["message"]
+        window.show_message(message, False)
+        # ログを出力
+        self.log.append(message)
+        if len(self.log)>10:
+            self.log.pop(0)
         # 攻撃側のMPが足りない場合は攻撃をキャンセル
         if self.mp[offense_is_friend][offense_name]<using_skill["mp_consumption"]:
-            window.show_message("しかしMPが足りない！", False)
+            message = "しかしMPが足りない！"
+            window.show_message(message, False)
+            # ログを出力
+            self.log.append(message)
+            if len(self.log)>10:
+                self.log.pop(0)
             return None
         # 防御側の被ダメージ時のメッセージを表示
         if defense_is_friend==True:
             enemy_or_friend = "味方の"
         elif defense_is_friend==False:
             enemy_or_friend = "敵の"
-        # 攻撃を受ける相手のモンスター
-        de
-        if 
-            defending_side = []
-        # skill「ミス」を使用した場合
-        if skill_name=="ミス":
-            window.show_message(f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！", False)
-            return None
-        # 攻撃側の与ダメージと自傷ダメージを計算する
-        damage = self.calc_damage(
-            skill_name,
-            offensing_monster["attack"],
-            offensing_monster["magic_attack"],
-            defending_monster["defense"],
-            defending_monster["attribute_damage_rate"]
-        )
-        self_damage = max(0, math.ceil(damage*using_skill["self_damage_ratio_to_calc_damage"]))
-        # 防御側のHPと攻撃側のMPを減らす
-        self.hp[defense_is_friend][defense_name] = max(self.hp[defense_is_friend][defense_name]-damage, 0)
-        self.mp[offense_is_friend][offense_name] -= using_skill["mp_consumption"]
-        # 攻撃側のMPの表示を変更する
-        self.update_hp_mp_text(offense_name, offense_is_friend, "mp", self.mp[offense_is_friend][offense_name])
-        # 全体攻撃のときは表示間隔を短くする
-        if damage>0:
-            window.show_message(f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！", True)
-        # ダメージを無効化した、または攻撃を回避した
-        else:
-            window.show_message(f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！", False)
-        # 防御側のHPの表示を変更する
-        self.update_hp_mp_text(defense_name, defense_is_friend, "hp", self.hp[defense_is_friend][defense_name])
-        # 防御側のdeadフラグを更新して、死亡時のメッセージを表示
-        if self.hp[defense_is_friend][defense_name]==0:
-            self.kill_monster(defense_name, defense_is_friend)
+        self_damage = 0
+        # 全体攻撃のときは、表示速度を速くする
+        show_fast = is_all
+        is_first_attack = True
+        is_critical = None
+        for defending_monster in defending_side:
+            # skill「ミス」を使用する
+            # 攻撃がミスする
+            if skill_name=="ミス" or self.is_n_percent(using_skill["miss_probability"]*100)==True:
+                message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
+                window.show_message(message, show_fast)
+                # ログを出力
+                self.log.append(message)
+                if len(self.log)>10:
+                    self.log.pop(0)
+                continue
+            # 死んでいる場合は攻撃の対象にならない
+            if self.dead[defense_is_friend][defending_monster["name"]]==True:
+                continue
+            # 会心の一撃かどうかを判定する
+            # 会心の一撃が出る可能性のあるスキルの、typeとrangeは以下の通り
+            # ・type=physics range=single
+            # ・type=magic range=single
+            # ・type=magic range=all
+            if is_critical is None:
+                is_critical = self.is_n_percent(using_skill["critical_probability"]*100)
+            # 会心の一撃発生時に、メッセージを表示
+            if is_critical==True:
+                if using_skill["type"]=="physics" and is_all==False:
+                    message = "会心の一撃！"
+                    window.show_message(message, False)
+                    # ログを出力
+                    self.log.append(message)
+                    if len(self.log)>10:
+                        self.log.pop(0)
+                elif using_skill["type"]=="magic" and is_first_attack==True:
+                    message = f"{offense_name}の魔力が暴走した！"
+                    window.show_message(message, False)
+                    # ログを出力
+                    self.log.append(message)
+                    if len(self.log)>10:
+                        self.log.pop(0)
+            # 攻撃側の与ダメージと自傷ダメージを計算する
+            damage = self.calc_damage(
+                skill_name,
+                offensing_monster["attack"],
+                offensing_monster["magic_attack"],
+                defending_monster["defense"],
+                defending_monster["attribute_damage_rate"],
+                is_critical,
+            )
+            self_damage = max(0, math.ceil(damage*using_skill["self_damage_ratio_to_calc_damage"]))
+            # 防御側のHPと攻撃側のMPを減らす
+            self.hp[defense_is_friend][defending_monster["name"]] = max(self.hp[defense_is_friend][defending_monster["name"]]-damage, 0)
+            if is_first_attack==True:
+                self.mp[offense_is_friend][offense_name] -= using_skill["mp_consumption"]
+            # 攻撃側のMPの表示を変更する
+            self.update_hp_mp_text(offense_name, offense_is_friend, "mp", self.mp[offense_is_friend][offense_name])
+            # 全体攻撃のときは表示間隔を短くする
+            if damage>0:
+                message = f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！"
+                window.show_message(message, show_fast)
+                # ログを出力
+                self.log.append(message)
+                if len(self.log)>10:
+                    self.log.pop(0)
+            # ダメージを無効化した、または攻撃を回避した
+            else:
+                message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
+                window.show_message(message, show_fast)
+                # ログを出力
+                self.log.append(message)
+                if len(self.log)>10:
+                    self.log.pop(0)
+            # 防御側のHPの表示を変更する
+            self.update_hp_mp_text(defending_monster["name"], defense_is_friend, "hp", self.hp[defense_is_friend][defending_monster["name"]])
+            # 防御側のdeadフラグを更新して、死亡時のメッセージを表示
+            if self.hp[defense_is_friend][defending_monster["name"]]==0:
+                self.kill_monster(defending_monster["name"], defense_is_friend)
+            is_first_attack = False
+        if is_all==True:
+            sleep(SHOW_DURATION*0.7)
         # 自傷ダメージ
-        if self_damage>0:
+        if self_damage>0 and is_all==False:
             # 攻撃側のHPを減らす
             self.hp[offense_is_friend][offense_name] -= self_damage
             self.update_hp_mp_text(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
@@ -755,7 +865,12 @@ class Battle:
                 enemy_or_friend = "味方の"
             elif offense_is_friend==False:
                 enemy_or_friend = "敵の"
-            window.show_message(f"{enemy_or_friend}{offense_name}に{self_damage}のダメージ！", False)
+            message = f"{enemy_or_friend}{offense_name}に{self_damage}のダメージ！"
+            window.show_message(message, False)
+            # ログを出力
+            self.log.append(message)
+            if len(self.log)>10:
+                self.log.pop(0)
             # 攻撃側のHPの表示を変更する
             self.update_hp_mp_text(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
             # 攻撃側のdeadフラグを更新して、死亡時のメッセージを表示
@@ -763,7 +878,7 @@ class Battle:
                 self.kill_monster(offense_name, offense_is_friend)
         # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
         # Falseで終了
-        if any([self.dead[0][name]==False for name in self.enemy]) and any([self.dead[1][name]==False for name in self.friend]):
+        if any(self.dead[0][name]==False for name in self.enemy) and any(self.dead[1][name]==False for name in self.friend):
             return True
         return False
     
@@ -825,14 +940,29 @@ class Battle:
                 # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
                 if continue_==False:
                     if all([self.dead[0][name] for name in self.dead[0]]):
-                        window.show_message("バトルに勝利した！", False)
+                        message = "バトルに勝利した！"
+                        window.show_message(message, False)
+                        # ログを出力
+                        self.log.append(message)
+                        if len(self.log)>10:
+                            self.log.pop(0)
                     elif all([self.dead[1][name] for name in self.dead[1]]):
-                        window.show_message("全滅してしまった...", False)
+                        message = "全滅してしまった..."
+                        window.show_message(message, False)
+                        # ログを出力
+                        self.log.append(message)
+                        if len(self.log)>10:
+                            self.log.pop(0)
                     sleep(BATTLE_FINISH_DURATION)
                     break_ = True
                     break
             if break_:
                 break
+
+    def show_battle_log(self) -> None:
+        """
+        バトルのログを表示する
+        """
 
 class Fusion:
     def __init__(self) -> None:
@@ -880,9 +1010,12 @@ with open("data/user.json", encoding="utf-8") as data:
 # Tkinterの初期設定
 app = tk.Tk()
 app.title("DQLike")
-width = 960
+width = 1200
 height = 620
-app.geometry(f"{width}x{height}+200+30")
+left = 60
+top = 30
+app.geometry(f"{width}x{height}+{left}+{top}")
+# 画面のサイズ変更を禁止
 app.resizable(0, 0)
 canvas = tk.Canvas(
     app,
@@ -903,7 +1036,7 @@ user_info.set_friend(["スライム", "ドラキー", "ギュメイ将軍"])
 # debug print
 
 # debug
-# user_info.show_all_monster()
+user_info.show_all_monster()
 
 # debug
 # window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
@@ -912,16 +1045,14 @@ user_info.set_friend(["スライム", "ドラキー", "ギュメイ将軍"])
 # 画面を表示
 app.mainloop()
 
-
 """
 To Do
 
-・is_decreasingを見ていない
-    -> さみだれ斬りが減衰しない
 ・ゲルニック将軍を実装する
     ・ルカナン
-・全体攻撃の処理を、battle_start_auto()からattack_on_monster()に移す
-    -> MPが足りなかったときに、3回試行せずにキャンセルできるようにするため
+・is_decreasingを見ていない
+    -> さみだれ斬りが減衰しない
+・バトル時のログを表示する
 """
 """
 メモ
