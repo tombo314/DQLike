@@ -46,7 +46,7 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 1,
-        "message": "の攻撃！痛恨の一撃！"
+        "message": "の攻撃！"
     },
     "大きくなぎ払う": {
         "type": "physics",
