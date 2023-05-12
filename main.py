@@ -31,6 +31,8 @@ class UserInfo:
         self.button_page_back = None
         # モンスター一覧のページ数
         self.page = 0
+        # モンスターボックスのテキスト
+        self.text_monster_box = None
 
     def delete_all_ui(self) -> None:
         """
@@ -80,9 +82,16 @@ class UserInfo:
         start_x, start_y = 425, 20
         width, height = 300, 60
         end_x, end_y = start_x+width, start_y+height
-        canvas.create_text(
+        # テキストが設定してあれば削除する
+        if self.text_monster_box is not None:
+            canvas.delete(self.text_monster_box)
+        if len(user["monster"])//12==len(user["monster"])/12:
+            page_all = len(user["monster"])//12
+        else:
+            page_all = len(user["monster"])//12+1
+        self.text_monster_box = canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
-            text = "モンスターボックス",
+            text = f"モンスターボックス（{self.page+1}／{page_all}）",
             font = ("", 22)
         )
         for i in range(self.page*12, min((self.page+1)*12, len(user["monster"]))):
