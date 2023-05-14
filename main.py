@@ -1,5 +1,7 @@
 from time import sleep
 from typing import Union
+from threading import Thread
+from playsound import playsound
 import tkinter as tk
 import json
 import math
@@ -184,6 +186,7 @@ class Window:
         self.message_text = None
         self.button = [None]*3
         self.enemy = [None]*3
+        self.log_text = [None]*15
     
     def make_message_box(self) -> None:
         """
@@ -208,31 +211,45 @@ class Window:
             canvas.delete(self.message_box)
             canvas.update()
     
-    def show_message(self, message: str, is_fast: bool, log_list: list[str], print_log: bool) -> None:
+    def show_message(self, message: str, is_fast: bool, log_list: list[str]) -> None:
         """
         メッセージを表示（変更）する
         message: 表示するメッセージ
         is_fast: 表示間隔を短くするかどうか
         log_list: 表示するログのリスト
-        print_log: ログを表示するかどうか
         """
-        start_x, start_y = 70, 275
-        width, height = 700, 60
-        end_x, end_y = start_x+width, start_y+height
+        # メッセージ
         # すでにメッセージが書いてある場合は消去する
         if self.message_text is not None:
             canvas.delete(self.message_text)
         # メッセージを表示する
+        start_x, start_y = 70, 275
+        width, height = 700, 60
+        end_x, end_y = start_x+width, start_y+height
         self.message_text = canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
             font = ("helvetica", 18),
             text = message
         )
+        # ログ
+        LOG_NUM = 15
+        # すでにログが書いてある場合は削除する
+        for i in range(LOG_NUM):
+            canvas.delete(self.log_text[i])
         # ログを出力する
-        if print_log==True:
+        if log_list is not None:
             log_list.append(message)
-            if len(self.log)>10:
-                self.log.pop(0)
+            if len(log_list)>LOG_NUM:
+                log_list.pop(0)
+            for i,content in enumerate(log_list):
+                start_x, start_y = 950, 27*(i+1)
+                width, height = 100, 30
+                end_x, end_y = start_x+width, start_y+height
+                self.log_text[i] = canvas.create_text(
+                    (start_x+end_x)/2, (start_y+end_y)/2,
+                    font = ("helvetica", 12),
+                    text = content
+                )
         canvas.update()
         if is_fast==True:
             sleep(SHOW_DURATION*0.3)
@@ -262,7 +279,7 @@ class Window:
             self.button[i].destroy()
         # バトルを開始する
         start_battle(self.enemy)
-    
+            
     def make_three_buttons(self, text: list[str]) -> None:
         """
         前、左、右の三方向に進むボタンを表示する
@@ -301,7 +318,7 @@ class Battle:
         self.enemy = enemy
         self.friend = friend
         # バトル時のログ
-        self.log = []
+        self.log_list = []
         canvas.delete("all")
         # メッセージボックスを作成
         window.make_message_box()
@@ -567,11 +584,7 @@ class Battle:
         elif is_friend==False:
             enemy_or_friend = "敵の"
         message = f"{enemy_or_friend}{name}は力尽きた..."
-        window.show_message(message, False)
-        # ログを出力
-        self.log.append(message)
-        if len(self.log)>10:
-            self.log.pop(0)
+        window.show_message(message, False, self.log_list)
         # deadフラグを更新
         self.dead[is_friend][name] = True
         # 画像を削除
@@ -763,19 +776,11 @@ class Battle:
         elif offense_is_friend==False:
             enemy_or_friend = "敵の"
         message = enemy_or_friend+offense_name+using_skill["message"]
-        window.show_message(message, False)
-        # ログを出力
-        self.log.append(message)
-        if len(self.log)>10:
-            self.log.pop(0)
+        window.show_message(message, False, self.log_list)
         # 攻撃側のMPが足りない場合は攻撃をキャンセル
         if self.mp[offense_is_friend][offense_name]<using_skill["mp_consumption"]:
             message = "しかしMPが足りない！"
-            window.show_message(message, False)
-            # ログを出力
-            self.log.append(message)
-            if len(self.log)>10:
-                self.log.pop(0)
+            window.show_message(message, False, self.log_list)
             return None
         # 防御側の被ダメージ時のメッセージを表示
         if defense_is_friend==True:
@@ -792,11 +797,7 @@ class Battle:
             # 攻撃がミスする
             if skill_name=="ミス" or self.is_n_percent(using_skill["miss_probability"]*100)==True:
                 message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
-                window.show_message(message, show_fast)
-                # ログを出力
-                self.log.append(message)
-                if len(self.log)>10:
-                    self.log.pop(0)
+                window.show_message(message, show_fast, self.log_list)
                 continue
             # 死んでいる場合は攻撃の対象にならない
             if self.dead[defense_is_friend][defending_monster["name"]]==True:
@@ -812,18 +813,10 @@ class Battle:
             if is_critical==True:
                 if using_skill["type"]=="physics" and is_all==False:
                     message = "会心の一撃！"
-                    window.show_message(message, False)
-                    # ログを出力
-                    self.log.append(message)
-                    if len(self.log)>10:
-                        self.log.pop(0)
+                    window.show_message(message, False, self.log_list)
                 elif using_skill["type"]=="magic" and is_first_attack==True:
                     message = f"{offense_name}の魔力が暴走した！"
-                    window.show_message(message, False)
-                    # ログを出力
-                    self.log.append(message)
-                    if len(self.log)>10:
-                        self.log.pop(0)
+                    window.show_message(message, False, self.log_list)
             # 攻撃側の与ダメージと自傷ダメージを計算する
             damage = self.calc_damage(
                 skill_name,
@@ -843,19 +836,11 @@ class Battle:
             # 全体攻撃のときは表示間隔を短くする
             if damage>0:
                 message = f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！"
-                window.show_message(message, show_fast)
-                # ログを出力
-                self.log.append(message)
-                if len(self.log)>10:
-                    self.log.pop(0)
+                window.show_message(message, show_fast, self.log_list)
             # ダメージを無効化した、または攻撃を回避した
             else:
                 message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
-                window.show_message(message, show_fast)
-                # ログを出力
-                self.log.append(message)
-                if len(self.log)>10:
-                    self.log.pop(0)
+                window.show_message(message, show_fast, self.log_list)
             # 防御側のHPの表示を変更する
             self.update_hp_mp_text(defending_monster["name"], defense_is_friend, "hp", self.hp[defense_is_friend][defending_monster["name"]])
             # 防御側のdeadフラグを更新して、死亡時のメッセージを表示
@@ -875,11 +860,7 @@ class Battle:
             elif offense_is_friend==False:
                 enemy_or_friend = "敵の"
             message = f"{enemy_or_friend}{offense_name}に{self_damage}のダメージ！"
-            window.show_message(message, False)
-            # ログを出力
-            self.log.append(message)
-            if len(self.log)>10:
-                self.log.pop(0)
+            window.show_message(message, False, self.log_list)
             # 攻撃側のHPの表示を変更する
             self.update_hp_mp_text(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
             # 攻撃側のdeadフラグを更新して、死亡時のメッセージを表示
@@ -950,28 +931,15 @@ class Battle:
                 if continue_==False:
                     if all([self.dead[0][name] for name in self.dead[0]]):
                         message = "バトルに勝利した！"
-                        window.show_message(message, False)
-                        # ログを出力
-                        self.log.append(message)
-                        if len(self.log)>10:
-                            self.log.pop(0)
+                        window.show_message(message, False, self.log_list)
                     elif all([self.dead[1][name] for name in self.dead[1]]):
                         message = "全滅してしまった..."
-                        window.show_message(message, False)
-                        # ログを出力
-                        self.log.append(message)
-                        if len(self.log)>10:
-                            self.log.pop(0)
+                        window.show_message(message, False, self.log_list)
                     sleep(BATTLE_FINISH_DURATION)
                     break_ = True
                     break
             if break_:
                 break
-
-    def show_battle_log(self) -> None:
-        """
-        バトルのログを表示する
-        """
 
 class Fusion:
     def __init__(self) -> None:
@@ -996,8 +964,13 @@ def start_battle(party_enemy: list[str]) -> None:
     バトルを行う
     party_enemy: 敵のパーティー
     """
+    # 再生を2回試行する
+    try:
+        play_music("交える死闘.mp3", 0)
+    except:
+        play_music("交える死闘.mp3", 0)
     battle = Battle(party_enemy, user_info.friend)
-    window.show_message("魔物の群れが現れた！", False)
+    window.show_message("魔物の群れが現れた！", False, None)
     sleep(BATTLE_START_DURATION)
     battle.battle_start_auto()
 
@@ -1005,6 +978,16 @@ def game_start() -> None:
     """
     ゲーム全体を開始する
     """
+
+def play_music(file_name: str, play_duration: int) -> None:
+    """
+    音声を再生する
+    file_name: ファイル名
+    play_duration: 再生時間
+    """
+    music = Thread(target=lambda: playsound(file_name), daemon=True)
+    music.start()
+    sleep(play_duration+1)
 
 # JSONデータを読み込む
 with open("data/monster.json", encoding="utf-8") as data:
@@ -1045,11 +1028,11 @@ user_info.set_friend(["スライム", "ドラキー", "ギュメイ将軍"])
 # debug print
 
 # debug
-user_info.show_all_monster()
+# user_info.show_all_monster()
 
 # debug
-# window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
-# window.make_three_buttons([1,2,3])
+window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
+window.make_three_buttons([1,2,3])
 
 # 画面を表示
 app.mainloop()
