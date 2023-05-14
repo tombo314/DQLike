@@ -1,7 +1,7 @@
 from time import sleep
 from typing import Union
 from threading import Thread
-from playsound import playsound
+import pygame
 import tkinter as tk
 import json
 import math
@@ -931,14 +931,25 @@ class Battle:
                 if continue_==False:
                     if all([self.dead[0][name] for name in self.dead[0]]):
                         message = "バトルに勝利した！"
+                        winner = "friend"
                         window.show_message(message, False, self.log_list)
                     elif all([self.dead[1][name] for name in self.dead[1]]):
                         message = "全滅してしまった..."
+                        winner = "enemy"
                         window.show_message(message, False, self.log_list)
                     sleep(BATTLE_FINISH_DURATION)
                     break_ = True
                     break
+            # 戦闘が終了した
             if break_:
+                # 戦闘BGMを停止する
+                pygame.mixer.music.stop()
+                # 戦闘終了BGMを流す
+                if winner=="friend":
+                    pygame.mixer.music.load("music/戦闘終了.mp3")
+                elif winner=="enemy":
+                    pygame.mixer.music.load("music/全滅.mp3")
+                pygame.mixer.music.play()
                 break
 
 class Fusion:
@@ -964,11 +975,7 @@ def start_battle(party_enemy: list[str]) -> None:
     バトルを行う
     party_enemy: 敵のパーティー
     """
-    # 再生を2回試行する
-    try:
-        play_music("交える死闘.mp3", 0)
-    except:
-        play_music("交える死闘.mp3", 0)
+    play_music("music/交える死闘.mp3")
     battle = Battle(party_enemy, user_info.friend)
     window.show_message("魔物の群れが現れた！", False, None)
     sleep(BATTLE_START_DURATION)
@@ -979,15 +986,19 @@ def game_start() -> None:
     ゲーム全体を開始する
     """
 
-def play_music(file_name: str, play_duration: int) -> None:
+def play_music(file_name: str) -> None:
     """
     音声を再生する
     file_name: ファイル名
-    play_duration: 再生時間
     """
-    music = Thread(target=lambda: playsound(file_name), daemon=True)
-    music.start()
-    sleep(play_duration+1)
+    # 別のスレッドで音楽を再生する
+    pygame.init()
+    pygame.mixer.music.load(file_name)
+    thread = Thread(target=lambda: pygame.mixer.music.play(-1), daemon=True)
+    thread.start()
+    # sleepしたときに限り、エラーなく音楽を再生できる
+    # 音楽が先に流れてから少し待つ方が、戦闘の開始時の演出が良い
+    sleep(1)
 
 # JSONデータを読み込む
 with open("data/monster.json", encoding="utf-8") as data:
@@ -1032,6 +1043,7 @@ user_info.set_friend(["スライム", "ドラキー", "ギュメイ将軍"])
 
 # debug
 window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
+# window.set_enemy(["ギュメイ将軍", "ボストロール", "ゲルニック将軍"])
 window.make_three_buttons([1,2,3])
 
 # 画面を表示
@@ -1044,7 +1056,8 @@ To Do
     ・ルカナン
 ・is_decreasingを見ていない
     -> さみだれ斬りが減衰しない
-・バトル時のログを表示する
+・戦闘BGMを戦闘終了時に停止する
+・勝利と全滅のBGMを流す
 """
 """
 メモ
