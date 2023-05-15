@@ -1,3 +1,4 @@
+# ライブラリのインポート
 from time import sleep
 from typing import Union
 from threading import Thread
@@ -8,7 +9,10 @@ import math
 import numpy as np
 import random as rd
 
-mode = "debug"
+# ライブラリの初期設定
+pygame.init()
+
+mode = "release"
 if mode=="release":
     SHOW_DURATION = 1.7
     BATTLE_START_DURATION = 1
@@ -733,7 +737,7 @@ class Battle:
         # 小数点以下切り上げ
         return max(0, math.ceil(damage))
 
-    def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str, is_all: bool) -> Union[bool, None]:
+    def attack_on_monster(self, skill_name: str, offense_name: str, offense_is_friend: bool, defense_name: str) -> Union[bool, None]:
         """
         モンスターからモンスターに攻撃する
         バトルを継続するときにTrue、終了するときにFalse、MPが足りない場合はNoneを返す
@@ -741,8 +745,19 @@ class Battle:
         offense_name: 攻撃側のモンスターの名前
         offense_is_friend: 攻撃側のモンスターが味方であるかどうか
         defense_name: 防御側のモンスターの名前
-        is_all: 全体攻撃かどうか
         """
+        # 使うスキルを設定
+        using_skill = skill[skill_name]
+        # 全体攻撃かどうか
+        if using_skill["range"]=="all":
+            is_all = True
+        elif using_skill["range"]=="single" or using_skill["range"]==None:
+            is_all = False
+        # ダメージが逓減するかどうか
+        if using_skill["is_decreasing"]==True:
+            is_decreasing = True
+        elif using_skill["is_decreasing"]==False:
+            is_decreasing = False
         # 攻撃側と防御側を設定
         if offense_is_friend==True:
             defense_is_friend = False
@@ -768,8 +783,6 @@ class Battle:
                 "defense": self.defense[defense_is_friend][name],
                 "attribute_damage_rate": monster[name]["attribute_damage_rate"]
             }
-        # 使うスキルを設定
-        using_skill = skill[skill_name]
         # 攻撃時のメッセージを表示
         if offense_is_friend==True:
             enemy_or_friend = "味方の"
@@ -792,6 +805,9 @@ class Battle:
         show_fast = is_all
         is_first_attack = True
         is_critical = None
+        # ダメージが逓減する割合
+        damage_decreasing_rate = 1
+        # 攻撃する
         for defending_monster in defending_side:
             # skill「ミス」を使用する
             # 攻撃がミスする
@@ -825,7 +841,8 @@ class Battle:
                 defending_monster["defense"],
                 defending_monster["attribute_damage_rate"],
                 is_critical,
-            )
+            )*damage_decreasing_rate
+            damage = math.ceil(damage)
             self_damage = max(0, math.ceil(damage*using_skill["self_damage_ratio_to_calc_damage"]))
             # 防御側のHPと攻撃側のMPを減らす
             self.hp[defense_is_friend][defending_monster["name"]] = max(self.hp[defense_is_friend][defending_monster["name"]]-damage, 0)
@@ -847,6 +864,10 @@ class Battle:
             if self.hp[defense_is_friend][defending_monster["name"]]==0:
                 self.kill_monster(defending_monster["name"], defense_is_friend)
             is_first_attack = False
+            # ダメージを減少させる
+            decreasing_rate_of_decreasing_rate = 0.25
+            if is_decreasing==True:
+                damage_decreasing_rate -= decreasing_rate_of_decreasing_rate
         if is_all==True:
             sleep(SHOW_DURATION*0.7)
         # 自傷ダメージ
@@ -914,8 +935,7 @@ class Battle:
                         skill_name,
                         offensing_monster,
                         offense_is_friend,
-                        defending_monster,
-                        False
+                        defending_monster
                     )
                 # 全体攻撃
                 elif skill[skill_name]["range"]=="all":
@@ -924,8 +944,7 @@ class Battle:
                         skill_name,
                         offensing_monster,
                         offense_is_friend,
-                        None,
-                        True
+                        None
                     )
                 # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
                 if continue_==False:
@@ -946,7 +965,7 @@ class Battle:
                 pygame.mixer.music.stop()
                 # 戦闘終了BGMを流す
                 if winner=="friend":
-                    pygame.mixer.music.load("music/戦闘終了.mp3")
+                    pygame.mixer.music.load("music/勝利.mp3")
                 elif winner=="enemy":
                     pygame.mixer.music.load("music/全滅.mp3")
                 pygame.mixer.music.play()
@@ -975,7 +994,7 @@ def start_battle(party_enemy: list[str]) -> None:
     バトルを行う
     party_enemy: 敵のパーティー
     """
-    play_music("music/交える死闘.mp3")
+    play_music("music/戦闘.mp3")
     battle = Battle(party_enemy, user_info.friend)
     window.show_message("魔物の群れが現れた！", False, None)
     sleep(BATTLE_START_DURATION)
@@ -992,7 +1011,6 @@ def play_music(file_name: str) -> None:
     file_name: ファイル名
     """
     # 別のスレッドで音楽を再生する
-    pygame.init()
     pygame.mixer.music.load(file_name)
     thread = Thread(target=lambda: pygame.mixer.music.play(-1), daemon=True)
     thread.start()
@@ -1054,10 +1072,10 @@ To Do
 
 ・ゲルニック将軍を実装する
     ・ルカナン
-・is_decreasingを見ていない
-    -> さみだれ斬りが減衰しない
-・戦闘BGMを戦闘終了時に停止する
-・勝利と全滅のBGMを流す
+・pygame.mixer.music.play()は、スレッドを分けなくてもいいか試してみる
+・play_music()の中にどこまで含めるかを検討する
+・play_music()にはsleep()がいるか試してみる
+    -> いらない場合は、sleep()を外に出す
 """
 """
 メモ
