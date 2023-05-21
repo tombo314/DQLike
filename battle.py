@@ -210,14 +210,6 @@ def load_battle() -> None:
             )
             canvas.update()
         
-        def delete_message_box(self) -> None:
-            """
-            メッセージボックスを削除する
-            """
-            if self.message_box!=None:
-                canvas.delete(self.message_box)
-                canvas.update()
-        
         def show_message(self, message: str, is_fast: bool, log_list: list[str]) -> None:
             """
             メッセージを表示（変更）する
@@ -225,7 +217,7 @@ def load_battle() -> None:
             is_fast: 表示間隔を短くするかどうか
             log_list: 表示するログのリスト
             """
-            # メッセージ
+            # メッセージを表示する
             # すでにメッセージが書いてある場合は消去する
             if self.message_text is not None:
                 canvas.delete(self.message_text)
@@ -238,7 +230,7 @@ def load_battle() -> None:
                 font = ("helvetica", 18),
                 text = message
             )
-            # ログ
+            # ログを表示する
             LOG_NUM = 15
             # すでにログが書いてある場合は削除する
             for i in range(LOG_NUM):
@@ -262,58 +254,6 @@ def load_battle() -> None:
                 sleep(SHOW_DURATION*0.3)
             elif is_fast==False:
                 sleep(SHOW_DURATION)
-
-        def delete_message(self) -> None:
-            """
-            メッセージを削除する
-            """
-            if self.message_text!=None:
-                canvas.delete(self.message_text)
-                canvas.update()
-        
-        def set_enemy(self, enemy: list[str]) -> None:
-            """
-            敵のパーティーを設定する
-            """
-            self.enemy = enemy
-        
-        def encounter(self, event) -> None:
-            """
-            敵と遭遇する
-            """
-            # ボタンを削除する
-            for i in range(3):
-                self.button[i].destroy()
-            # バトルを開始する
-            start_battle(self.enemy)
-                
-        def make_three_buttons(self, text: list[str]) -> None:
-            """
-            前、左、右の三方向に進むボタンを表示する
-            """
-            canvas.delete("all")
-            for i in range(3):
-                self.button[i] = tk.Button(
-                    app,
-                    text=text[i],
-                    font=("", 20),
-                    width=13,
-                    height=3
-                )
-                self.button[i].pack()
-                self.button[i].place(x=230*i+130, y=200)
-                # debug
-                self.button[i].bind("<1>", self.encounter)
-        
-        def make_yes_no_buttons(self) -> None:
-            """
-            「はい」と「いいえ」のボタンを表示する
-            """
-        
-        def delete_yes_no_buttons(self) -> None:
-            """
-            「はい」と「いいえ」のボタンを削除する
-            """
 
     class Battle:
         def __init__(self, enemy:list, friend: list) -> None:
@@ -994,11 +934,6 @@ def load_battle() -> None:
         battle.battle_start_auto()
         app.destroy()
 
-    def game_start() -> None:
-        """
-        ゲーム全体を開始する
-        """
-
     def play_music(file_name: str) -> None:
         """
         音声を再生する
@@ -1047,35 +982,33 @@ def load_battle() -> None:
 
     # UIのインスタンス
     window = Window()
-
     # 自分の情報のインスタンス
     user_info = UserInfo()
 
     # debug
+    # 自分のパーティーを設定する
     user_info.set_friend(["スライム", "ドラキー", "ギュメイ将軍"])
 
-    # debug print
-
     # debug
+    # 自分が持っているモンスターの一覧を表示する
     # user_info.show_all_monster()
-    window.set_enemy(["スライム", "ボストロール", "ゲルニック将軍"])
-    # window.set_enemy(["ギュメイ将軍", "ボストロール", "ゲルニック将軍"])
+    # バトルを開始する
     start_battle(["スライム", "ボストロール", "ゲルニック将軍"])
 
     # 画面を表示
     app.mainloop()
 
-    """
-    To Do
+"""
+To Do
 
-    ・ゲルニック将軍を実装する
-        ・ルカナン
-    ・バトル中に方向キーを入力すると、バトル終了後にエンカウントするのを直す
-    """
-    """
-    メモ
+・ゲルニック将軍を実装する
+    ・ルカナン
+・クラスごとにファイルを分ける？
+"""
+"""
+メモ
 
-    ・毎バトル終了後に、味方モンスターのHPとMPが全回復してもいいかもしれない？
-    ・パーティー内のモンスターの重複禁止
-    ・自傷ダメージのある攻撃は、range=singleのみ
-    """
+・毎バトル終了後に、味方モンスターのHPとMPが全回復するようにする？
+・パーティー内のモンスターの重複禁止
+・自傷ダメージのある攻撃は、range=singleのみ
+"""
