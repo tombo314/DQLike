@@ -1,23 +1,26 @@
-def load_battle():
-    # ライブラリのインポート
-    from time import sleep
-    from typing import Union
-    import pygame
-    import tkinter as tk
-    import json
-    import math
-    import numpy as np
-    import random as rd
+# ライブラリのインポート
+from time import sleep
+from typing import Union
+import pygame
+import tkinter as tk
+import json
+import math
+import numpy as np
+import random as rd
 
-    # ライブラリの初期設定
-    pygame.init()
+# ライブラリの初期設定
+pygame.init()
 
-    mode = "release"
+def load_battle() -> None:
+    """
+    バトルを開始する
+    """
+    mode = "debug"
     if mode=="release":
         SHOW_DURATION = 1.7
         BATTLE_START_DURATION = 1
     elif mode=="debug":
-        SHOW_DURATION = 0.3
+        SHOW_DURATION = 0.05
         BATTLE_START_DURATION = 0.5
     BATTLE_FINISH_DURATION = 2
 
@@ -656,16 +659,6 @@ def load_battle():
                 self.mp_text[is_friend][name] = elem
             canvas.update()
 
-        def is_n_percent(self, prob: int) -> bool:
-            """
-            probパーセントの確率でTrueを返す
-            prob: Trueが返ってくる確率(0~100)
-            """
-            r = rd.randint(1, 100)
-            if r<=prob:
-                return True
-            return False
-
         def select_skill(self, skill: dict) -> str:
             """
             スキルを選択する
@@ -811,7 +804,7 @@ def load_battle():
             for defending_monster in defending_side:
                 # skill「ミス」を使用する
                 # 攻撃がミスする
-                if skill_name=="ミス" or self.is_n_percent(using_skill["miss_probability"]*100)==True:
+                if skill_name=="ミス" or is_n_percent(using_skill["miss_probability"]*100)==True:
                     message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
                     window.show_message(message, show_fast, self.log_list)
                     continue
@@ -824,7 +817,7 @@ def load_battle():
                 # ・type=magic range=single
                 # ・type=magic range=all
                 if is_critical is None:
-                    is_critical = self.is_n_percent(using_skill["critical_probability"]*100)
+                    is_critical = is_n_percent(using_skill["critical_probability"]*100)
                 # 会心の一撃発生時に、メッセージを表示
                 if is_critical==True:
                     if using_skill["type"]=="physics" and is_all==False:
@@ -999,6 +992,7 @@ def load_battle():
         window.show_message("魔物の群れが現れた！", False, None)
         sleep(BATTLE_START_DURATION)
         battle.battle_start_auto()
+        app.destroy()
 
     def game_start() -> None:
         """
@@ -1012,6 +1006,17 @@ def load_battle():
         """
         pygame.mixer.music.load(file_name)
         pygame.mixer.music.play(-1)
+
+    def is_n_percent(prob: int) -> bool:
+        """
+        probパーセントの確率でTrueを返す
+        prob: Trueが返ってくる確率(0~100)
+        """
+        r = rd.randint(1, 100)
+        if r<=prob:
+            return True
+        return False
+
 
     # JSONデータを読み込む
     with open("data/monster.json", encoding="utf-8") as data:
@@ -1065,9 +1070,7 @@ def load_battle():
 
     ・ゲルニック将軍を実装する
         ・ルカナン
-    ・play_music()の中にどこまで含めるかを検討する
-    ・play_music()にはsleep()がいるか試してみる
-        -> いらない場合は、sleep()を外に出す
+    ・バトル中に方向キーを入力すると、バトル終了後にエンカウントするのを直す
     """
     """
     メモ
