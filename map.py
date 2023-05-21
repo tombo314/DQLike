@@ -1,9 +1,9 @@
 # ライブラリのインポート
-from pygame.locals import *
 from battle import load_battle
-from time import sleep
+from pygame.locals import *
 import pygame
 import random as rd
+from time import sleep
 
 # ライブラリの初期設定
 pygame.init()
@@ -12,7 +12,6 @@ def load_map() -> None:
     """
     フィールドマップを読み込む
     """
-
     KEY_INPUT_DURATION = 0.1
 
     class Map:
@@ -102,12 +101,9 @@ def load_map() -> None:
             """
             エンカウントするか判定する
             """
-            print(1)
             is_encountered = self.is_n_percent(self.encounter_prob)
             # エンカウントする
-            # debug
-            if 0 and is_encountered==True and self.in_battle==False:
-            # if is_encountered==True and self.in_battle==False:
+            if is_encountered==True and self.in_battle==False:
                 self.in_battle = True
                 self.encounter_prob = 0
                 self.move_cnt = 0
@@ -134,12 +130,16 @@ def load_map() -> None:
             """
             key_inputted = False
             while True:
-                self.draw_map(self.screen)  # マップ描画
-                self.screen.blit(self.playerImg, (self.x*self.gs, self.y*self.gs), (0, 0, self.gs, self.gs))  # プレイヤー描画
+                # マップを描画する
+                self.draw_map(self.screen)
+                # プレイヤーを描画する
+                self.screen.blit(self.playerImg, (self.x*self.gs, self.y*self.gs), (0, 0, self.gs, self.gs))
                 pygame.display.update()
+                # キーの入力間隔を空ける
                 if key_inputted==True:
                     sleep(KEY_INPUT_DURATION)
                     key_inputted = False
+                # キーの入力を受け取る
                 for event in pygame.event.get():
                     if event.type==QUIT:
                         exit()
@@ -168,3 +168,15 @@ def load_map() -> None:
     map.run()
 
 load_map()
+
+"""
+To Do
+
+・モンスター編成所を作る
+・モンスター配合所を作る
+・ゲーム終了ボタンを作る
+"""
+"""
+メモ
+
+"""
