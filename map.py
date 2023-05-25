@@ -4,6 +4,9 @@ import pygame
 import random as rd
 from time import sleep
 
+# クラスのインポート
+from battle import battle
+
 # ライブラリの初期設定
 pygame.init()
 
@@ -35,7 +38,7 @@ class Map:
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
         ]
         self.screen = pygame.display.set_mode(self.scr_rect.size)
-        pygame.display.set_caption("PyRPG 03 プレイヤーの移動")
+        pygame.display.set_caption("フィールドマップ")
         # イメージロード
         self.playerImg = self.load_image("images/character.png", -1)  # プレイヤー
         self.grassImg = self.load_image("images/grass.png", -1)
@@ -105,7 +108,8 @@ class Map:
             self.in_battle = True
             self.encounter_prob = 0
             self.move_cnt = 0
-            # start_battle()
+            # バトルを開始する
+            battle.start_battle(["スライム", "ゴースト", "ゲルニック将軍"])
         # エンカウントしない
         else:
             self.in_battle = False
