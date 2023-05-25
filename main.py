@@ -1,34 +1,22 @@
-from battle import start_battle
-from user_info import UserInfo
-from window import Window
-from fusion import Fusion
-from map import Map
+# クラスのインポート
+from user_info import user_info
+from window import window
+from battle import battle
+from fusion import fusion
+from map import map
 
-import tkinter as tk
+# 味方パーティーを設定
+user_info.set_friend(["スライム", "ドラキー", "ギュメイ将軍"])
 
-# クラスをインスタンス化する
-user_info = UserInfo()
-window = Window
-fusion = Fusion()
-map = Map()
+# 味方パーティーを設定
+battle.set_friend(user_info.friend)
+# # 敵パーティーを設定
+# battle.set_enemy(["スライム", "ゴースト", "ゲルニック将軍"])
+# battle.init_param()
+# battle.draw_ui()
 
-
-# Tkinterの初期設定
-app = tk.Tk()
-app.title("DQLike")
-width = 1200
-height = 620
-left = 60
-top = 30
-app.geometry(f"{width}x{height}+{left}+{top}")
-# 画面のサイズ変更を禁止
-app.resizable(0, 0)
-canvas = tk.Canvas(
-    app,
-    width = width,
-    height = height
-)
-canvas.pack()
+# マップを表示
+map.run()
 
 """
 To Do
