@@ -21,6 +21,4 @@ class UserInfo:
             print("味方パーティー内でモンスターが重複しています。")
             exit()
 
-
-
 user_info = UserInfo()
