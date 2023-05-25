@@ -1,11 +1,10 @@
-# ライブラリのインポート
+# ライブラリをインポート
 from time import sleep
 import tkinter as tk
 
-# クラスのインポート
+# クラスをインポート
 from config import *
 from json_import import *
-from battle_system import battle
 
 class UI:
     """
@@ -34,91 +33,6 @@ class UI:
         self.button_page_back = None
         # 画像データ
         self.image = {name: [] for name in monster}
-        # モンスタ―とUIの座標の対応関係
-        # (monster_name, is_friend): (start_x, start_y)
-        self.elem_coord = {}
-    
-    def draw_battle_ui(self) -> None:
-        """
-        UIを描画する
-        """
-        # Tkinterのインスタンスを生成
-        self.make_tk_window()
-        # UIを削除
-        self.canvas.delete("all")
-        # メッセージボックスを作成
-        ui.make_message_box()
-        # 敵と味方の名前、HP、MPを表示する
-        self.make_party(battle.enemy, "name", False)
-        self.make_party(battle.enemy, "hp", False)
-        self.make_party(battle.enemy, "mp", False)
-        self.make_party(battle.friend, "name", True)
-        self.make_party(battle.friend, "hp", True)
-        self.make_party(battle.friend, "mp", True)
-        # 敵と味方の画像を表示する
-        self.plot_image_all()
-        self.canvas.update()
-        
-    def make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
-        """
-        UIを生成する
-        party: 敵か味方のモンスター3体
-        type: 「name」「hp」「mp」のどれか
-        is_friend: 敵の要素であるかどうか
-        """
-        y = -1
-        if type_=="name":
-            y = 100
-        elif type_=="hp":
-            y = 160
-        elif type_=="mp":
-            y = 220
-        if is_friend==True:
-            color = "#3f3"
-            y += 250
-        elif is_friend==False:
-            color = "#f33"
-        i = 0
-        # パーティーのモンスターのUIを表示する
-        for name in party:
-            start_x, start_y = 220*i+140, y
-            # モンスター名とモンスターの敵・味方の区分と、UIの座標を対応付ける
-            self.elem_coord.update({(name, type_, is_friend): (start_x, start_y)})
-            width, height = 160, 40
-            end_x, end_y = start_x+width, start_y+height
-            # 四角形を表示する
-            elem = self.canvas.create_rectangle(
-                start_x, start_y,
-                end_x, end_y,
-                fill = "#ddd",
-                outline = color
-            )
-            if type_=="name":
-                self.name_box[is_friend][name] = elem
-            elif type_=="hp":
-                self.hp_box[is_friend][name] = elem
-            elif type_=="mp":
-                self.mp_box[is_friend][name] = elem
-            # テキストを表示する
-            if type_=="name":
-                content = name
-            elif type_=="hp":
-                content = f"{self.hp[is_friend][name]} / {self.hp_init[is_friend][name]}"
-            elif type_=="mp":
-                content = f"{self.mp[is_friend][name]} / {self.mp_init[is_friend][name]}"
-            elem = self.canvas.create_text(
-                (start_x+end_x)/2, (start_y+end_y)/2,
-                text = content,
-                font = ("", 12)
-            )
-            if type_=="name":
-                self.name_text[is_friend][name] = elem
-            elif type_=="hp":
-                self.hp_text[is_friend][name] = elem
-            elif type_=="mp":
-                self.mp_text[is_friend][name] = elem
-            i += 1
-        self.canvas.update()
     
     def plot_image(self, name: str, path: str, x: int, y: int) -> None:
         """
@@ -132,28 +46,6 @@ class UI:
         self.image[name].append(tk.PhotoImage(file=path, width=130, height=130))
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image[name][-1], anchor=tk.NW)
-    
-    def plot_image_all(self) -> None:
-        """
-        敵と味方のパーティーの画像を表示
-        """
-        i = 0
-        for name in battle.enemy:
-            width = 212*i+175
-            if name=="ドラキー" or name=="ボストロール":
-                width -= 13
-            height = 8
-            self.plot_image(name, False, f"images/png_resized/{name}_resized.png", width, height)
-            i += 1
-        i = 0
-        for name in battle.friend:
-            width = 222*i+170
-            if name=="ドラキー" or name=="ボストロール":
-                width -= 13
-            height = 520
-            self.plot_image(name, True, f"images/png_resized/{name}_resized.png", width, height)
-            i += 1
-        self.canvas.update()
     
     def make_tk_window(self) -> None:
         """
