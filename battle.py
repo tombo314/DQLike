@@ -27,6 +27,22 @@ class Battle:
         # モンスタ―とUIの座標の対応関係
         self.elem_coord = {}
     
+    def set_enemy(self, enemy: list) -> None:
+        """
+        敵パーティーを設定する
+        """
+        self.enemy = enemy
+        # パーティー内でモンスターの重複があったら強制終了
+        if len(set(self.enemy))<=2:
+            print("敵パーティー内でモンスターが重複しています。")
+            exit()
+
+    def set_friend(self) -> None:
+        """
+        味方パーティーを設定する
+        """
+        self.friend = user_info.friend
+    
     def init_param(self) -> None:
         """
         モンスターの情報を初期化する
@@ -89,22 +105,6 @@ class Battle:
             self.reflect_level(name, False, monster[name]["level"])
         for name in self.friend:
             self.reflect_level(name, True, monster[name]["level"])
-    
-    def set_enemy(self, enemy: list) -> None:
-        """
-        敵パーティーを設定する
-        """
-        self.enemy = enemy
-        # パーティー内でモンスターの重複があったら強制終了
-        if len(set(self.enemy))<=2:
-            print("敵パーティー内でモンスターが重複しています。")
-            exit()
-
-    def set_friend(self) -> None:
-        """
-        味方パーティーを設定する
-        """
-        self.friend = user_info.friend
     
     def init_ui(self) -> None:
         # 0がenemyのUI, 1がfriendのUI
@@ -273,7 +273,6 @@ class Battle:
         elif type_=="mp":
             self.mp_text[is_friend][name] = elem
         ui.canvas.update()
-
     
     def delete_image(self, name: str, is_friend) -> None:
         """
@@ -692,7 +691,9 @@ class Battle:
         バトルを行う
         enemy: 敵パーティー
         """
+        # 味方パーティーを設定
         self.set_friend()
+        # 敵パーティーを設定
         self.set_enemy(enemy)
         # モンスターのパラメータを初期化
         self.init_param()
