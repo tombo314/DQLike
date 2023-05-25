@@ -2,46 +2,34 @@
 from time import sleep
 from typing import Union
 import pygame
-import tkinter as tk
 import math
 import numpy as np
 import random as rd
 
 # クラスのインポート
 from json_import import *
+from config import *
+from UI import ui
 from user_info import user_info
-from screen import canvas
-from window import window
 
 # ライブラリの初期設定
 pygame.init()
-
-# 表示速度を変える
-mode = "debug"
-
-if mode=="release":
-    SHOW_DURATION = 1.7
-    BATTLE_START_DURATION = 1
-elif mode=="debug":
-    SHOW_DURATION = 0.05
-    BATTLE_START_DURATION = 0.5
-BATTLE_FINISH_DURATION = 2
 
 class Battle:
     """
     バトルを行う
     """
     def __init__(self) -> None:
+        # Tkinterのオブジェクト
+        self.app = None
+        self.canvas = None
         # 敵パーティー
         self.enemy = None
         # 味方パーティー
         self.friend = None
         # バトル時のログ
         self.log_list = []
-        # モンスタ―とUIの座標の対応関係
-        # (monster_name, is_friend): (start_x, start_y)
-        self.elem_coord = {}
-        
+    
     def init_param(self) -> None:
         """
         モンスターの情報を初期化する
@@ -144,132 +132,12 @@ class Battle:
         if len(set(self.enemy))<=2:
             print("敵パーティー内でモンスターが重複しています。")
             exit()
-            
-    def set_friend(self, friend: list) -> None:
+
+    def set_friend(self) -> None:
         """
         味方パーティーを設定する
         """
-        self.friend = friend
-        # パーティー内でモンスターの重複があったら終了
-        if len(set(self.friend))<=2:
-            print("味方パーティー内でモンスターが重複しています。")
-            exit()
-    
-    def draw_ui(self) -> None:
-        """
-        UIを描画する
-        """
-        # UIを削除
-        canvas.delete("all")
-        # メッセージボックスを作成
-        window.make_message_box()
-        # 敵と味方の名前、HP、MPを表示する
-        self.make_party(self.enemy, "name", False)
-        self.make_party(self.enemy, "hp", False)
-        self.make_party(self.enemy, "mp", False)
-        self.make_party(self.friend, "name", True)
-        self.make_party(self.friend, "hp", True)
-        self.make_party(self.friend, "mp", True)
-        # 敵と味方の画像を表示する
-        self.plot_image_all()
-        canvas.update()
-    
-    def make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
-        """
-        UIを生成する
-        party: 敵か味方のモンスター3体
-        type: 「name」「hp」「mp」のどれか
-        is_friend: 敵の要素であるかどうか
-        """
-        y = -1
-        if type_=="name":
-            y = 100
-        elif type_=="hp":
-            y = 160
-        elif type_=="mp":
-            y = 220
-        if is_friend==True:
-            color = "#3f3"
-            y += 250
-        elif is_friend==False:
-            color = "#f33"
-        i = 0
-        # パーティーのモンスターのUIを表示する
-        for name in party:
-            start_x, start_y = 220*i+140, y
-            # モンスター名とモンスターの敵・味方の区分と、UIの座標を対応付ける
-            self.elem_coord.update({(name, type_, is_friend): (start_x, start_y)})
-            width, height = 160, 40
-            end_x, end_y = start_x+width, start_y+height
-            # 四角形を表示する
-            elem = canvas.create_rectangle(
-                start_x, start_y,
-                end_x, end_y,
-                fill = "#ddd",
-                outline = color
-            )
-            if type_=="name":
-                self.name_box[is_friend][name] = elem
-            elif type_=="hp":
-                self.hp_box[is_friend][name] = elem
-            elif type_=="mp":
-                self.mp_box[is_friend][name] = elem
-            # テキストを表示する
-            if type_=="name":
-                content = name
-            elif type_=="hp":
-                content = f"{self.hp[is_friend][name]} / {self.hp_init[is_friend][name]}"
-            elif type_=="mp":
-                content = f"{self.mp[is_friend][name]} / {self.mp_init[is_friend][name]}"
-            elem = canvas.create_text(
-                (start_x+end_x)/2, (start_y+end_y)/2,
-                text = content,
-                font = ("", 12)
-            )
-            if type_=="name":
-                self.name_text[is_friend][name] = elem
-            elif type_=="hp":
-                self.hp_text[is_friend][name] = elem
-            elif type_=="mp":
-                self.mp_text[is_friend][name] = elem
-            i += 1
-        canvas.update()
-
-    def plot_image(self, name: str, is_friend: bool, path: str, x: int, y: int) -> None:
-        """
-        画像を表示
-        name: モンスターの名前
-        is_friend: 味方であるかどうか
-        path: 画像のパス
-        x: x座標
-        y: y座標
-        """
-        # イメージ作成
-        self.image[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
-        # キャンバスにイメージを表示
-        canvas.create_image(x, y, image=self.image[is_friend][name], anchor=tk.NW)
-
-    def plot_image_all(self) -> None:
-        """
-        敵と味方のパーティーの画像を表示
-        """
-        i = 0
-        for name in self.enemy:
-            width = 212*i+175
-            if name=="ドラキー" or name=="ボストロール":
-                width -= 13
-            height = 8
-            self.plot_image(name, False, f"images/png_resized/{name}_resized.png", width, height)
-            i += 1
-        i = 0
-        for name in self.friend:
-            width = 222*i+170
-            if name=="ドラキー" or name=="ボストロール":
-                width -= 13
-            height = 520
-            self.plot_image(name, True, f"images/png_resized/{name}_resized.png", width, height)
-            i += 1
-        canvas.update()
+        self.friend = user_info.friend
 
     def delete_image(self, name: str, is_friend) -> None:
         """
@@ -619,7 +487,7 @@ class Battle:
             return True
         return False
     
-    def battle_start_auto(self) -> None:
+    def turns_process(self) -> None:
         """
         バトルを開始する（自動）
         """
@@ -697,18 +565,29 @@ class Battle:
                 pygame.mixer.music.play()
                 break
 
-    def start_battle(self) -> None:
+    def start_battle(self, enemy: list) -> None:
         """
         バトルを行う
-        party_enemy: 敵のパーティー
+        enemy: 敵パーティー
         """
-        self.draw_ui()
+        # 敵パーティーを設定
+        battle.set_enemy(enemy)
+        # 味方パーティーを設定
+        battle.set_friend()
+        # モンスターのパラメータを初期化
+        battle.init_param()
+        # UIを表示
+        ui.draw_battle_ui()
+        # 戦闘BGMを再生
         self.play_music("music/戦闘.mp3")
-        battle = Battle(self.enemy, user_info.friend)
-        window.show_message("魔物の群れが現れた！", False, None)
+        # メッセージを表示
+        ui.show_message("魔物の群れが現れた！", False, None)
+        # 開始まで間隔を空ける
         sleep(BATTLE_START_DURATION)
-        battle.battle_start_auto()
-        app.destroy()
+        # ターンを開始する
+        battle.turns_process()
+        # Tkinterのインスタンスを削除する
+        ui.app.destroy()
 
     def play_music(self, file_name: str) -> None:
         """
@@ -729,14 +608,6 @@ class Battle:
         return False
 
 battle = Battle()
-
-# # JSONデータを読み込む
-# with open("data/monster.json", encoding="utf-8") as data:
-#     monster = json.load(data)
-# with open("data/skill.json", encoding="utf-8") as data:
-#     skill = json.load(data)
-
-# window = Window()
 
 """
 To Do
