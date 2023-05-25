@@ -162,6 +162,8 @@ class Map:
                     key_inputted = True
                 break
 
+map = Map()
+
 """
 To Do
 
