@@ -1,3 +1,7 @@
+# クラスのインポート
+from json_import import *
+from screen import canvas
+
 class UserInfo:
     """
     プレイヤーの情報を管理する
@@ -35,6 +39,10 @@ class UserInfo:
         自分のパーティーを設定する
         """
         self.friend = friend
+        # パーティー内でモンスターの重複があったら終了
+        if len(set(self.friend))<=2:
+            print("味方パーティー内でモンスターが重複しています。")
+            exit()
     
     def plot_image(self, name: str, path: str, x: int, y: int) -> None:
         """
@@ -157,3 +165,5 @@ class UserInfo:
         自分の情報を表示する
         """
         self.delete_all_ui()
+
+user_info = UserInfo()
