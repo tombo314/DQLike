@@ -1,3 +1,9 @@
+# クラスのインポート
+from screen import canvas
+
+# ライブラリのインポート
+from time import sleep
+
 class Window:
     """
     UIを表示する
@@ -71,3 +77,5 @@ class Window:
             sleep(SHOW_DURATION*0.3)
         elif is_fast==False:
             sleep(SHOW_DURATION)
+
+window = Window()
