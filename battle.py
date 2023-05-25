@@ -1,4 +1,4 @@
-# ライブラリのインポート
+# ライブラリをインポート
 from time import sleep
 from typing import Union
 import pygame
@@ -6,10 +6,10 @@ import math
 import numpy as np
 import random as rd
 
-# クラスのインポート
+# クラスをインポート
 from json_import import *
 from config import *
-from UI import ui
+from ui import ui
 from user_info import user_info
 
 # ライブラリの初期設定
@@ -17,53 +17,20 @@ pygame.init()
 
 class Battle:
     """
-    バトルを行う
+    バトル時のステータスを管理する
     """
     def __init__(self) -> None:
-        # Tkinterのオブジェクト
-        self.app = None
-        self.canvas = None
-        # 敵パーティー
         self.enemy = None
-        # 味方パーティー
         self.friend = None
         # バトル時のログ
         self.log_list = []
+        # モンスタ―とUIの座標の対応関係
+        self.elem_coord = {}
     
     def init_param(self) -> None:
         """
         モンスターの情報を初期化する
         """
-        # 0がenemyのUI, 1がfriendのUI
-        self.name_box = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend}
-        ]
-        self.name_text = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend}
-        ]
-        self.hp_box = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend}
-        ]
-        self.hp_text = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend}
-        ]
-        self.mp_box = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend}
-        ]
-        self.mp_text = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend}
-        ]
-        # 画像データ
-        self.image = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend},
-        ]
         # バトル時のパラメータ
         self.hp = [
             {monster[name]["name"]: monster[name]["hp"] for name in self.enemy},
@@ -128,7 +95,7 @@ class Battle:
         敵パーティーを設定する
         """
         self.enemy = enemy
-        # パーティー内でモンスターの重複があったら終了
+        # パーティー内でモンスターの重複があったら強制終了
         if len(set(self.enemy))<=2:
             print("敵パーティー内でモンスターが重複しています。")
             exit()
@@ -138,7 +105,176 @@ class Battle:
         味方パーティーを設定する
         """
         self.friend = user_info.friend
+    
+    def init_ui(self) -> None:
+        # 0がenemyのUI, 1がfriendのUI
+        self.name_box = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.name_text = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.hp_box = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.hp_text = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.mp_box = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.mp_text = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        # 画像データ
+        self.image = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend},
+        ]
+    
+    def plot_image_battle(self) -> None:
+        """
+        敵と味方のパーティーの画像を表示
+        """
+        i = 0
+        for name in self.enemy:
+            width = 212*i+175
+            if name=="ドラキー" or name=="ボストロール":
+                width -= 13
+            height = 8
+            ui.plot_image(name, f"images/png_resized/{name}_resized.png", width, height)
+            i += 1
+        i = 0
+        for name in self.friend:
+            width = 222*i+170
+            if name=="ドラキー" or name=="ボストロール":
+                width -= 13
+            height = 520
+            ui.plot_image(name, f"images/png_resized/{name}_resized.png", width, height)
+            i += 1
+        ui.canvas.update()
+    
+    def draw_battle_ui(self) -> None:
+        """
+        UIを描画する
+        """
+        # Tkinterのインスタンスを生成
+        ui.make_tk_window()
+        # UIを削除
+        ui.canvas.delete("all")
+        # メッセージボックスを作成
+        ui.make_message_box()
+        # 敵と味方の名前、HP、MPを表示する
+        self.make_party(self.enemy, "name", False)
+        self.make_party(self.enemy, "hp", False)
+        self.make_party(self.enemy, "mp", False)
+        self.make_party(self.friend, "name", True)
+        self.make_party(self.friend, "hp", True)
+        self.make_party(self.friend, "mp", True)
+        # 敵と味方の画像を表示する
+        self.plot_image_battle()
+        ui.canvas.update()
+    
+    def make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
+        """
+        UIを生成する
+        party: 敵か味方のモンスター3体
+        type: 「name」「hp」「mp」のどれか
+        is_friend: 敵の要素であるかどうか
+        """
+        y = -1
+        if type_=="name":
+            y = 100
+        elif type_=="hp":
+            y = 160
+        elif type_=="mp":
+            y = 220
+        if is_friend==True:
+            color = "#3f3"
+            y += 250
+        elif is_friend==False:
+            color = "#f33"
+        i = 0
+        # パーティーのモンスターのUIを表示する
+        for name in party:
+            start_x, start_y = 220*i+140, y
+            # モンスター名とモンスターの敵・味方の区分と、UIの座標を対応付ける
+            self.elem_coord.update({(name, type_, is_friend): (start_x, start_y)})
+            width, height = 160, 40
+            end_x, end_y = start_x+width, start_y+height
+            # 四角形を表示する
+            elem = ui.canvas.create_rectangle(
+                start_x, start_y,
+                end_x, end_y,
+                fill = "#ddd",
+                outline = color
+            )
+            if type_=="name":
+                self.name_box[is_friend][name] = elem
+            elif type_=="hp":
+                self.hp_box[is_friend][name] = elem
+            elif type_=="mp":
+                self.mp_box[is_friend][name] = elem
+            # テキストを表示する
+            if type_=="name":
+                content = name
+            elif type_=="hp":
+                content = f"{self.hp[is_friend][name]} / {self.hp_init[is_friend][name]}"
+            elif type_=="mp":
+                content = f"{self.mp[is_friend][name]} / {self.mp_init[is_friend][name]}"
+            elem = ui.canvas.create_text(
+                (start_x+end_x)/2, (start_y+end_y)/2,
+                text = content,
+                font = ("", 12)
+            )
+            if type_=="name":
+                self.name_text[is_friend][name] = elem
+            elif type_=="hp":
+                self.hp_text[is_friend][name] = elem
+            elif type_=="mp":
+                self.mp_text[is_friend][name] = elem
+            i += 1
+        ui.canvas.update()
 
+    def update_hp_mp_text(self, name: str, is_friend: bool, type_: str, param: int) -> None:
+        """
+        hpまたはmpの表示を更新する
+        name: モンスターの名前
+        is_friend: 味方であるかどうか
+        type_: 「hp」「mp」のどちらか
+        param: 更新したあとの数字
+        """
+        # 前のテキストを削除する
+        if type_=="hp":
+            ui.canvas.delete(self.hp_text[is_friend][name])
+        elif type_=="mp":
+            ui.canvas.delete(self.mp_text[is_friend][name])
+        start_x, start_y = self.elem_coord[(name, type_, is_friend)]
+        width, height = 160, 40
+        end_x, end_y = start_x+width, start_y+height
+        # テキストを表示する
+        if type_=="hp":
+            max_val = self.hp_init[is_friend][name]
+        elif type_=="mp":
+            max_val = self.mp_init[is_friend][name]
+        elem = ui.canvas.create_text(
+            (start_x+end_x)/2, (start_y+end_y)/2,
+            text = f"{param} / {max_val}",
+            font = ("", 12)
+        )
+        if type_=="hp":
+            self.hp_text[is_friend][name] = elem
+        elif type_=="mp":
+            self.mp_text[is_friend][name] = elem
+        ui.canvas.update()
+
+    
     def delete_image(self, name: str, is_friend) -> None:
         """
         画像を削除する
@@ -192,12 +328,12 @@ class Battle:
         elif is_friend==False:
             enemy_or_friend = "敵の"
         message = f"{enemy_or_friend}{name}は力尽きた..."
-        window.show_message(message, False, self.log_list)
+        ui.show_message(message, False, self.log_list)
         # deadフラグを更新
         self.dead[is_friend][name] = True
         # 画像を削除
         self.delete_image(name, is_friend)
-        canvas.update()
+        ui.canvas.update()
     
     def revive_monster(self, name: str, is_friend: bool) -> None:
         """
@@ -214,51 +350,19 @@ class Battle:
         else:
             color = "#f33"
         # 四角形を表示する
-        self.name_box[is_friend][name] = canvas.create_rectangle(
+        self.name_box[is_friend][name] = ui.canvas.create_rectangle(
             start_x, start_y,
             end_x, end_y,
             fill = "#ddd",
             outline = color
         )
         # テキストを表示する
-        self.name_text[is_friend][name] = canvas.create_text(
+        self.name_text[is_friend][name] = ui.canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
             text = name,
             font = ("", 12)
         )
-        canvas.update()
-
-    def update_hp_mp_text(self, name: str, is_friend: bool, type_: str, param: int) -> None:
-        """
-        hpまたはmpの表示を更新する
-        name: モンスターの名前
-        is_friend: 味方であるかどうか
-        type_: 「hp」「mp」のどちらか
-        param: 更新したあとの数字
-        """
-        # 前のテキストを削除する
-        if type_=="hp":
-            canvas.delete(self.hp_text[is_friend][name])
-        elif type_=="mp":
-            canvas.delete(self.mp_text[is_friend][name])
-        start_x, start_y = self.elem_coord[(name, type_, is_friend)]
-        width, height = 160, 40
-        end_x, end_y = start_x+width, start_y+height
-        # テキストを表示する
-        if type_=="hp":
-            max_val = self.hp_init[is_friend][name]
-        elif type_=="mp":
-            max_val = self.mp_init[is_friend][name]
-        elem = canvas.create_text(
-            (start_x+end_x)/2, (start_y+end_y)/2,
-            text = f"{param} / {max_val}",
-            font = ("", 12)
-        )
-        if type_=="hp":
-            self.hp_text[is_friend][name] = elem
-        elif type_=="mp":
-            self.mp_text[is_friend][name] = elem
-        canvas.update()
+        ui.canvas.update()
 
     def select_skill(self, skill: dict) -> str:
         """
@@ -383,11 +487,11 @@ class Battle:
         elif offense_is_friend==False:
             enemy_or_friend = "敵の"
         message = enemy_or_friend+offense_name+using_skill["message"]
-        window.show_message(message, False, self.log_list)
+        ui.show_message(message, False, self.log_list)
         # 攻撃側のMPが足りない場合は攻撃をキャンセル
         if self.mp[offense_is_friend][offense_name]<using_skill["mp_consumption"]:
             message = "しかしMPが足りない！"
-            window.show_message(message, False, self.log_list)
+            ui.show_message(message, False, self.log_list)
             return None
         # 防御側の被ダメージ時のメッセージを表示
         if defense_is_friend==True:
@@ -407,7 +511,7 @@ class Battle:
             # 攻撃がミスする
             if skill_name=="ミス" or self.is_n_percent(using_skill["miss_probability"]*100)==True:
                 message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
-                window.show_message(message, show_fast, self.log_list)
+                ui.show_message(message, show_fast, self.log_list)
                 continue
             # 死んでいる場合は攻撃の対象にならない
             if self.dead[defense_is_friend][defending_monster["name"]]==True:
@@ -423,10 +527,10 @@ class Battle:
             if is_critical==True:
                 if using_skill["type"]=="physics" and is_all==False:
                     message = "会心の一撃！"
-                    window.show_message(message, False, self.log_list)
+                    ui.show_message(message, False, self.log_list)
                 elif using_skill["type"]=="magic" and is_first_attack==True:
                     message = f"{offense_name}の魔力が暴走した！"
-                    window.show_message(message, False, self.log_list)
+                    ui.show_message(message, False, self.log_list)
             # 攻撃側の与ダメージと自傷ダメージを計算する
             damage = self.calc_damage(
                 skill_name,
@@ -447,11 +551,11 @@ class Battle:
             # 全体攻撃のときは表示間隔を短くする
             if damage>0:
                 message = f"{enemy_or_friend}{defending_monster['name']}に{damage}のダメージ！"
-                window.show_message(message, show_fast, self.log_list)
+                ui.show_message(message, show_fast, self.log_list)
             # ダメージを無効化した、または攻撃を回避した
             else:
                 message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
-                window.show_message(message, show_fast, self.log_list)
+                ui.show_message(message, show_fast, self.log_list)
             # 防御側のHPの表示を変更する
             self.update_hp_mp_text(defending_monster["name"], defense_is_friend, "hp", self.hp[defense_is_friend][defending_monster["name"]])
             # 防御側のdeadフラグを更新して、死亡時のメッセージを表示
@@ -475,7 +579,7 @@ class Battle:
             elif offense_is_friend==False:
                 enemy_or_friend = "敵の"
             message = f"{enemy_or_friend}{offense_name}に{self_damage}のダメージ！"
-            window.show_message(message, False, self.log_list)
+            ui.show_message(message, False, self.log_list)
             # 攻撃側のHPの表示を変更する
             self.update_hp_mp_text(offense_name, offense_is_friend, "hp", self.hp[offense_is_friend][offense_name])
             # 攻撃側のdeadフラグを更新して、死亡時のメッセージを表示
@@ -545,11 +649,11 @@ class Battle:
                     if all([self.dead[0][name] for name in self.dead[0]]):
                         message = "バトルに勝利した！"
                         winner = "friend"
-                        window.show_message(message, False, self.log_list)
+                        ui.show_message(message, False, self.log_list)
                     elif all([self.dead[1][name] for name in self.dead[1]]):
                         message = "全滅してしまった..."
                         winner = "enemy"
-                        window.show_message(message, False, self.log_list)
+                        ui.show_message(message, False, self.log_list)
                     sleep(BATTLE_FINISH_DURATION)
                     break_ = True
                     break
@@ -564,30 +668,6 @@ class Battle:
                     pygame.mixer.music.load("music/全滅.mp3")
                 pygame.mixer.music.play()
                 break
-
-    def start_battle(self, enemy: list) -> None:
-        """
-        バトルを行う
-        enemy: 敵パーティー
-        """
-        # 敵パーティーを設定
-        battle.set_enemy(enemy)
-        # 味方パーティーを設定
-        battle.set_friend()
-        # モンスターのパラメータを初期化
-        battle.init_param()
-        # UIを表示
-        ui.draw_battle_ui()
-        # 戦闘BGMを再生
-        self.play_music("music/戦闘.mp3")
-        # メッセージを表示
-        ui.show_message("魔物の群れが現れた！", False, None)
-        # 開始まで間隔を空ける
-        sleep(BATTLE_START_DURATION)
-        # ターンを開始する
-        battle.turns_process()
-        # Tkinterのインスタンスを削除する
-        ui.app.destroy()
 
     def play_music(self, file_name: str) -> None:
         """
@@ -607,19 +687,28 @@ class Battle:
             return True
         return False
 
+    def start_battle(self, enemy: list) -> None:
+        """
+        バトルを行う
+        enemy: 敵パーティー
+        """
+        self.set_friend()
+        self.set_enemy(enemy)
+        # モンスターのパラメータを初期化
+        self.init_param()
+        # モンスターのUIを初期化
+        self.init_ui()
+        # UIを表示
+        self.draw_battle_ui()
+        # 戦闘BGMを再生
+        self.play_music("music/戦闘.mp3")
+        # メッセージを表示
+        ui.show_message("魔物の群れが現れた！", False, None)
+        # 開始まで間隔を空ける
+        sleep(BATTLE_START_DURATION)
+        # ターンを開始する
+        self.turns_process()
+        # Tkinterのインスタンスを削除する
+        ui.app.destroy()
+
 battle = Battle()
-
-"""
-To Do
-
-・ゲルニック将軍を実装する
-・ルカナン
-・クラスごとにファイルを分ける？
-"""
-"""
-メモ
-
-・毎バトル終了後に、味方モンスターのHPとMPが全回復するようにする？
-・パーティー内のモンスターの重複禁止
-・自傷ダメージのある攻撃は、range=singleのみ
-"""
