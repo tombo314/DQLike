@@ -3,15 +3,22 @@ from time import sleep
 from typing import Union
 import pygame
 import tkinter as tk
-import json
 import math
 import numpy as np
 import random as rd
 
+# クラスのインポート
+from json_import import *
+from user_info import user_info
+from screen import canvas
+from window import window
+
 # ライブラリの初期設定
 pygame.init()
 
+# 表示速度を変える
 mode = "debug"
+
 if mode=="release":
     SHOW_DURATION = 1.7
     BATTLE_START_DURATION = 1
@@ -21,127 +28,148 @@ elif mode=="debug":
 BATTLE_FINISH_DURATION = 2
 
 class Battle:
-    def __init__(self, enemy:list, friend: list) -> None:
-        """
-        バトルを行う
-        enemy: 敵のパーティー
-        friend: 味方のパーティー
-        """
-        self.enemy = enemy
-        self.friend = friend
+    """
+    バトルを行う
+    """
+    def __init__(self) -> None:
+        # 敵パーティー
+        self.enemy = None
+        # 味方パーティー
+        self.friend = None
         # バトル時のログ
         self.log_list = []
-        canvas.delete("all")
-        # メッセージボックスを作成
-        window.make_message_box()
-        # パーティー内でモンスターの重複があったら終了
-        is_deplicated = False
-        if len(set(enemy))<=2:
-            is_deplicated = True
-            print("敵パーティー内でモンスターが重複しています。")
-        if len(set(friend))<=2:
-            is_deplicated = True
-            print("味方パーティー内でモンスターが重複しています。")
-        if is_deplicated:
-            exit()
-        # 0がenemyのUI, 1がfriendのUI
-        self.name_box = [
-            {monster[name]["name"]: 0 for name in enemy},
-            {monster[name]["name"]: 0 for name in friend}
-        ]
-        self.name_text = [
-            {monster[name]["name"]: 0 for name in enemy},
-            {monster[name]["name"]: 0 for name in friend}
-        ]
-        self.hp_box = [
-            {monster[name]["name"]: 0 for name in enemy},
-            {monster[name]["name"]: 0 for name in friend}
-        ]
-        self.hp_text = [
-            {monster[name]["name"]: 0 for name in enemy},
-            {monster[name]["name"]: 0 for name in friend}
-        ]
-        self.mp_box = [
-            {monster[name]["name"]: 0 for name in enemy},
-            {monster[name]["name"]: 0 for name in friend}
-        ]
-        self.mp_text = [
-            {monster[name]["name"]: 0 for name in enemy},
-            {monster[name]["name"]: 0 for name in friend}
-        ]
-        # 画像データ
-        self.image = [
-            {monster[name]["name"]: 0 for name in enemy},
-            {monster[name]["name"]: 0 for name in friend},
-        ]
         # モンスタ―とUIの座標の対応関係
         # (monster_name, is_friend): (start_x, start_y)
         self.elem_coord = {}
+        
+    def init_param(self) -> None:
+        """
+        モンスターの情報を初期化する
+        """
+        # 0がenemyのUI, 1がfriendのUI
+        self.name_box = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.name_text = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.hp_box = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.hp_text = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.mp_box = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        self.mp_text = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend}
+        ]
+        # 画像データ
+        self.image = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend},
+        ]
         # バトル時のパラメータ
         self.hp = [
-            {monster[name]["name"]: monster[name]["hp"] for name in enemy},
-            {monster[name]["name"]: monster[name]["hp"] for name in friend}
+            {monster[name]["name"]: monster[name]["hp"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["hp"] for name in self.friend}
         ]
         self.hp_init = [
-            {monster[name]["name"]: monster[name]["hp"] for name in enemy},
-            {monster[name]["name"]: monster[name]["hp"] for name in friend}
+            {monster[name]["name"]: monster[name]["hp"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["hp"] for name in self.friend}
         ]
         self.mp = [
-            {monster[name]["name"]: monster[name]["mp"] for name in enemy},
-            {monster[name]["name"]: monster[name]["mp"] for name in friend}
+            {monster[name]["name"]: monster[name]["mp"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["mp"] for name in self.friend}
         ]
         self.mp_init = [
-            {monster[name]["name"]: monster[name]["mp"] for name in enemy},
-            {monster[name]["name"]: monster[name]["mp"] for name in friend}
+            {monster[name]["name"]: monster[name]["mp"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["mp"] for name in self.friend}
         ]
         self.attack = [
-            {monster[name]["name"]: monster[name]["attack"] for name in enemy},
-            {monster[name]["name"]: monster[name]["attack"] for name in friend}
+            {monster[name]["name"]: monster[name]["attack"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["attack"] for name in self.friend}
         ]
         self.attack_init = [
-            {monster[name]["name"]: monster[name]["attack"] for name in enemy},
-            {monster[name]["name"]: monster[name]["attack"] for name in friend}
+            {monster[name]["name"]: monster[name]["attack"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["attack"] for name in self.friend}
         ]
         self.magic_attack = [
-            {monster[name]["name"]: monster[name]["magic_attack"] for name in enemy},
-            {monster[name]["name"]: monster[name]["magic_attack"] for name in friend}
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in self.friend}
         ]
         self.magic_attack_init = [
-            {monster[name]["name"]: monster[name]["magic_attack"] for name in enemy},
-            {monster[name]["name"]: monster[name]["magic_attack"] for name in friend}
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["magic_attack"] for name in self.friend}
         ]
         self.defense = [
-            {monster[name]["name"]: monster[name]["defense"] for name in enemy},
-            {monster[name]["name"]: monster[name]["defense"] for name in friend}
+            {monster[name]["name"]: monster[name]["defense"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["defense"] for name in self.friend}
         ]
         self.defense_init = [
-            {monster[name]["name"]: monster[name]["defense"] for name in enemy},
-            {monster[name]["name"]: monster[name]["defense"] for name in friend}
+            {monster[name]["name"]: monster[name]["defense"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["defense"] for name in self.friend}
         ]
         self.agility = [
-            {monster[name]["name"]: monster[name]["agility"] for name in enemy},
-            {monster[name]["name"]: monster[name]["agility"] for name in friend}
+            {monster[name]["name"]: monster[name]["agility"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["agility"] for name in self.friend}
         ]
         self.agility_init = [
-            {monster[name]["name"]: monster[name]["agility"] for name in enemy},
-            {monster[name]["name"]: monster[name]["agility"] for name in friend}
+            {monster[name]["name"]: monster[name]["agility"] for name in self.enemy},
+            {monster[name]["name"]: monster[name]["agility"] for name in self.friend}
         ]
         self.dead = [
-            {monster[name]["name"]: False for name in enemy},
-            {monster[name]["name"]: False for name in friend}
+            {monster[name]["name"]: False for name in self.enemy},
+            {monster[name]["name"]: False for name in self.friend}
         ]
         # レベルに合わせてパラメータを変更する
-        for name in enemy:
+        for name in self.enemy:
             self.reflect_level(name, False, monster[name]["level"])
-        for name in friend:
+        for name in self.friend:
             self.reflect_level(name, True, monster[name]["level"])
+    
+    def set_enemy(self, enemy: list) -> None:
+        """
+        敵パーティーを設定する
+        """
+        self.enemy = enemy
+        # パーティー内でモンスターの重複があったら終了
+        if len(set(self.enemy))<=2:
+            print("敵パーティー内でモンスターが重複しています。")
+            exit()
+            
+    def set_friend(self, friend: list) -> None:
+        """
+        味方パーティーを設定する
+        """
+        self.friend = friend
+        # パーティー内でモンスターの重複があったら終了
+        if len(set(self.friend))<=2:
+            print("味方パーティー内でモンスターが重複しています。")
+            exit()
+    
+    def draw_ui(self) -> None:
+        """
+        UIを描画する
+        """
+        # UIを削除
+        canvas.delete("all")
+        # メッセージボックスを作成
+        window.make_message_box()
         # 敵と味方の名前、HP、MPを表示する
-        self.make_party(enemy, "name", False)
-        self.make_party(enemy, "hp", False)
-        self.make_party(enemy, "mp", False)
-        self.make_party(friend, "name", True)
-        self.make_party(friend, "hp", True)
-        self.make_party(friend, "mp", True)
+        self.make_party(self.enemy, "name", False)
+        self.make_party(self.enemy, "hp", False)
+        self.make_party(self.enemy, "mp", False)
+        self.make_party(self.friend, "name", True)
+        self.make_party(self.friend, "hp", True)
+        self.make_party(self.friend, "mp", True)
         # 敵と味方の画像を表示する
         self.plot_image_all()
         canvas.update()
@@ -509,7 +537,7 @@ class Battle:
         for defending_monster in defending_side:
             # skill「ミス」を使用する
             # 攻撃がミスする
-            if skill_name=="ミス" or is_n_percent(using_skill["miss_probability"]*100)==True:
+            if skill_name=="ミス" or self.is_n_percent(using_skill["miss_probability"]*100)==True:
                 message = f"ミス！{enemy_or_friend}{defending_monster['name']}はダメージを受けない！"
                 window.show_message(message, show_fast, self.log_list)
                 continue
@@ -522,7 +550,7 @@ class Battle:
             # ・type=magic range=single
             # ・type=magic range=all
             if is_critical is None:
-                is_critical = is_n_percent(using_skill["critical_probability"]*100)
+                is_critical = self.is_n_percent(using_skill["critical_probability"]*100)
             # 会心の一撃発生時に、メッセージを表示
             if is_critical==True:
                 if using_skill["type"]=="physics" and is_all==False:
@@ -669,46 +697,46 @@ class Battle:
                 pygame.mixer.music.play()
                 break
 
-def start_battle(party_enemy: list[str]) -> None:
-    """
-    バトルを行う
-    party_enemy: 敵のパーティー
-    """
-    play_music("music/戦闘.mp3")
-    battle = Battle(party_enemy, user_info.friend)
-    window.show_message("魔物の群れが現れた！", False, None)
-    sleep(BATTLE_START_DURATION)
-    battle.battle_start_auto()
-    app.destroy()
+    def start_battle(self) -> None:
+        """
+        バトルを行う
+        party_enemy: 敵のパーティー
+        """
+        self.draw_ui()
+        self.play_music("music/戦闘.mp3")
+        battle = Battle(self.enemy, user_info.friend)
+        window.show_message("魔物の群れが現れた！", False, None)
+        sleep(BATTLE_START_DURATION)
+        battle.battle_start_auto()
+        app.destroy()
 
-def play_music(file_name: str) -> None:
-    """
-    音声を再生する
-    file_name: ファイル名
-    """
-    pygame.mixer.music.load(file_name)
-    pygame.mixer.music.play(-1)
+    def play_music(self, file_name: str) -> None:
+        """
+        音声を再生する
+        file_name: ファイル名
+        """
+        pygame.mixer.music.load(file_name)
+        pygame.mixer.music.play(-1)
 
-def is_n_percent(prob: int) -> bool:
-    """
-    probパーセントの確率でTrueを返す
-    prob: Trueが返ってくる確率(0~100)
-    """
-    r = rd.randint(1, 100)
-    if r<=prob:
-        return True
-    return False
+    def is_n_percent(self, prob: int) -> bool:
+        """
+        probパーセントの確率でTrueを返す
+        prob: Trueが返ってくる確率(0~100)
+        """
+        r = rd.randint(1, 100)
+        if r<=prob:
+            return True
+        return False
 
+battle = Battle()
 
-# JSONデータを読み込む
-with open("data/monster.json", encoding="utf-8") as data:
-    monster = json.load(data)
-with open("data/skill.json", encoding="utf-8") as data:
-    skill = json.load(data)
-with open("data/fusion_tree.json", encoding="utf-8") as data:
-    fusion_tree = json.load(data)
-with open("data/user.json", encoding="utf-8") as data:
-    user = json.load(data)
+# # JSONデータを読み込む
+# with open("data/monster.json", encoding="utf-8") as data:
+#     monster = json.load(data)
+# with open("data/skill.json", encoding="utf-8") as data:
+#     skill = json.load(data)
+
+# window = Window()
 
 """
 To Do
