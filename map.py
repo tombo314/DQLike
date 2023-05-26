@@ -6,6 +6,7 @@ from time import sleep
 
 # クラスのインポート
 from battle import battle
+from ui import ui
 
 # ライブラリの初期設定
 pygame.init()
@@ -98,9 +99,17 @@ class Map:
             return True
         return False
 
-    def encounter_judge(self):  
+    def show_monster_box(self) -> None:
+        ui.make_tk_window()
+        ui.show_all_monster()
+        # exitボタンで修了できるようにする
+        if 0:
+            ui.app.destroy()
+
+    def encounter_judge(self, enemy: list):
         """
         エンカウントするか判定する
+        enemy: 敵パーティー
         """
         is_encountered = self.is_n_percent(self.encounter_prob)
         # エンカウントする
@@ -109,7 +118,9 @@ class Map:
             self.encounter_prob = 0
             self.move_cnt = 0
             # バトルを開始する
-            battle.start_battle(["スライム", "ゴースト", "ゲルニック将軍"])
+            # battle.start_battle(enemy)
+            # モンスターボックスを開く
+            self.show_monster_box()
         # エンカウントしない
         else:
             self.in_battle = False
@@ -134,48 +145,44 @@ class Map:
         while True:
             # マップを描画する
             self.draw_map(self.screen)
-            # プレイヤーを描画する
+            # プレイヤーの座標を更新する
             self.screen.blit(self.playerImg, (self.x*self.gs, self.y*self.gs), (0, 0, self.gs, self.gs))
             pygame.display.update()
             # キーの入力間隔を空ける
             if key_inputted==True:
                 sleep(KEY_INPUT_DURATION)
                 key_inputted = False
+            # 敵パーティーを設定
+            # 出てくるモンスターの種類を指定して、その中からランダムに選ぶ
+            enemy = ["スライム", "ゴースト", "ゲルニック将軍"]
             # キーの入力を受け取る
             for event in pygame.event.get():
                 if event.type==QUIT:
                     exit()
+                # Escapeで画面を閉じる
                 elif event.type==KEYDOWN and event.key==K_ESCAPE:
                     exit()
-                # プレイヤーの移動処理
+                # プレイヤーが移動する
+                # 下
                 elif event.type==KEYDOWN and event.key==K_DOWN and self.can_move_to("y+"):
                     self.y += 1
-                    self.encounter_judge()
+                    self.encounter_judge(enemy)
                     key_inputted = True
+                # 左
                 elif event.type==KEYDOWN and event.key==K_LEFT and self.can_move_to("x-"):
                     self.x -= 1
-                    self.encounter_judge()
+                    self.encounter_judge(enemy)
                     key_inputted = True
+                # 右
                 elif event.type==KEYDOWN and event.key==K_RIGHT and self.can_move_to("x+"):
                     self.x += 1
-                    self.encounter_judge()
+                    self.encounter_judge(enemy)
                     key_inputted = True
+                # 上
                 elif event.type==KEYDOWN and event.key==K_UP and self.can_move_to("y-"):
                     self.y -= 1
-                    self.encounter_judge()
+                    self.encounter_judge(enemy)
                     key_inputted = True
                 break
 
 map = Map()
-
-"""
-To Do
-
-・モンスター編成所を作る
-・モンスター配合所を作る
-・ゲーム終了ボタンを作る
-"""
-"""
-メモ
-
-"""
