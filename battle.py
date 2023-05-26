@@ -17,7 +17,7 @@ pygame.init()
 
 class Battle:
     """
-    バトル時のステータスを管理する
+    バトルを行う
     """
     def __init__(self) -> None:
         self.enemy = None
