@@ -46,7 +46,8 @@ class Map:
         self.sabakuImg = self.load_image("images/dirt.png", -1)
         # プレイヤーの位置（単位：マス）
         self.x, self.y = 0, 0
-        self.in_battle = False
+        # Trueでキーを押せない
+        self.key_in_use = False
         # エンカウントする確率
         self.encounter_prob = 0
         # 移動した回数
@@ -102,9 +103,6 @@ class Map:
     def show_monster_box(self) -> None:
         ui.make_tk_window()
         ui.show_all_monster()
-        # exitボタンで終了できるようにする
-        if 0:
-            ui.app.destroy()
 
     def encounter_judge(self, enemy: list):
         """
@@ -113,17 +111,16 @@ class Map:
         """
         is_encountered = self.is_n_percent(self.encounter_prob)
         # エンカウントする
-        if is_encountered==True and self.in_battle==False:
-            self.in_battle = True
+        if is_encountered==True and self.in_use==False:
+            self.in_use = True
             self.encounter_prob = 0
             self.move_cnt = 0
             # バトルを開始する
-            battle.start_battle(enemy)
+            # battle.start_battle(enemy)
             # モンスターボックスを開く
-            # self.show_monster_box()
+            self.show_monster_box()
         # エンカウントしない
         else:
-            self.in_battle = False
             # 確率を調整する
             if self.move_cnt<3:
                 pass
@@ -185,4 +182,4 @@ class Map:
                     key_inputted = True
                 break
 
-map = Map()
+map_ = Map()
