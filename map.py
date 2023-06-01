@@ -102,7 +102,7 @@ class Map:
     def show_monster_box(self) -> None:
         ui.make_tk_window()
         ui.show_all_monster()
-        # exitボタンで修了できるようにする
+        # exitボタンで終了できるようにする
         if 0:
             ui.app.destroy()
 
@@ -118,9 +118,9 @@ class Map:
             self.encounter_prob = 0
             self.move_cnt = 0
             # バトルを開始する
-            # battle.start_battle(enemy)
+            battle.start_battle(enemy)
             # モンスターボックスを開く
-            self.show_monster_box()
+            # self.show_monster_box()
         # エンカウントしない
         else:
             self.in_battle = False
