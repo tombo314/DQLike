@@ -1,12 +1,12 @@
 # クラスをインポート
 from user_info import user_info
-from map import map
+from map import map_
 
 # 味方パーティーを設定
 user_info.set_friend(["スライム", "ドラキー", "ギュメイ将軍"])
 
 # マップを表示
-map.run()
+map_.run()
 
 """
 To Do
