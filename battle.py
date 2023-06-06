@@ -132,13 +132,8 @@ class Battle:
             {monster[name]["name"]: 0 for name in self.enemy},
             {monster[name]["name"]: 0 for name in self.friend}
         ]
-        # 画像データ
-        self.image = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend},
-        ]
     
-    def plot_image_battle(self) -> None:
+    def plot_image_battle_all(self) -> None:
         """
         敵と味方のパーティーの画像を表示
         """
@@ -148,7 +143,7 @@ class Battle:
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 8
-            ui.plot_image(name, f"images/png_resized/{name}_resized.png", width, height)
+            ui.plot_image_battle(name, False, f"images/png_resized/{name}_resized.png", width, height)
             i += 1
         i = 0
         for name in self.friend:
@@ -156,7 +151,7 @@ class Battle:
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = 520
-            ui.plot_image(name, f"images/png_resized/{name}_resized.png", width, height)
+            ui.plot_image_battle(name, True, f"images/png_resized/{name}_resized.png", width, height)
             i += 1
         ui.canvas.update()
     
@@ -178,7 +173,7 @@ class Battle:
         self.make_party(self.friend, "hp", True)
         self.make_party(self.friend, "mp", True)
         # 敵と味方の画像を表示する
-        self.plot_image_battle()
+        self.plot_image_battle_all()
         ui.canvas.update()
     
     def make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
@@ -280,7 +275,7 @@ class Battle:
         name: モンスターの名前
         is_friend: 味方であるかどうか
         """
-        self.image[is_friend][name] = None
+        ui.image_battle[is_friend][name] = None
 
     def reflect_level(self, name: str, is_friend: bool, level: int) -> None:
         """
@@ -700,6 +695,7 @@ class Battle:
         # モンスターのUIを初期化
         self.init_ui()
         # UIを表示
+        ui.set_party(enemy, user_info.friend)
         self.draw_battle_ui()
         # 戦闘BGMを再生
         self.play_music("music/戦闘.mp3")
