@@ -31,8 +31,32 @@ class UI:
         self.text_monster_box = None
         # 前のページに戻るボタン
         self.button_page_back = None
-        # 画像データ
-        self.image = {name: [] for name in monster}
+        # モンスターボックスを閉じるボタン
+        self.close_button = None
+        # 画像データ（モンスターボックス）
+        self.image_monster_box = {name: [] for name in monster}
+        # 敵パーティー
+        self.enemy = None
+        # 味方パーティー
+        self.friend = None
+        # 画像データ（バトル）
+        self.image_battle = None
+    
+    def set_party(self, enemy: list, friend: list) -> None:
+        """
+        バトル時の敵と味方のパーティーを設定する
+        enemy: 敵パーティー
+        friend: 味方パーティー
+        """
+        # 敵パーティー
+        self.enemy = enemy
+        # 味方パーティー
+        self.friend = friend
+        # 画像データ（バトル）
+        self.image_battle = [
+            {monster[name]["name"]: 0 for name in self.enemy},
+            {monster[name]["name"]: 0 for name in self.friend},
+        ]
     
     def plot_image(self, name: str, path: str, x: int, y: int) -> None:
         """
@@ -43,9 +67,23 @@ class UI:
         y: y座標
         """
         # イメージ作成
-        self.image[name].append(tk.PhotoImage(file=path, width=130, height=130))
+        self.image_monster_box[name].append(tk.PhotoImage(file=path, width=130, height=130))
         # キャンバスにイメージを表示
-        self.canvas.create_image(x, y, image=self.image[name][-1], anchor=tk.NW)
+        self.canvas.create_image(x, y, image=self.image_monster_box[name][-1], anchor=tk.NW)
+    
+    def plot_image_battle(self, name: str, is_friend: bool, path: str, x: int, y: int) -> None:
+        """
+        画像を表示
+        name: モンスターの名前
+        is_friend: 味方かどうか
+        path: 画像のパス
+        x: x座標
+        y: y座標
+        """
+        # イメージ作成
+        self.image_battle[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
+        # キャンバスにイメージを表示
+        self.canvas.create_image(x, y, image=self.image_battle[is_friend][name], anchor=tk.NW)
     
     def make_tk_window(self) -> None:
         """
@@ -74,11 +112,14 @@ class UI:
         self.canvas.delete("all")
         if self.button_page_next is not None:
             self.button_page_next.destroy()
+            self.button_page_next = None
         if self.button_page_back is not None:
             self.button_page_back.destroy()
+            self.button_page_back = None
         for i in range(12):
             if self.button_monster[i] is not None:
                 self.button_monster[i].destroy()
+                self.button_monster[i] = None
 
     def make_message_box(self) -> None:
         """
@@ -140,17 +181,43 @@ class UI:
         elif is_fast==False:
             sleep(SHOW_DURATION)
     
+    def make_close_button(self) -> None:
+        # モンスターボックスを閉じるボタンを表示
+        self.close_button = tk.Button(
+            self.app,
+            text="x",
+            font=("", 18),
+            width=2,
+            height=1,
+            bg="#f33",
+            command=self.close_monster_box
+        )
+        left = 0
+        top = 0
+        self.close_button.place(relx=left, rely=top)
+        self.app.bind_all("KeyPress", self.key_listen_to_close_monster_box)
+    
     def show_all_monster(self) -> None:
         """
         自分が持っているモンスターを表示する
         """
         self.page = 0
+        self.make_tk_window()
+        self.make_close_button()
         self.show_monster()
+
+    def key_listen_to_close_monster_box(self, event) -> None:
+        """
+        eキーでモンスターボックスを閉じる
+        """
+        if event.keysym=="e":
+            self.close_monster_box()
 
     def show_monster(self) -> None:
         """
         モンスターを1ページ分表示する
         """
+        # 既存のUIを削除
         self.delete_all_ui()
         # テキストを表示
         start_x, start_y = 425, 20
@@ -168,6 +235,7 @@ class UI:
             text = f"モンスターボックス（{self.page+1}／{page_all}）",
             font = ("", 22)
         )
+        # モンスターの画像を表示
         for i in range(self.page*12, min((self.page+1)*12, len(user["monster"]))):
             name = user["monster"][i]["name"]
             # 画像を表示
@@ -185,12 +253,11 @@ class UI:
                 height=1
             )
             self.button_monster[i%12].pack()
-            relx = 0.2*(i%4)+0.12
-            rely = (0.27*(i//4))%0.81+0.3
-            self.button_monster[i%12].place(relx=relx, rely=rely)
-            # debug
+            left = 0.2*(i%4)+0.12
+            top = (0.27*(i//4))%0.81+0.3
+            self.button_monster[i%12].place(relx=left, rely=top)
+            # # モンスターの詳細情報を表示
             # self.button_monster[i].bind("<1>", self.show_monster_info)
-            i += 1
         # 次のページに進むボタンを表示
         if (self.page+1)*12<len(user["monster"]):
             self.button_page_next = tk.Button(
@@ -198,13 +265,13 @@ class UI:
                 text = ">",
                 font=("", 18),
                 width=2,
-                height=7
+                height=7,
+                command=self.show_next_page
             )
             self.button_page_next.pack()
             self.button_page_next.place(x=1140, y=240)
-            self.button_page_next.bind("<1>", self.show_next_page)
         # 最後のページだったら進むボタンを削除
-        elif (self.page+1)*12>=len(user["monster"]):
+        elif (self.page+1)*12>=len(user["monster"]) and self.button_page_next is not None:
             self.button_page_next.destroy()
         # 前のページに戻るボタンを表示
         if 0<self.page*12<len(user["monster"]):
@@ -213,40 +280,49 @@ class UI:
                 text = "<",
                 font=("", 18),
                 width=2,
-                height=7
+                height=7,
+                command=self.show_previous_page
             )
             self.button_page_back.pack()
             self.button_page_back.place(x=20, y=240)
-            self.button_page_back.bind("<1>", self.show_previous_page)
         # 最初のページだったら進むボタンを削除
         elif self.page==0:
             if self.button_page_back is not None:
                 self.button_page_back.destroy()
-        self.canvas.update()
+                self.button_page_back = None
+        self.app.mainloop()
 
-    def show_next_page(self, event) -> None:
+    def show_next_page(self) -> None:
         """
         次のページを表示する
         """
         self.page += 1
         self.show_monster()
     
-    def show_previous_page(self, event) -> None:
+    def show_previous_page(self) -> None:
         """
         前のページを表示する
         """
         self.page -= 1
         self.show_monster()
 
-    def show_monster_info(self, event) -> None:
+    def show_monster_info(self) -> None:
         """
         自分が持っているモンスターの詳細を表示する
         """
+        self.delete_all_ui()
     
     def show_user_info(self) -> None:
         """
         自分の情報を表示する
         """
         self.delete_all_ui()
+
+    def close_monster_box(self) -> None:
+        """
+        モンスターボックスを閉じる
+        """
+        self.delete_all_ui()
+        self.app.destroy()
 
 ui = UI()
