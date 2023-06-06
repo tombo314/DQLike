@@ -46,8 +46,6 @@ class Map:
         self.sabakuImg = self.load_image("images/dirt.png", -1)
         # プレイヤーの位置（単位：マス）
         self.x, self.y = 0, 0
-        # Trueでキーを押せない
-        self.key_in_use = False
         # エンカウントする確率
         self.encounter_prob = 0
         # 移動した回数
@@ -101,7 +99,9 @@ class Map:
         return False
 
     def show_monster_box(self) -> None:
-        ui.make_tk_window()
+        """
+        モンスターボックスを表示する
+        """
         ui.show_all_monster()
 
     def encounter_judge(self, enemy: list):
@@ -111,14 +111,11 @@ class Map:
         """
         is_encountered = self.is_n_percent(self.encounter_prob)
         # エンカウントする
-        if is_encountered==True and self.in_use==False:
-            self.in_use = True
+        if is_encountered==True:
             self.encounter_prob = 0
             self.move_cnt = 0
             # バトルを開始する
-            # battle.start_battle(enemy)
-            # モンスターボックスを開く
-            self.show_monster_box()
+            battle.start_battle(enemy)
         # エンカウントしない
         else:
             # 確率を調整する
@@ -154,6 +151,7 @@ class Map:
             enemy = ["スライム", "ゴースト", "ゲルニック将軍"]
             # キーの入力を受け取る
             for event in pygame.event.get():
+                # よく分かっていない
                 if event.type==QUIT:
                     exit()
                 # Escapeで画面を閉じる
@@ -161,25 +159,33 @@ class Map:
                     exit()
                 # プレイヤーが移動する
                 # 下
-                elif event.type==KEYDOWN and event.key==K_DOWN and self.can_move_to("y+"):
+                elif event.type==KEYDOWN and (event.key==K_DOWN or event.key==K_s) and self.can_move_to("y+"):
                     self.y += 1
                     self.encounter_judge(enemy)
+                    # キーの入力間隔を空ける
                     key_inputted = True
                 # 左
-                elif event.type==KEYDOWN and event.key==K_LEFT and self.can_move_to("x-"):
+                elif event.type==KEYDOWN and (event.key==K_LEFT or event.key==K_a) and self.can_move_to("x-"):
                     self.x -= 1
                     self.encounter_judge(enemy)
+                    # キーの入力間隔を空ける
                     key_inputted = True
                 # 右
-                elif event.type==KEYDOWN and event.key==K_RIGHT and self.can_move_to("x+"):
+                elif event.type==KEYDOWN and (event.key==K_RIGHT or event.key==K_d) and self.can_move_to("x+"):
                     self.x += 1
                     self.encounter_judge(enemy)
+                    # キーの入力間隔を空ける
                     key_inputted = True
                 # 上
-                elif event.type==KEYDOWN and event.key==K_UP and self.can_move_to("y-"):
+                elif event.type==KEYDOWN and (event.key==K_UP or event.key==K_w) and self.can_move_to("y-"):
                     self.y -= 1
                     self.encounter_judge(enemy)
+                    # キーの入力間隔を空ける
                     key_inputted = True
+                # モンスターボックスを開く
+                elif event.type==KEYDOWN and event.key==K_e:
+                    # モンスターボックスを開く
+                    self.show_monster_box()
                 break
 
 map_ = Map()
