@@ -160,7 +160,7 @@ class Battle:
         UIを描画する
         """
         # Tkinterのインスタンスを生成
-        ui.make_tk_window()
+        ui.make_tk_window("バトル")
         # UIを削除
         ui.canvas.delete("all")
         # メッセージボックスを作成

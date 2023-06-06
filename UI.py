@@ -85,12 +85,14 @@ class UI:
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_battle[is_friend][name], anchor=tk.NW)
     
-    def make_tk_window(self) -> None:
+    def make_tk_window(self, window_title: str) -> None:
         """
         Tkinterの画面を描画する
+        window_title: 画面の左上に表示するタイトル
         """
         self.app = tk.Tk()
-        self.app.title("DQLike")
+        self.app.focus_force()
+        self.app.title(window_title)
         width = 1200
         height = 620
         left = 60
@@ -189,29 +191,33 @@ class UI:
             font=("", 18),
             width=2,
             height=1,
-            bg="#f33",
+            bg="#f44",
             command=self.close_monster_box
         )
         left = 0
         top = 0
         self.close_button.place(relx=left, rely=top)
-        self.app.bind_all("KeyPress", self.key_listen_to_close_monster_box)
+        self.app.bind("<KeyPress>", self.key_listen_to_close_monster_box)
     
-    def show_all_monster(self) -> None:
+    def make_edit_button(self) -> None:
         """
-        自分が持っているモンスターを表示する
         """
-        self.page = 0
-        self.make_tk_window()
-        self.make_close_button()
-        self.show_monster()
-
+    
     def key_listen_to_close_monster_box(self, event) -> None:
         """
         eキーでモンスターボックスを閉じる
         """
         if event.keysym=="e":
             self.close_monster_box()
+    
+    def show_all_monster(self) -> None:
+        """
+        自分が持っているモンスターを表示する
+        """
+        self.page = 0
+        self.make_tk_window("モンスターボックス")
+        self.make_close_button()
+        self.show_monster()
 
     def show_monster(self) -> None:
         """
