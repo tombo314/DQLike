@@ -8,8 +8,6 @@ class UserInfo:
     def __init__(self) -> None:
         # 味方パーティー
         self.friend = [None]*3
-        # モンスター一覧のページ数
-        self.page = 0
 
     def set_friend(self, friend: list[str]) -> None:
         """
