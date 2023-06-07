@@ -66,8 +66,8 @@ class UI:
         self.friend = friend
         # 画像データ（バトル）
         self.image_battle = [
-            {monster[name]["name"]: 0 for name in self.enemy},
-            {monster[name]["name"]: 0 for name in self.friend},
+            {json_data.monster[name]["name"]: 0 for name in self.enemy},
+            {json_data.monster[name]["name"]: 0 for name in self.friend},
         ]
     
     def plot_image(self, name: str, path: str, x: int, y: int) -> None:
