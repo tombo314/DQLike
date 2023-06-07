@@ -4,7 +4,6 @@ json_data.select_save_data()
 
 # クラスをインポート
 from user_info import user_info
-from ui import ui
 from map import map_
 
 # 味方パーティーを設定
