@@ -1,5 +1,10 @@
+# セーブデータをロード
+from json_data import json_data
+json_data.select_save_data()
+
 # クラスをインポート
 from user_info import user_info
+from ui import ui
 from map import map_
 
 # 味方パーティーを設定
@@ -21,6 +26,8 @@ To Do
 ・エンカウントする敵をランダムにする
 ・倒した敵が一定の確率で仲間になるようにする
 ・ぴぽや倉庫から、モンスター配合所のような写真を持ってくる
+
+・セーブデータを分割するにあたって、各ファイルのスコープやセーブデータ選択のタイミング、循環参照を回避することなどが上手くいっていないので、それらを改善する
 """
 """
 メモ
