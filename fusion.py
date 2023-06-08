@@ -1,5 +1,5 @@
 # クラスのインポート
-from json_import import *
+from json_data import json_data
 
 class Fusion:
     """
@@ -20,6 +20,6 @@ class Fusion:
         モンスターの配合候補を返す
         monster: 親の片方となるモンスター
         """
-        return fusion_tree[monster]
+        return json_data.fusion_tree[monster]
 
 fusion = Fusion()
