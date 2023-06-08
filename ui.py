@@ -5,6 +5,7 @@ import tkinter as tk
 # クラスをインポート
 from config import *
 from json_data import json_data
+from user_info import user_info
 
 class UI:
     """
@@ -46,13 +47,15 @@ class UI:
         # パーティーの枠
         self.party_frame = [None]*3
         # 「パーティー編成」or「モンスター情報」の文字
-        self.text_party_edit_or_monster_info = "パーティー編成へ"
+        self.text_party_edit_or_monster_info = None
         # 「info」でモンスター情報モード、「edit」でパーティー編成モード
         self.monster_box_mode = None
         # モンスターボックスのモードの文字
         self.text_monster_box_mode = None
         # モンスターボックスのページ数
         self.page = None
+        # 一時的な味方パーティー
+        self.friend_tmp = [None]*3
     
     def set_party(self, enemy: list, friend: list) -> None:
         """
@@ -236,11 +239,13 @@ class UI:
         # モンスターボックスのモードを変更
         if self.monster_box_mode=="info":
             self.monster_box_mode = "edit"
+            # 味方パーティーを取得する
+            self.friend_tmp = user_info.friend
         elif self.monster_box_mode=="edit":
             self.monster_box_mode = "info"
         # モンスターボックスのモードの文字を削除
         self.canvas.delete(self.text_monster_box_mode)
-        # モンスターボックスのモードを更新
+        # モンスターボックスモードの文字を表示
         left = 200
         top = 120
         if self.monster_box_mode=="info":
@@ -431,16 +436,16 @@ class UI:
         if self.monster_box_mode=="info":
             self.show_monster_info()
         elif self.monster_box_mode=="edit":
-            self.monster_in_party_switch()
+            self.add_or_remove_monster()
     
     def show_monster_info(self) -> None:
         """
         モンスターの詳細情報を表示する
         """
     
-    def monster_in_party_switch(self) -> None:
+    def add_or_remove_monster(self) -> None:
         """
-        モンスターがパーティーに含まれているかどうかの状態を変更する
+        モンスターをパーティーに追加したり、パーティーから削除したりする
         """
     
     def show_user_info(self) -> None:
