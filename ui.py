@@ -54,10 +54,8 @@ class UI:
         self.page = None
         # パーティーの枠
         self.party_frame = [None]*3
-        # 一時的なパーティー
-        self.friend_tmp = [None]*3
         # パーティーの画像
-        self.image_friend_tmp = [None]*3
+        self.image_friend = [None]*3
     
     def set_party(self, enemy: list, friend: list) -> None:
         """
@@ -102,19 +100,20 @@ class UI:
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_battle[is_friend][name], anchor=tk.NW)
     
-    def plot_image_party(self, name: str, path: str, idx: int) -> None:
+    def plot_image_party(self, name: str, idx: int) -> None:
         """
         モンスターの画像を表示（パーティー）
         name: モンスターの名前
         path: 画像のパス
         index: 左から何番目であるか（1~3）の値
         """
-        x = idx*150+400
-        y = 200
+        x = idx*162+405
+        y = 37
+        path = f"images/png_resized/{name}_resized.png"
         # イメージを作成
-        self.image_friend_tmp[idx] = tk.PhotoImage(file=path, width=130, height=130)
+        self.image_friend[idx] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
-        self.canvas.create_image(x, y, image=self.image_friend_tmp[idx], anchor=tk.NW)
+        self.canvas.create_image(x, y, image=self.image_friend[idx], anchor=tk.NW)
     
     def make_tk_window(self, window_title: str) -> None:
         """
@@ -256,8 +255,6 @@ class UI:
         # モンスター情報
         if self.monster_box_mode=="info":
             self.monster_box_mode = "edit"
-            # 味方パーティーを取得する
-            self.friend_tmp = user_info.friend
         # パーティー編成
         elif self.monster_box_mode=="edit":
             self.monster_box_mode = "info"
@@ -328,14 +325,26 @@ class UI:
         elif event.keysym=="Left" and self.page>0:
             self.show_previous_page()
     
+    def show_party_image(self) -> None:
+        """
+        パーティーの画像を表示する
+        """
+        for idx, name in enumerate(user_info.friend):
+            self.plot_image_party(name, idx)
+    
     def show_all_monster(self) -> None:
         """
         自分が持っているモンスターを表示する
         """
+        # モンスターボックスのページ数
         self.page = 0
+        # Tkinterのウィンドウを表示
         self.make_tk_window("モンスターボックス")
+        # 画面を閉じるボタンを表示
         self.make_close_button()
+        # パーティー編成モードとモンスター情報モードを切り替えるボタンを表示
         self.make_party_edit_button()
+        # モンスターボックスの1ページ目を表示
         self.show_monster()
 
     def show_monster(self) -> None:
@@ -363,7 +372,7 @@ class UI:
         )
         # モンスターボックスのモードの文字を削除
         self.canvas.delete(self.text_monster_box_mode)
-        # モンスターボックスのモードを更新
+        # モンスターボックスのモードの文字を表示
         left = 200
         top = 120
         if self.monster_box_mode=="info":
@@ -377,6 +386,8 @@ class UI:
         )
         # パーティーの枠を表示
         self.make_party_edit_frame()
+        # パーティーの画像を表示
+        self.show_party_image()
         # モンスターの画像と詳細ボタンを表示
         for i in range(self.page*12, min((self.page+1)*12, len(json_data.save_data["monster"]))):
             name = json_data.save_data["monster"][i]["name"]
@@ -465,8 +476,6 @@ class UI:
         """
         モンスターをパーティーに追加したり、パーティーから削除したりする
         """
-        for name in self.friend_tmp:
-            pass
     
     def show_user_info(self) -> None:
         """
