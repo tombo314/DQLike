@@ -332,7 +332,7 @@ class UI:
         for idx, name in enumerate(user_info.friend):
             self.plot_image_party(name, idx)
     
-    def show_all_monster(self) -> None:
+    def open_monster_box(self) -> None:
         """
         自分が持っているモンスターを表示する
         """
