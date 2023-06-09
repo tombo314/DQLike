@@ -44,8 +44,6 @@ class UI:
         self.friend = None
         # 画像データ（バトル）
         self.image_battle = None
-        # パーティーの枠
-        self.party_frame = [None]*3
         # 「パーティー編成」or「モンスター情報」の文字
         self.text_party_edit_or_monster_info = None
         # 「info」でモンスター情報モード、「edit」でパーティー編成モード
@@ -54,8 +52,12 @@ class UI:
         self.text_monster_box_mode = None
         # モンスターボックスのページ数
         self.page = None
-        # 一時的な味方パーティー
+        # パーティーの枠
+        self.party_frame = [None]*3
+        # 一時的なパーティー
         self.friend_tmp = [None]*3
+        # パーティーの画像
+        self.image_friend_tmp = [None]*3
     
     def set_party(self, enemy: list, friend: list) -> None:
         """
@@ -73,32 +75,46 @@ class UI:
             {json_data.monster[name]["name"]: 0 for name in self.friend},
         ]
     
-    def plot_image(self, name: str, path: str, x: int, y: int) -> None:
+    def plot_image_monster_box(self, name: str, path: str, x: int, y: int) -> None:
         """
-        画像を表示
+        モンスターの画像を表示（モンスターボックス）
         name: モンスターの名前
         path: 画像のパス
         x: x座標
         y: y座標
         """
-        # イメージ作成
+        # イメージを作成
         self.image_monster_box[name].append(tk.PhotoImage(file=path, width=130, height=130))
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_monster_box[name][-1], anchor=tk.NW)
     
     def plot_image_battle(self, name: str, is_friend: bool, path: str, x: int, y: int) -> None:
         """
-        画像を表示
+        モンスターの画像を表示（バトル）
         name: モンスターの名前
         is_friend: 味方かどうか
         path: 画像のパス
         x: x座標
         y: y座標
         """
-        # イメージ作成
+        # イメージを作成
         self.image_battle[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_battle[is_friend][name], anchor=tk.NW)
+    
+    def plot_image_party(self, name: str, path: str, idx: int) -> None:
+        """
+        モンスターの画像を表示（パーティー）
+        name: モンスターの名前
+        path: 画像のパス
+        index: 左から何番目であるか（1~3）の値
+        """
+        x = idx*150+400
+        y = 200
+        # イメージを作成
+        self.image_friend_tmp[idx] = tk.PhotoImage(file=path, width=130, height=130)
+        # キャンバスにイメージを表示
+        self.canvas.create_image(x, y, image=self.image_friend_tmp[idx], anchor=tk.NW)
     
     def make_tk_window(self, window_title: str) -> None:
         """
@@ -237,10 +253,12 @@ class UI:
         top = 50
         self.party_edit_button.place(x=left, y=top)
         # モンスターボックスのモードを変更
+        # モンスター情報
         if self.monster_box_mode=="info":
             self.monster_box_mode = "edit"
             # 味方パーティーを取得する
             self.friend_tmp = user_info.friend
+        # パーティー編成
         elif self.monster_box_mode=="edit":
             self.monster_box_mode = "info"
         # モンスターボックスのモードの文字を削除
@@ -367,7 +385,7 @@ class UI:
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = (150*(i//4)+140)%450+10
-            self.plot_image(name, f"images/png_resized/{name}_resized.png", width, height)
+            self.plot_image_monster_box(name, f"images/png_resized/{name}_resized.png", width, height)
             # モンスターの名前が書かれたボタンを表示
             self.button_monster[i%12] = tk.Button(
                 self.app,
@@ -447,6 +465,8 @@ class UI:
         """
         モンスターをパーティーに追加したり、パーティーから削除したりする
         """
+        for name in self.friend_tmp:
+            pass
     
     def show_user_info(self) -> None:
         """
