@@ -102,7 +102,7 @@ class Map:
         """
         モンスターボックスを表示する
         """
-        ui.show_all_monster()
+        ui.open_monster_box()
 
     def encounter_judge(self, enemy: list):
         """
