@@ -57,7 +57,9 @@ class UI:
         # パーティーの画像
         self.image_friend = [None]*3
         # 仮の味方パーティー
-        self.friend_tmp = [None]*3
+        self.friend_tmp = []
+        # モンスターの名前のボタンのNORMAL・DISABLEDを持つ
+        self.monster_button_state = [None]*len(json_data.save_data["monster"])
     
     def set_party(self, enemy: list, friend: list) -> None:
         """
@@ -240,6 +242,10 @@ class UI:
         # user_info.friend = self.friend_tmp.copy()
         # 「パーティー編成へ」のボタンを表示
         self.make_party_edit_button()
+        # モンスターの名前のボタンの状態を初期化
+        for i in range(len(json_data.save_data["monster"])):
+            self.monster_button_state[i] = tk.NORMAL
+        self.show_monster()
     
     def update_text_monster_box_mode(self) -> None:
         """
@@ -356,6 +362,9 @@ class UI:
         """
         # モンスターボックスのページ数
         self.page = 0
+        # モンスターの名前のボタンの状態を初期化
+        for i in range(len(json_data.save_data["monster"])):
+            self.monster_button_state[i] = tk.NORMAL
         # モンスターボックスのモードを設定
         self.monster_box_mode = "info"
         # Tkinterのウィンドウを表示
@@ -415,7 +424,8 @@ class UI:
                 font=("", 18),
                 width=16,
                 height=1,
-                bg=color
+                bg=color,
+                state=self.monster_button_state[i]
             )
             self.button_monster[i%12].pack()
             left = 0.21*(i%4)+0.1
@@ -472,18 +482,27 @@ class UI:
         self.page -= 1
         self.show_monster()
 
-    def get_monster_info(self, event) -> None:
+    def get_monster_id(self, event) -> int:
+        """
+        押したボタンからモンスターのidを得る
+        """
+        return int(event.widget["bg"][6], 16)+1+12*self.page
+
+    def get_monster_info(self, event) -> dict:
         """
         押したボタンからモンスターの情報を得る
         event: ボタンを押したときのeventインスタンス
         """
-        return json_data.save_data["monster"][str(int(event.widget["bg"][6], 16)+1)]
+        return json_data.save_data["monster"][str(int(event.widget["bg"][6], 16)+1+12*self.page)]
 
     def press_monster_name_button(self, event) -> None:
         """
         モンスターの名前が書かれたボタンを押す
         """
-        print(self.get_monster_info(event))
+        
+        # debug
+        mons = self.get_monster_info(event)
+
         # モンスター情報モードのとき
         if self.monster_box_mode=="info":
             # モンスターの詳細情報を表示
@@ -491,22 +510,31 @@ class UI:
         # パーティー編集モードのとき
         elif self.monster_box_mode=="edit":
             # そのモンスターをパーティーに追加するか、パーティーから削除する
-            self.add_or_remove_monster()
-        # ボタンの有効・無効を切り替える
-        if event.widget["state"]==tk.NORMAL:
-            event.widget["state"] = tk.DISABLED
-        elif event.widget["state"]==tk.DISABLED:
-            event.widget["state"] = tk.NORMAL
+            if len(self.friend_tmp)<=2:
+                self.add_or_remove_monster(mons, "add")
+            # ボタンの有効・無効を切り替える
+            if event.widget["state"]==tk.NORMAL:
+                event.widget["state"] = tk.DISABLED
+                self.monster_button_state[self.get_monster_id(event)-1] = tk.DISABLED
+            elif event.widget["state"]==tk.DISABLED:
+                event.widget["state"] = tk.NORMAL
+                self.monster_button_state[self.get_monster_id(event)-1] = tk.NORMAL
     
     def show_monster_info(self) -> None:
         """
         モンスターの詳細情報を表示する
         """
     
-    def add_or_remove_monster(self) -> None:
+    def add_or_remove_monster(self, mons: dict, add_or_remove: str) -> None:
         """
         モンスターをパーティーに追加したり、パーティーから削除したりする
+        mons: モンスターの情報
+        add_or_remove: 「add」「remove」のいずれか
         """
+        # if add_or_remove=="add":
+        #     self.friend_tmp.append(mons)
+        # elif add_or_remove=="remove":
+        #     self.friend_tmp.remove(mons)
     
     def show_user_info(self) -> None:
         """
