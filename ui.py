@@ -6,6 +6,7 @@ import tkinter as tk
 from config import *
 from json_data import json_data
 from user_info import user_info
+from numpy import base_repr
 
 class UI:
     """
@@ -131,6 +132,7 @@ class UI:
         self.app.geometry(f"{width}x{height}+{left}+{top}")
         # 画面のサイズ変更を禁止
         self.app.resizable(0, 0)
+        # canvasを描画
         self.canvas = tk.Canvas(
             self.app,
             width = width,
@@ -397,25 +399,30 @@ class UI:
         self.show_party_image()
         # モンスターの画像と詳細ボタンを表示
         for i in range(self.page*12, min((self.page+1)*12, len(json_data.save_data["monster"]))):
-            name = json_data.save_data["monster"][i]["name"]
+            name = json_data.save_data["monster"][str(i+1)]["name"]
             # 画像を表示
             width = 247*(i%4)+190
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = (150*(i//4)+140)%450+10
             self.plot_image_monster_box(name, f"images/png_resized/{name}_resized.png", width, height)
-            # モンスターの名前が書かれたボタンを表示
+            # モンスターの名前のボタンを表示
+            # ボタンの色によってボタンを区別する
+            color = f"#eeeee{base_repr(i%12, 16)}"
             self.button_monster[i%12] = tk.Button(
                 self.app,
-                text=f"{name} Lv.{json_data.save_data['monster'][i]['level']}",
+                text=f"{name} Lv.{json_data.save_data['monster'][str(i+1)]['level']}",
                 font=("", 18),
                 width=16,
-                height=1
+                height=1,
+                bg=color
             )
             self.button_monster[i%12].pack()
             left = 0.21*(i%4)+0.1
             top = (0.24*(i//4))%0.72+0.4
+            # ボタンを配置
             self.button_monster[i%12].place(relx=left, rely=top)
+            # ボタンを押したときの処理
             self.button_monster[i%12].bind("<ButtonPress>", self.press_monster_name_button)
         # 次のページに進むボタンを表示
         if (self.page+1)*12<len(json_data.save_data["monster"]):
@@ -465,10 +472,18 @@ class UI:
         self.page -= 1
         self.show_monster()
 
+    def get_monster_info(self, event) -> None:
+        """
+        押したボタンからモンスターの情報を得る
+        event: ボタンを押したときのeventインスタンス
+        """
+        return json_data.save_data["monster"][str(int(event.widget["bg"][6], 16)+1)]
+
     def press_monster_name_button(self, event) -> None:
         """
         モンスターの名前が書かれたボタンを押す
         """
+        print(self.get_monster_info(event))
         # モンスター情報モードのとき
         if self.monster_box_mode=="info":
             # モンスターの詳細情報を表示
