@@ -27,13 +27,16 @@ class Battle:
         # モンスタ―とUIの座標の対応関係
         self.elem_coord = {}
     
-    def set_enemy(self, enemy: list) -> None:
+    def set_enemy(self, enemy: list[dict]) -> None:
         """
         敵パーティーを設定する
         """
-        self.enemy = enemy
+        self.enemy = enemy.copy()
         # パーティー内でモンスターの重複があったら強制終了
-        if len(set(self.enemy))<=2:
+        a = []
+        for mons in self.enemy:
+            a.append(mons["name"])
+        if len(set(a))<=2:
             print("敵パーティー内でモンスターが重複しています。")
             exit()
 
@@ -49,88 +52,89 @@ class Battle:
         """
         # バトル時のパラメータ
         self.hp = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["hp"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["hp"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["hp"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["hp"] for mons in self.friend}
         ]
         self.hp_init = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["hp"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["hp"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["hp"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["hp"] for mons in self.friend}
         ]
         self.mp = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["mp"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["mp"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["mp"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["mp"] for mons in self.friend}
         ]
         self.mp_init = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["mp"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["mp"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["mp"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["mp"] for mons in self.friend}
         ]
         self.attack = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["attack"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["attack"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["attack"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["attack"] for mons in self.friend}
         ]
         self.attack_init = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["attack"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["attack"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["attack"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["attack"] for mons in self.friend}
         ]
         self.magic_attack = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["magic_attack"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["magic_attack"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["magic_attack"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["magic_attack"] for mons in self.friend}
         ]
         self.magic_attack_init = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["magic_attack"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["magic_attack"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["magic_attack"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["magic_attack"] for mons in self.friend}
         ]
         self.defense = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["defense"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["defense"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["defense"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["defense"] for mons in self.friend}
         ]
         self.defense_init = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["defense"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["defense"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["defense"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["defense"] for mons in self.friend}
         ]
         self.agility = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["agility"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["agility"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["agility"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["agility"] for mons in self.friend}
         ]
         self.agility_init = [
-            {json_data.monster[name]["name"]: json_data.monster[name]["agility"] for name in self.enemy},
-            {json_data.monster[name]["name"]: json_data.monster[name]["agility"] for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["agility"] for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: json_data.monster[mons["name"]]["agility"] for mons in self.friend}
         ]
         self.dead = [
-            {json_data.monster[name]["name"]: False for name in self.enemy},
-            {json_data.monster[name]["name"]: False for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: False for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: False for mons in self.friend}
         ]
+        # debug
         # レベルに合わせてパラメータを変更する
-        for name in self.enemy:
-            self.reflect_level(name, False,json_data.monster[name]["level"])
-        for name in self.friend:
-            self.reflect_level(name, True,json_data.monster[name]["level"])
+        # for name in self.enemy:
+        #     self.reflect_level(name, False,json_data.monster[name]["level"])
+        # for name in self.friend:
+        #     self.reflect_level(name, True,json_data.monster[name]["level"])
     
     def init_ui(self) -> None:
         # 0がenemyのUI, 1がfriendのUI
         self.name_box = [
-            {json_data.monster[name]["name"]: 0 for name in self.enemy},
-            {json_data.monster[name]["name"]: 0 for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend}
         ]
         self.name_text = [
-            {json_data.monster[name]["name"]: 0 for name in self.enemy},
-            {json_data.monster[name]["name"]: 0 for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend}
         ]
         self.hp_box = [
-            {json_data.monster[name]["name"]: 0 for name in self.enemy},
-            {json_data.monster[name]["name"]: 0 for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend}
         ]
         self.hp_text = [
-            {json_data.monster[name]["name"]: 0 for name in self.enemy},
-            {json_data.monster[name]["name"]: 0 for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend}
         ]
         self.mp_box = [
-            {json_data.monster[name]["name"]: 0 for name in self.enemy},
-            {json_data.monster[name]["name"]: 0 for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend}
         ]
         self.mp_text = [
-            {json_data.monster[name]["name"]: 0 for name in self.enemy},
-            {json_data.monster[name]["name"]: 0 for name in self.friend}
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend}
         ]
     
     def plot_image_battle_all(self) -> None:
@@ -138,20 +142,20 @@ class Battle:
         敵と味方のパーティーの画像を表示
         """
         i = 0
-        for name in self.enemy:
+        for mons in self.enemy:
             width = 212*i+175
-            if name=="ドラキー" or name=="ボストロール":
+            if mons["name"]=="ドラキー" or mons["name"]=="ボストロール":
                 width -= 13
             height = 8
-            ui.plot_image_battle(name, False, f"images/png_resized/{name}_resized.png", width, height)
+            ui.plot_image_battle(mons["name"], False, f"images/png_resized/{mons['name']}_resized.png", width, height)
             i += 1
         i = 0
-        for name in self.friend:
+        for mons in self.friend:
             width = 222*i+170
-            if name=="ドラキー" or name=="ボストロール":
+            if mons["name"]=="ドラキー" or mons["name"]=="ボストロール":
                 width -= 13
             height = 520
-            ui.plot_image_battle(name, True, f"images/png_resized/{name}_resized.png", width, height)
+            ui.plot_image_battle(mons["name"], True, f"images/png_resized/{mons['name']}_resized.png", width, height)
             i += 1
         ui.canvas.update()
     
@@ -176,7 +180,7 @@ class Battle:
         self.plot_image_battle_all()
         ui.canvas.update()
     
-    def make_party(self, party: list[str], type_: str, is_friend: bool) -> None:
+    def make_party(self, party: list[dict], type_: str, is_friend: bool) -> None:
         """
         UIを生成する
         party: 敵か味方のモンスター3体
@@ -197,10 +201,10 @@ class Battle:
             color = "#f33"
         i = 0
         # パーティーのモンスターのUIを表示する
-        for name in party:
+        for mons in party:
             start_x, start_y = 220*i+140, y
             # モンスター名とモンスターの敵・味方の区分と、UIの座標を対応付ける
-            self.elem_coord.update({(name, type_, is_friend): (start_x, start_y)})
+            self.elem_coord.update({(mons["name"], type_, is_friend): (start_x, start_y)})
             width, height = 160, 40
             end_x, end_y = start_x+width, start_y+height
             # 四角形を表示する
@@ -211,29 +215,29 @@ class Battle:
                 outline = color
             )
             if type_=="name":
-                self.name_box[is_friend][name] = elem
+                self.name_box[is_friend][mons["name"]] = elem
             elif type_=="hp":
-                self.hp_box[is_friend][name] = elem
+                self.hp_box[is_friend][mons["name"]] = elem
             elif type_=="mp":
-                self.mp_box[is_friend][name] = elem
+                self.mp_box[is_friend][mons["name"]] = elem
             # テキストを表示する
             if type_=="name":
-                content = name
+                content = mons["name"]
             elif type_=="hp":
-                content = f"{self.hp[is_friend][name]} / {self.hp_init[is_friend][name]}"
+                content = f"{self.hp[is_friend][mons['name']]} / {self.hp_init[is_friend][mons['name']]}"
             elif type_=="mp":
-                content = f"{self.mp[is_friend][name]} / {self.mp_init[is_friend][name]}"
+                content = f"{self.mp[is_friend][mons['name']]} / {self.mp_init[is_friend][mons['name']]}"
             elem = ui.canvas.create_text(
                 (start_x+end_x)/2, (start_y+end_y)/2,
                 text = content,
                 font = ("", 12)
             )
             if type_=="name":
-                self.name_text[is_friend][name] = elem
+                self.name_text[is_friend][mons["name"]] = elem
             elif type_=="hp":
-                self.hp_text[is_friend][name] = elem
+                self.hp_text[is_friend][mons["name"]] = elem
             elif type_=="mp":
-                self.mp_text[is_friend][name] = elem
+                self.mp_text[is_friend][mons["name"]] = elem
             i += 1
         ui.canvas.update()
 
@@ -373,13 +377,15 @@ class Battle:
         mons = None
         if enemy_or_friend=="enemy":
             # 死んでいたら攻撃の対象にならない
+            mons_name = [mons["name"] for mons in self.enemy]
             while mons==None or self.dead[0][mons]==True:
-                mons = rd.choice(self.enemy)
+                mons = rd.choice(mons_name)
             return mons
         elif enemy_or_friend=="friend":
             # 死んでいたら攻撃の対象にならない
+            mons_name = [mons["name"] for mons in self.friend]
             while mons==None or self.dead[1][mons]==True:
-                mons = rd.choice(self.friend)
+                mons = rd.choice(mons_name)
             return mons
 
     def calc_damage(self, skill_name: str, attack: int, magic_attack: int, defense: int, attribute_damage_rate: dict, is_critical: bool) -> int:
@@ -456,11 +462,14 @@ class Battle:
         elif offense_is_friend==False:
             defense_is_friend = True
         # 攻撃を受ける相手のモンスターを設定
-        if is_all==True: 
+        if is_all==True:
+            defending_side = []
             if offense_is_friend==True:
-                defending_side = self.enemy.copy()
+                for mons in self.enemy:
+                    defending_side.append(mons["name"])
             elif offense_is_friend==False:
-                defending_side = self.friend.copy()
+                for mons in self.friend:
+                    defending_side.append(mons["name"])
         elif is_all==False:
             defending_side = [defense_name]
         # 攻撃側の情報を設定
@@ -581,7 +590,7 @@ class Battle:
                 self.kill_monster(offense_name, offense_is_friend)
         # 両方のチームで1体以上のモンスターが生きている場合、バトルを継続する
         # Falseで終了
-        if any(self.dead[0][name]==False for name in self.enemy) and any(self.dead[1][name]==False for name in self.friend):
+        if any(self.dead[0][mons["name"]]==False for mons in self.enemy) and any(self.dead[1][mons["name"]]==False for mons in self.friend):
             return True
         return False
     
@@ -593,11 +602,11 @@ class Battle:
         while True:
             # 各ターンの処理
             order = []
-            for name in self.enemy:
+            for mons in self.enemy:
                 r = rd.uniform(0.8, 1.2)
-                order.append([r*json_data.monster[name]["agility"],json_data.monster[name]["name"], "enemy"])
-            for name in self.friend:
-                order.append([r*json_data.monster[name]["agility"],json_data.monster[name]["name"], "friend"])
+                order.append([r*json_data.monster[mons["name"]]["agility"],json_data.monster[mons["name"]]["name"], "enemy"])
+            for mons in self.friend:
+                order.append([r*json_data.monster[mons["name"]]["agility"],json_data.monster[mons["name"]]["name"], "friend"])
             order.sort(reverse=True)
             for mons in order:
                 agility, name, offense_enemy_or_friend = mons
@@ -681,7 +690,7 @@ class Battle:
             return True
         return False
 
-    def start_battle(self, enemy: list) -> None:
+    def start_battle(self, enemy: list[dict]) -> None:
         """
         バトルを行う
         enemy: 敵パーティー

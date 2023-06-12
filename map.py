@@ -104,7 +104,7 @@ class Map:
         """
         ui.open_monster_box()
 
-    def encounter_judge(self, enemy: list):
+    def encounter_judge(self, enemy: list[dict]):
         """
         エンカウントするか判定する
         enemy: 敵パーティー
@@ -148,7 +148,11 @@ class Map:
                 key_inputted = False
             # 敵パーティーを設定
             # 出てくるモンスターの種類を指定して、その中からランダムに選ぶ
-            enemy = ["スライム", "ゴースト", "ゲルニック将軍"]
+            enemy = [
+                {"name": "スライム", "level": 1, "gear": None},
+                {"name": "ゴースト", "level": 1, "gear": None},
+                {"name": "ゲルニック将軍", "level": 1, "gear": None}
+            ]
             # キーの入力を受け取る
             for event in pygame.event.get():
                 # よく分かっていない

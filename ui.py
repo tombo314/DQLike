@@ -71,8 +71,8 @@ class UI:
         self.friend = friend
         # 画像データ（バトル）
         self.image_battle = [
-            {json_data.monster[name]["name"]: 0 for name in self.enemy},
-            {json_data.monster[name]["name"]: 0 for name in self.friend},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend},
         ]
     
     def plot_image_monster_box(self, name: str, path: str, x: int, y: int) -> None:
@@ -347,8 +347,8 @@ class UI:
         """
         パーティーの画像を表示する
         """
-        for idx, name in enumerate(user_info.friend):
-            self.plot_image_party(name, idx)
+        for idx, mons in enumerate(user_info.friend):
+            self.plot_image_party(mons["name"], idx)
     
     def open_monster_box(self) -> None:
         """
