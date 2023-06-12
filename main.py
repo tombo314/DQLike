@@ -8,9 +8,9 @@ from map import map_
 
 # 味方パーティーを設定
 user_info.set_friend([
-    {"name": "スライム", "level": 1, "gear": None},
-    {"name": "ゴーレム", "level": 1, "gear": None},
-    {"name": "ギュメイ将軍", "level": 1, "gear": None}
+    {"id": 1, "name": "スライム", "level": 1, "gear": None},
+    {"id": 3, "name": "ゴーレム", "level": 1, "gear": None},
+    {"id": 20, "name": "ギュメイ将軍", "level": 1, "gear": None}
 ])
 
 # マップを表示
