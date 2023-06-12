@@ -1,0 +1,48 @@
+{
+    "階層番号": [
+        {
+            "name": "モンスターの名前",
+            "level": "モンスターのレベル",
+            "encounter_prob": "モンスターとのエンカウント率",
+            "drop": [
+                {
+                    "name": "ドロップ品の名前",
+                    "prob": "ドロップ率"
+                },
+                {
+                    "name": "ドロップ品の名前",
+                    "prob": "ドロップ率"
+                }
+            ],
+            "original_characteristics": [
+                {
+                    "name": "固有特性の名前",
+                    "effect": 
+                }
+            ]
+        }
+    ],
+
+    "1": [
+        {
+            "name": "スライム",
+            "level": 1,
+            "encounter_prob": 0.3,
+            "drop": [
+                {
+                    "name": "薬草",
+                    "prob": 0.5
+                }
+            ]
+        },
+        {
+            "name": "ゴースト",
+            "level": 1,
+            "drop": []
+        },
+        {
+            "name": "ドラキー",
+            "level"
+        }
+    ]
+}
