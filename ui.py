@@ -58,7 +58,7 @@ class UI:
         self.image_friend = [None]*3
         # 仮の味方パーティー
         self.friend_tmp = []
-        # モンスターの名前のボタンのNORMAL・DISABLEDを持つ
+        # モンスターの名前ボタンのNORMAL・DISABLED
         self.monster_button_state = [None]*len(json_data.save_data["monster"])
     
     def set_party(self, enemy: list, friend: list) -> None:
@@ -77,28 +77,30 @@ class UI:
             {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend},
         ]
     
-    def plot_image_monster_box(self, name: str, path: str, x: int, y: int) -> None:
+    def plot_image_monster_box(self, name: str, x: int, y: int) -> None:
         """
-        モンスターの画像を表示（モンスターボックス）
+        モンスターの画像を表示する（モンスターボックス）
         name: モンスターの名前
-        path: 画像のパス
         x: x座標
         y: y座標
-        """
+        """ 
+        # 画像のパス
+        path = f"images/png_resized/{name}_resized.png",
         # イメージを作成
         self.image_monster_box[name].append(tk.PhotoImage(file=path, width=130, height=130))
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_monster_box[name][-1], anchor=tk.NW)
     
-    def plot_image_battle(self, name: str, is_friend: bool, path: str, x: int, y: int) -> None:
+    def plot_image_battle(self, name: str, is_friend: bool, x: int, y: int) -> None:
         """
-        モンスターの画像を表示（バトル）
+        モンスターの画像を表示する（バトル）
         name: モンスターの名前
         is_friend: 味方かどうか
-        path: 画像のパス
         x: x座標
         y: y座標
         """
+        # 画像のパス
+        path = f"images/png_resized/{name}_resized.png",
         # イメージを作成
         self.image_battle[is_friend][name] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
@@ -106,18 +108,29 @@ class UI:
     
     def plot_image_party(self, name: str, idx: int) -> None:
         """
-        モンスターの画像を表示（パーティー）
+        モンスターの画像を表示する（パーティー）
         name: モンスターの名前
-        path: 画像のパス
         index: 左から何番目であるか（1~3）の値
         """
+        # 画像の左上のxy座標
         x = idx*162+405
         y = 37
+        # 画像のパス
         path = f"images/png_resized/{name}_resized.png"
         # イメージを作成
         self.image_friend[idx] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_friend[idx], anchor=tk.NW)
+    
+    def remove_image_party(self, name: str) -> None:
+        """
+        モンスターの画像を削除する（パーティー）
+        name: モンスターの名前
+        """
+        for idx, mons in enumerate(self.friend_tmp):
+            if mons["name"]==name:
+                self.image_friend[idx] = None
+        self.canvas.update()
     
     def make_tk_window(self, window_title: str) -> None:
         """
@@ -270,6 +283,7 @@ class UI:
     def make_party_edit_button(self) -> None:
         """
         「パーティー編成へ」のボタンを表示
+        モンスター情報モードに移行する
         """
         # 「決定」のボタンを削除
         if self.party_edit_end_button is not None:
@@ -294,7 +308,8 @@ class UI:
     
     def make_party_edit_end_button(self) -> None:
         """
-        モンスターボックス内で、パーティー編成モードとモンスター情報モードを切り替える
+        「決定」のボタンを表示
+        パーティー編成モードに移行する
         """
         # 「パーティー編成へ」のボタンを削除
         if self.party_edit_button is not None:
@@ -353,18 +368,33 @@ class UI:
         """
         パーティーの画像を表示する
         """
-        for idx, mons in enumerate(user_info.friend):
+        for idx, mons in enumerate(self.friend_tmp):
             self.plot_image_party(mons["name"], idx)
     
     def open_monster_box(self) -> None:
         """
         自分が持っているモンスターを表示する
         """
-        # モンスターボックスのページ数
+        # モンスターボックスのページ数を初期化
         self.page = 0
+        
+        # debug
+        # copyが参照渡しになってる？
+        # 仮の味方パーティーを初期化
+        self.friend_tmp = user_info.friend.copy()
+        
         # モンスターの名前のボタンの状態を初期化
-        for i in range(len(json_data.save_data["monster"])):
-            self.monster_button_state[i] = tk.NORMAL
+        for idx in json_data.save_data["monster"]:
+            mons = json_data.save_data["monster"][idx]
+            # そのモンスターがパーティーに含まれていたら
+            if mons in self.friend_tmp:
+                self.monster_button_state[int(idx)-1] = tk.DISABLED
+            # そのモンスターがパーティーに含まれていなかったら
+            else:
+                self.monster_button_state[int(idx)-1] = tk.NORMAL
+            print(mons)
+        print(self.monster_button_state)
+        
         # モンスターボックスのモードを設定
         self.monster_box_mode = "info"
         # Tkinterのウィンドウを表示
@@ -414,7 +444,7 @@ class UI:
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
             height = (150*(i//4)+140)%450+10
-            self.plot_image_monster_box(name, f"images/png_resized/{name}_resized.png", width, height)
+            self.plot_image_monster_box(name, width, height)
             # モンスターの名前のボタンを表示
             # ボタンの色によってボタンを区別する
             color = f"#eeeee{base_repr(i%12, 16)}"
@@ -509,14 +539,20 @@ class UI:
             self.show_monster_info()
         # パーティー編集モードのとき
         elif self.monster_box_mode=="edit":
-            # そのモンスターをパーティーに追加するか、パーティーから削除する
-            if len(self.friend_tmp)<=2:
-                self.add_or_remove_monster(mons, "add")
-            # ボタンの有効・無効を切り替える
+            # そのモンスターが選択されていないとき
             if event.widget["state"]==tk.NORMAL:
-                event.widget["state"] = tk.DISABLED
-                self.monster_button_state[self.get_monster_id(event)-1] = tk.DISABLED
+                # モンスターの枠が空いているなら、モンスターを追加できる
+                if len(self.friend_tmp)<=2:
+                    # そのモンスターをパーティーに追加する
+                    self.add_or_remove_monster(mons, "add")
+                    # ボタンの有効・無効を切り替える
+                    event.widget["state"] = tk.DISABLED
+                    self.monster_button_state[self.get_monster_id(event)-1] = tk.DISABLED
+            # そのモンスターが既に選択されているとき
             elif event.widget["state"]==tk.DISABLED:
+                # そのモンスターをパーティーから削除する
+                self.add_or_remove_monster(mons, "remove")
+                # ボタンの有効・無効を切り替える
                 event.widget["state"] = tk.NORMAL
                 self.monster_button_state[self.get_monster_id(event)-1] = tk.NORMAL
     
@@ -531,10 +567,11 @@ class UI:
         mons: モンスターの情報
         add_or_remove: 「add」「remove」のいずれか
         """
-        # if add_or_remove=="add":
-        #     self.friend_tmp.append(mons)
-        # elif add_or_remove=="remove":
-        #     self.friend_tmp.remove(mons)
+        if add_or_remove=="add":
+            self.friend_tmp.append(mons)
+        elif add_or_remove=="remove":
+            self.friend_tmp.remove(mons)
+            self.remove_image_party(mons["name"])
     
     def show_user_info(self) -> None:
         """
