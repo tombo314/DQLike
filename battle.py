@@ -141,22 +141,18 @@ class Battle:
         """
         敵と味方のパーティーの画像を表示
         """
-        i = 0
-        for mons in self.enemy:
-            width = 212*i+175
+        for idx, mons in enumerate(self.enemy):
+            width = 212*idx+175
             if mons["name"]=="ドラキー" or mons["name"]=="ボストロール":
                 width -= 13
             height = 8
-            ui.plot_image_battle(mons["name"], False, f"images/png_resized/{mons['name']}_resized.png", width, height)
-            i += 1
-        i = 0
-        for mons in self.friend:
-            width = 222*i+170
+            ui.plot_image_battle(mons["name"], False, width, height)
+        for idx, mons in enumerate(self.friend):
+            width = 222*idx+170
             if mons["name"]=="ドラキー" or mons["name"]=="ボストロール":
                 width -= 13
             height = 520
-            ui.plot_image_battle(mons["name"], True, f"images/png_resized/{mons['name']}_resized.png", width, height)
-            i += 1
+            ui.plot_image_battle(mons["name"], True, width, height)
         ui.canvas.update()
     
     def draw_battle_ui(self) -> None:
