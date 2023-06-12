@@ -2,131 +2,157 @@
     "username": "tombo314",
     "monster": {
         "1": {
+            "id": 1,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "2": {
+            "id": 2,
             "name": "ドラキー",
             "level": 1,
             "gear": null
         },
         "3": {
+            "id": 3,
             "name": "ゴーレム",
             "level": 1,
             "gear": null
         },
         "4": {
+            "id": 4,
             "name": "ドラキー",
             "level": 1,
             "gear": null
         },
         "5": {
+            "id": 5,
             "name": "ドラキー",
             "level": 1,
             "gear": null
         },
         "6": {
+            "id": 6,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "7": {
+            "id": 7,
             "name": "ドラキー",
             "level": 1,
             "gear": null
         },
         "8": {
+            "id": 8,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "9": {
+            "id": 9,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "10": {
+            "id": 10,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "11": {
+            "id": 11,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "12": {
+            "id": 12,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "13": {
+            "id": 13,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "14": {
+            "id": 14,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "15": {
+            "id": 15,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "16": {
+            "id": 16,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "17": {
+            "id": 17,
             "name": "ゴースト",
             "level": 1,
             "gear": null
         },
         "18": {
+            "id": 18,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "19": {
+            "id": 19,
             "name": "ゴーレム",
             "level": 1,
             "gear": null
         },
         "20": {
+            "id": 20,
             "name": "ギュメイ将軍",
             "level": 1,
             "gear": null
         },
         "21": {
+            "id": 21,
             "name": "スライム",
             "level": 1,
             "gear": null
         },
         "22": {
+            "id": 22,
             "name": "ボストロール",
             "level": 1,
             "gear": null
         },
         "23": {
+            "id": 23,
             "name": "ゲルニック将軍",
             "level": 1,
             "gear": null
         },
         "24": {
+            "id": 24,
             "name": "おばけキノコ",
             "level": 1,
             "gear": null
         },
         "25": {
+            "id": 25,
             "name": "おばけキノコ",
             "level": 1,
             "gear": null
         },
         "26": {
+            "id": 26,
             "name": "スライム",
             "level": 1,
             "gear": null
