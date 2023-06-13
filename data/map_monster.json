@@ -1,9 +1,10 @@
 {
-    "階層番号": [
+    "マップの階層番号": [
         {
             "name": "モンスターの名前",
             "level": "モンスターのレベル",
             "encounter_prob": "モンスターとのエンカウント率",
+            "gold": "得られるゴールド",
             "drop": [
                 {
                     "name": "ドロップ品の名前",
@@ -15,9 +16,17 @@
                 }
             ],
             "original_characteristics": [
+                "固有特性の名前",
+                "固有特性の名前"
+            ],
+            "random_characteristics": [
                 {
-                    "name": "固有特性の名前",
-                    "effect": 
+                    "name": "ランダム特性の名前",
+                    "prob": "ランダム特性を得る確率"
+                },
+                {
+                    "name": "ランダム特性の名前",
+                    "prob": "ランダム特性を得る確率"
                 }
             ]
         }
@@ -27,22 +36,591 @@
         {
             "name": "スライム",
             "level": 1,
-            "encounter_prob": 0.3,
+            "encounter_prob": 0.5,
+            "exp": 3,
+            "gold": 5,
             "drop": [
                 {
-                    "name": "薬草",
+                    "name": "すばやさの指輪",
+                    "prob": 0.05
+                }
+            ],
+            "original_characteristics": [
+                "スモールボディ"
+            ],
+            "random_characteristics": [
+                {
+                    "name": "メラ系のコツ",
                     "prob": 0.5
+                },
+                {
+                    "name": "メラのさとり",
+                    "prob": 0.1
                 }
             ]
         },
         {
             "name": "ゴースト",
             "level": 1,
-            "drop": []
+            "encounter_prob": 0.3,
+            "exp": 10,
+            "gold": 13,
+            "drop": [
+                {
+                    "name": "まほうつかいの指輪",
+                    "prob": 0.05
+                }
+            ],
+            "original_characteristics": [
+                "メラ系のコツ"
+            ],
+            "random_characteristics": [
+                {}
+            ]
         },
         {
             "name": "ドラキー",
-            "level"
+            "level": 1,
+            "encounter_prob": 0.2,
+            "exp": 18,
+            "gold": 15,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {
+                    "name": "バギ系のコツ",
+                    "prob": 0.5
+                },
+                {
+                    "name": "バギのさとり",
+                    "prob": 0.1
+                }
+            ]
+        }
+    ],
+    "2": [
+        {
+            "name": "おばけキノコ",
+            "level": 1,
+            "encounter_prob": 0.2,
+            "exp": 25,
+            "gold": 20,
+            "drop": [
+                {
+                    "name": "めざましリング",
+                    "prob": 0.05
+                }
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {
+                    "name": "ねむりブレイク",
+                    "prob": 0.1
+                }
+            ]
+        },
+        {
+            "name": "メタルハンター",
+            "level": 1,
+            "encounter_prob": 0.2,
+            "exp": 33,
+            "gold": 35,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+                "メタルハンター"
+            ],
+            "random_characteristics": [
+                {
+                    "name": "メタルキラー",
+                    "prob": 0.1
+                },
+                {
+                    "name": "AI1～2回行動",
+                    "prob": 0.1
+                }
+            ]
+        },
+        {
+            "name": "とうろうへい",
+            "level": 2,
+            "encounter_prob": 0.2,
+            "exp": 40,
+            "gold": 27,
+            "drop": [
+                {
+                    "name": "たけのやり",
+                    "prob": 0.2
+                }
+            ],
+            "original_characteristics": [
+                "ギガキラー"
+            ],
+            "random_characteristics": [
+                {
+                    "name": "こうどうおそい",
+                    "prob": 0.5
+                }
+            ]
+        }
+    ],
+    "3": [
+        {
+            "name": "ゴーレム",
+            "level": 3,
+            "encounter_prob": 0.2,
+            "exp": 80,
+            "gold": 40,
+            "drop": [
+                {
+                    "name": "破毒のリング",
+                    "prob": 0.05
+                },
+                {
+                    "name": "ようせいの笛",
+                    "prob": 0.1
+                }
+            ],
+            "original_characteristics": [
+                "まれにテンション"
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "タホドラキー",
+            "level": 4,
+            "encounter_prob": 0.2,
+            "exp": 66,
+            "gold": 45,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {
+                    "name": "バギ系のコツ",
+                    "prob": 0.2
+                },
+                {
+                    "name": "バギマのさとり",
+                    "prob": 0.08
+                }
+            ]
+        }
+    ],
+    "4": [
+        {
+            "name": "メタルスライム",
+            "level": 6,
+            "encounter_prob": 0.05,
+            "exp": 1000,
+            "gold": 80,
+            "drop": [
+                {
+                    "name": "はやてのリング",
+                    "prob": 0.3
+                }
+            ],
+            "original_characteristics": [
+                "にげあし"
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        }
+    ],
+    "5": [
+        {
+            "name": "おどるほうせき",
+            "level": 8,
+            "encounter_prob": 0.1,
+            "exp": 103,
+            "gold": 550,
+            "drop": [
+                {
+                    "name": "幸運のブレスレット",
+                    "prob": 0.3
+                }
+            ],
+            "original_characteristics": [
+                "スモールボディ",
+                "獲得ゴールドアップ"
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        }
+    ],
+    "6": [],
+    "7": [
+        {
+            "name": "はぐれメタル",
+            "level": 7,
+            "encounter_prob": 0.03,
+            "exp": 10050,
+            "gold": 120,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+                "にげあし"
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        }
+    ],
+    "8": [
+        {
+            "name": "メタルキング",
+            "level": 13,
+            "encounter_prob": 0.01,
+            "exp": 30100,
+            "gold": 300,
+            "drop": [
+                {
+                    "name": "ほしふる腕輪",
+                    "prob": 0.2
+                }
+            ],
+            "original_characteristics": [
+                "にげあし"
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "ギュメイ将軍",
+            "level": 15,
+            "encounter_prob": 0.2,
+            "exp": 580,
+            "gold": 250,
+            "drop": [
+                {
+                    "name": "まじんのかなづち",
+                    "prob": 0.1
+                }
+            ],
+            "original_characteristics": [
+                "魔神攻撃",
+                "スモールキラー"
+            ],
+            "random_characteristics": [
+                {
+                    "name": "強者のよゆう",
+                    "prob": 0.5
+                },
+                {
+                    "name": "AI1～2回行動",
+                    "prob": 0.2
+                },
+                {
+                    "name": "さみだれ斬りの心得",
+                    "prob": 0.1
+                },
+                {
+                    "name": "さみだれ斬りの真髄",
+                    "prob": 0.05
+                }
+            ]
+        },
+        {
+            "name": "ゲルニック将軍",
+            "level": 10,
+            "encounter_prob": 0.2,
+            "exp": 630,
+            "gold": 310,
+            "drop": [
+                {
+                    "name": "ようせいの腕輪",
+                    "prob": 0.1
+                }
+            ],
+            "original_characteristics": [
+                "消費MP節約",
+                "みかわしアップ",
+                "メラ系のコツ"
+            ],
+            "random_characteristics": [
+                {
+                    "name": "消費MP半分",
+                    "prob": 0.2
+                },
+                {
+                    "name": "呪文のコツ",
+                    "prob": 0.2
+                }
+            ]
+        },
+        {
+            "name": "ゴレオン将軍",
+            "level": 10,
+            "encounter_prob": 0.2,
+            "exp": 460,
+            "gold": 270,
+            "drop": [
+                {
+                    "name": "はかいの鉄球",
+                    "prob": 0.1
+                }
+            ],
+            "original_characteristics": [
+                "ときどきバイキルト",
+                "狂戦士"
+            ],
+            "random_characteristics": [
+                {
+                    "name": "ときどきテンション",
+                    "prob": 0.3
+                },
+                {
+                    "name": "HPギャンブル",
+                    "prob": 0.2
+                }
+            ]
+        }
+    ],
+    "9": [
+        {
+            "name": "メタルキング",
+            "level": 13,
+            "encounter_prob": 0.03,
+            "exp": 30100,
+            "gold": 300,
+            "drop": [
+                {
+                    "name": "ほしふる腕輪",
+                    "prob": 0.2
+                }
+            ],
+            "original_characteristics": [
+                "にげあし"
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        }
+    ],
+    "10": [
+        {
+            "name": "バラモスゾンビ",
+            "level": 28,
+            "encounter_prob": 0.05,
+            "exp": 712,
+            "gold": 428,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "まおうの使い",
+            "level": 33,
+            "encounter_prob": 0.05,
+            "exp": 804,
+            "gold": 334,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+                "AI1～2回行動",
+                "いきなりバイキルト"
+            ],
+            "random_characteristics": [
+                {
+                    "name": "ねむり攻撃",
+                    "prob": 0.2
+                },
+                {
+                    "name": "マヒ攻撃",
+                    "prob": 0.2
+                },
+                {
+                    "name": "AI2回行動",
+                    "prob": 0.1
+                }
+            ]
+        }
+    ],
+    "BOSS": [
+        {
+            "name": "竜王",
+            "level": 30,
+            "encounter_prob": null,
+            "exp": 3300,
+            "gold": 1200,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "シドー",
+            "level": 35,
+            "encounter_prob": null,
+            "exp": 3800,
+            "gold": 2000,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+                "自動HP回復"
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "ゾーマ",
+            "level": 38,
+            "encounter_prob": null,
+            "exp": 4300,
+            "gold": 2600,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "デスピサロ",
+            "level": 40,
+            "encounter_prob": null,
+            "exp": 4100,
+            "gold": 3000,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "ミルドラース",
+            "level": 42,
+            "encounter_prob": null,
+            "exp": 4800,
+            "gold": 3500,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "デスタムーア",
+            "level": 47,
+            "encounter_prob": null,
+            "exp": 5000,
+            "gold": 3300,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "オルゴ・デミーラ",
+            "level": 45,
+            "encounter_prob": null,
+            "exp": 4800,
+            "gold": 4000,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "ラプソーン",
+            "level": 53,
+            "encounter_prob": null,
+            "exp": 5500,
+            "gold": 4200,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "エルギオス",
+            "level": 55,
+            "encounter_prob": null,
+            "exp": 5800,
+            "gold": 4100,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "エスターク",
+            "level": 58,
+            "encounter_prob": null,
+            "exp": 6200,
+            "gold": 5500,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
+        },
+        {
+            "name": "ダークドレアム",
+            "level": 66,
+            "encounter_prob": null,
+            "exp": 6666,
+            "gold": 6666,
+            "drop": [
+                {}
+            ],
+            "original_characteristics": [
+            ],
+            "random_characteristics": [
+                {}
+            ]
         }
     ]
 }
