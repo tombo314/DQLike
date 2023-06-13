@@ -157,10 +157,10 @@ class Map:
             for event in pygame.event.get():
                 # よく分かっていない
                 if event.type==QUIT:
-                    exit()
+                    return None
                 # Escapeで画面を閉じる
                 elif event.type==KEYDOWN and event.key==K_ESCAPE:
-                    exit()
+                    return None
                 # プレイヤーが移動する
                 # 下
                 elif event.type==KEYDOWN and (event.key==K_DOWN or event.key==K_s) and self.can_move_to("y+"):
