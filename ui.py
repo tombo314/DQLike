@@ -547,6 +547,14 @@ class UI:
         elif self.monster_box_mode=="edit":
             # そのモンスターが選択されていないとき
             if event.widget["state"]==tk.NORMAL:
+                # 同じ種類のモンスターを、2体以上パーティに入れることはできない
+                ok = True
+                name = event.widget["text"].split()[0]
+                for mons in self.friend_info_tmp:
+                    if mons["name"]==name:
+                        ok = False
+                if not ok:
+                    return None
                 # モンスターの枠が空いているなら、モンスターを追加できる
                 if len(self.friend_info_tmp)<=2:
                     # そのモンスターをパーティーに追加する
