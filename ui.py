@@ -1,5 +1,6 @@
 # ライブラリをインポート
 from time import sleep
+from copy import deepcopy
 import tkinter as tk
 
 # クラスをインポート
@@ -377,12 +378,8 @@ class UI:
         """
         # モンスターボックスのページ数を初期化
         self.page = 0
-        
-        # debug
-        # copyが参照渡しになってる？
         # 仮の味方パーティーを初期化
-        self.friend_tmp = user_info.friend.copy()
-        
+        self.friend_tmp = deepcopy(user_info.friend)
         # モンスターの名前のボタンの状態を初期化
         for idx in json_data.save_data["monster"]:
             mons = json_data.save_data["monster"][idx]
@@ -392,8 +389,6 @@ class UI:
             # そのモンスターがパーティーに含まれていなかったら
             else:
                 self.monster_button_state[int(idx)-1] = tk.NORMAL
-            print(mons)
-        print(self.monster_button_state)
         
         # モンスターボックスのモードを設定
         self.monster_box_mode = "info"
@@ -568,10 +563,11 @@ class UI:
         add_or_remove: 「add」「remove」のいずれか
         """
         if add_or_remove=="add":
+            self.plot_image_party(mons["name"], len(self.friend_tmp))
             self.friend_tmp.append(mons)
         elif add_or_remove=="remove":
-            self.friend_tmp.remove(mons)
             self.remove_image_party(mons["name"])
+            self.friend_tmp.remove(mons)
     
     def show_user_info(self) -> None:
         """
