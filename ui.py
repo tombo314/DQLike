@@ -50,7 +50,7 @@ class UI:
         self.friend = None
         # 画像データ（バトル）
         self.image_battle = None
-        # 「info」でモンスター情報モード、「edit」でパーティー編成モード
+        # 「all」でモンスター一覧モード、「detail」でモンスター詳細モード、「edit」でパーティー編成モード
         self.monster_box_mode = None
         # モンスターボックスのモードの文字
         self.text_monster_box_mode = None
@@ -61,9 +61,13 @@ class UI:
         # パーティーの画像
         self.image_friend = [None]*3
         # 仮の味方パーティー
-        self.friend_info_tmp = []
+        self.friend_tmp = []
         # モンスターの名前ボタンのNORMAL・DISABLED
         self.monster_button_state = [tk.NORMAL]*1000
+        # モンスターの詳細画面の画像
+        self.monster_image_detail = None
+        # モンスターの詳細画面のパラメータの文字のインスタンス
+        self.text_monster_param_detail = {}
     
     def set_party(self, enemy: list, friend: list) -> None:
         """
@@ -128,12 +132,29 @@ class UI:
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_friend[idx], anchor=tk.NW)
     
+    def plot_image_monster_detail(self, name: str) -> None:
+        """
+        モンスターの画像を表示する（モンスター情報）
+        name: モンスターの名前
+        """
+        # 画像の左上のxy座標
+        x = 150
+        if name=="ドラキー" or name=="ボストロール":
+            x -= 20
+        y = 100
+        # 画像のパス
+        path = f"images/png_resized/{name}_resized.png"
+        # イメージを作成
+        self.monster_image_detail = tk.PhotoImage(file=path, width=130, height=130)
+        # キャンバスにイメージを表示
+        self.canvas.create_image(x, y, image=self.monster_image_detail, anchor=tk.NW)
+    
     def remove_image_party(self, name: str) -> None:
         """
         モンスターの画像を削除する（パーティー）
         name: モンスターの名前
         """
-        for idx, mons in enumerate(self.friend_info_tmp):
+        for idx, mons in enumerate(self.friend_tmp):
             if mons["name"]==name:
                 self.image_friend[idx] = None
         self.canvas.update()
@@ -266,7 +287,7 @@ class UI:
         パーティー編集モードを終了する
         """
         # パーティーを確定する
-        user_info.friend = deepcopy(self.friend_info_tmp)
+        user_info.friend = deepcopy(self.friend_tmp)
         # 「パーティー編成へ」のボタンを表示
         self.make_party_edit_button()
         self.show_monster()
@@ -281,7 +302,7 @@ class UI:
         # モンスターボックスモードの文字を表示
         left = 200
         top = 120
-        if self.monster_box_mode=="info":
+        if self.monster_box_mode=="all":
             text = "モンスター情報"
         elif self.monster_box_mode=="edit":
             text = "パーティー編成"
@@ -301,7 +322,7 @@ class UI:
             self.party_edit_end_button.destroy()
             self.party_edit_end_button = None
         # モンスターボックスモードを設定
-        self.monster_box_mode = "info"
+        self.monster_box_mode = "all"
         # 「パーティー編成へ」のボタンを表示
         self.party_edit_button = tk.Button(
             self.app,
@@ -343,8 +364,15 @@ class UI:
         # モンスターボックスのモードの文字を更新
         self.update_text_monster_box_mode()
         # 仮の味方パーティーを設定
-        self.friend_info_tmp = deepcopy(user_info.friend)
-    
+        self.friend_tmp = deepcopy(user_info.friend)
+        
+        # debug
+        for i in range(self.page*12, min((self.page+1)*12, len(json_data.save_data["monster"]))):
+            if self.monster_button_state[i]==tk.NORMAL:
+                self.button_monster[i%12]["state"] = tk.NORMAL
+            elif self.monster_button_state[i]==tk.DISABLED:
+                self.button_monster[i%12]["state"] = tk.DISABLED
+
     def make_party_edit_frame(self) -> None:
         """
         パーティー編成の枠を表示
@@ -369,7 +397,7 @@ class UI:
         if event.keysym=="e":
             self.close_monster_box()
         # →でモンスターボックスの次ページを表示
-        elif event.keysym=="Right" and self.page<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+        elif self.monster_box_mode=="all" and event.keysym=="Right" and self.page<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
             self.show_next_page()
         # ←でモンスターボックスの前ページを表示
         elif event.keysym=="Left" and self.page>0:
@@ -379,7 +407,7 @@ class UI:
         """
         パーティーの画像を表示する
         """
-        for idx, mons in enumerate(self.friend_info_tmp):
+        for idx, mons in enumerate(self.friend_tmp):
             self.plot_image_party(mons["name"], idx)
     
     def open_monster_box(self) -> None:
@@ -389,19 +417,19 @@ class UI:
         # モンスターボックスのページ数を初期化
         self.page = 0
         # 仮の味方パーティーを初期化
-        self.friend_info_tmp = deepcopy(user_info.friend)
+        self.friend_tmp = deepcopy(user_info.friend)
         # モンスターの名前のボタンの状態を初期化
         for idx in json_data.save_data["monster"]:
             mons = json_data.save_data["monster"][idx]
             # そのモンスターがパーティーに含まれていたら
-            if mons in self.friend_info_tmp:
+            if mons in self.friend_tmp:
                 self.monster_button_state[int(idx)-1] = tk.DISABLED
             # そのモンスターがパーティーに含まれていなかったら
             else:
                 self.monster_button_state[int(idx)-1] = tk.NORMAL
         
         # モンスターボックスのモードを設定
-        self.monster_box_mode = "info"
+        self.monster_box_mode = "all"
         # Tkinterのウィンドウを表示
         self.make_tk_window("モンスターボックス")
         # 画面を閉じるボタンを表示
@@ -416,7 +444,7 @@ class UI:
         # 既存のUIを削除
         self.delete_all_ui()
         # パーティー編成モードに切り替えるボタンを表示
-        if self.monster_box_mode=="info":
+        if self.monster_box_mode=="all":
             self.make_party_edit_button()
         # モンスターボックスのモードの文字を更新
         self.update_text_monster_box_mode()
@@ -453,6 +481,11 @@ class UI:
             # モンスターの名前のボタンを表示
             # ボタンの色によってボタンを区別する
             color = f"#eeeee{base_repr(i%12, 16)}"
+            # モンスターの名前ボタンのNORMAL・DISABLED
+            if self.monster_box_mode=="all":
+                button_state = tk.NORMAL
+            else:
+                button_state = self.monster_button_state[i]
             self.button_monster[i%12] = tk.Button(
                 self.app,
                 text=f"{name} Lv.{json_data.save_data['monster'][str(i+1)]['level']}",
@@ -460,7 +493,7 @@ class UI:
                 width=16,
                 height=1,
                 bg=color,
-                state=self.monster_button_state[i]
+                state=button_state
             )
             self.button_monster[i%12].pack()
             left = 0.21*(i%4)+0.1
@@ -517,13 +550,6 @@ class UI:
         self.page -= 1
         self.show_monster()
 
-    def get_monster_id(self, event) -> int:
-        """
-        押したボタンからモンスターのidを得る
-        event: ボタンを押したときのeventインスタンス
-        """
-        return int(event.widget["bg"][6], 16)+1+12*self.page
-
     def get_monster_info(self, event) -> dict:
         """
         押したボタンからモンスターの情報を得る
@@ -539,9 +565,9 @@ class UI:
         mons_info = self.get_monster_info(event)
         
         # モンスター情報モードのとき
-        if self.monster_box_mode=="info":
+        if self.monster_box_mode=="all":
             # モンスターの詳細情報を表示
-            self.show_monster_info()
+            self.show_monster_info(mons_info)
         
         # パーティー編集モードのとき
         elif self.monster_box_mode=="edit":
@@ -550,18 +576,18 @@ class UI:
                 # 同じ種類のモンスターを、2体以上パーティに入れることはできない
                 ok = True
                 name = event.widget["text"].split()[0]
-                for mons in self.friend_info_tmp:
+                for mons in self.friend_tmp:
                     if mons["name"]==name:
                         ok = False
                 if not ok:
                     return None
                 # モンスターの枠が空いているなら、モンスターを追加できる
-                if len(self.friend_info_tmp)<=2:
+                if len(self.friend_tmp)<=2:
                     # そのモンスターをパーティーに追加する
                     self.add_or_remove_monster(mons_info, "add")
                     # ボタンの有効・無効を切り替える
                     event.widget["state"] = tk.DISABLED
-                    self.monster_button_state[self.get_monster_id(event)-1] = tk.DISABLED
+                    self.monster_button_state[mons_info["id"]-1] = tk.DISABLED
                 
             # そのモンスターが既に選択されているとき
             elif event.widget["state"]==tk.DISABLED:
@@ -569,12 +595,87 @@ class UI:
                 self.add_or_remove_monster(mons_info, "remove")
                 # ボタンの有効・無効を切り替える
                 event.widget["state"] = tk.NORMAL
-                self.monster_button_state[self.get_monster_id(event)-1] = tk.NORMAL
+                self.monster_button_state[mons_info["id"]-1] = tk.NORMAL
     
-    def show_monster_info(self) -> None:
+    def show_monster_param_detail(self, name: str, level: int) -> None:
+        """
+        モンスター情報でモンスターのパラメータを表示する
+        name: モンスターの名前
+        level: モンスターのレベル
+        """
+        # モンスター情報の文字のインスタンスのdictを初期化する
+        self.text_monster_param_detail.clear()
+        # 文字の座標
+        x, y = 150, 250
+        # 文字の大きさ
+        font_size = 18
+        # 名前を表示
+        self.text_monster_param_detail["name"] = self.canvas.create_text(
+            x, y,
+            font = ("helvetica", font_size),
+            text = name
+        )
+        # 文字の座標
+        x, y = 250, 250
+        # 文字の大きさ
+        font_size = 16
+        # レベルを表示
+        self.text_monster_param_detail["level"] = self.canvas.create_text(
+            x+len(name)*5, y,
+            font = ("helvetica", font_size),
+            text = f"Lv. {level}"
+        )
+        # 使うデータを選択
+        data = json_data.monster[name].copy()
+        data.pop("name")
+        data.pop("skill_select_probability")
+        data.pop("attribute_damage_rate")
+        data.pop("status_ailment_probability")
+        # ループ変数
+        i = 0
+        # 文字の座標
+        x, y = 160, 280
+        # 文字の大きさ
+        font_size = 18
+        # 各パラメータを表示
+        for key,val in data.items():
+            if key=="hp":
+                content_key = "HP"
+            elif key=="mp":
+                content_key = "MP"
+            elif key=="attack":
+                content_key = "攻撃力"
+            elif key=="magic_attack":
+                content_key = "賢さ"
+            elif key=="defense":
+                content_key = "守備力"
+            elif key=="agility":
+                content_key = "素早さ"
+            self.text_monster_param_detail[f"{key}_key"] = self.canvas.create_text(
+                x, y+30*i,
+                font = ("helvetica", font_size),
+                text = content_key
+            )
+            self.text_monster_param_detail[f"{val}_val"] = self.canvas.create_text(
+                x+100, y+30*i,
+                font = ("helvetica", font_size-2),
+                text = val
+            )
+            i += 1
+    
+    def show_monster_info(self, mons_info) -> None:
         """
         モンスターの詳細情報を表示する
+        mons_info: モンスター情報のdict
         """
+        # UIを削除する
+        self.delete_all_ui()
+        self.party_edit_button.destroy()
+        self.party_edit_button = None
+        # モンスターの画像を表示する
+        self.plot_image_monster_detail(mons_info["name"])
+        # モンスターのパラメータを表示する
+        self.show_monster_param_detail(mons_info["name"], mons_info["level"])
     
     def add_or_remove_monster(self, mons: dict, add_or_remove: str) -> None:
         """
@@ -583,11 +684,11 @@ class UI:
         add_or_remove: 「add」「remove」のいずれか
         """
         if add_or_remove=="add":
-            self.plot_image_party(mons["name"], len(self.friend_info_tmp))
-            self.friend_info_tmp.append(mons)
+            self.plot_image_party(mons["name"], len(self.friend_tmp))
+            self.friend_tmp.append(mons)
         elif add_or_remove=="remove":
             self.remove_image_party(mons["name"])
-            self.friend_info_tmp.remove(mons)
+            self.friend_tmp.remove(mons)
             self.remove_image_party_all()
             self.show_party_image()
     
