@@ -37,7 +37,7 @@ class UI:
         # 前のページに戻るボタン
         self.button_page_back = None
         # モンスターボックスを閉じるボタン
-        self.close_button = None
+        self.close_button_monster_box = None
         # 「パーティー編成」のボタン
         self.party_edit_button = None
         # 「決定」のボタン
@@ -68,6 +68,20 @@ class UI:
         self.monster_image_detail = None
         # モンスターの詳細画面のパラメータの文字のインスタンス
         self.text_monster_param_detail = {}
+        # モンスター情報の画面を閉じるボタンのインスタンス
+        self.close_button_monster_detail = None
+    
+    def init_all_button(self) -> None:
+        """
+        すべてのボタンをNoneで初期化する
+        """
+        self.party_edit_button = None
+        self.party_edit_end_button = None
+        self.button_page_next = None
+        self.button_page_back = None
+        self.close_button_monster_box = None
+        self.close_button_monster_detail = None
+        self.button_monster = [None]*12
     
     def set_party(self, enemy: list, friend: list) -> None:
         """
@@ -266,9 +280,9 @@ class UI:
         elif is_fast==False:
             sleep(SHOW_DURATION)
     
-    def make_close_button(self) -> None:
+    def make_close_button_monster_box(self) -> None:
         # モンスターボックスを閉じるボタンを表示
-        self.close_button = tk.Button(
+        self.close_button_monster_box = tk.Button(
             self.app,
             text="x",
             font=("", 18),
@@ -279,18 +293,21 @@ class UI:
         )
         left = 0
         top = 0
-        self.close_button.place(relx=left, rely=top)
+        self.close_button_monster_box.place(relx=left, rely=top)
         self.app.bind("<KeyPress>", self.listen_key)
     
     def party_edit_end(self) -> None:
         """
         パーティー編集モードを終了する
         """
-        # パーティーを確定する
-        user_info.friend = deepcopy(self.friend_tmp)
-        # 「パーティー編成へ」のボタンを表示
-        self.make_party_edit_button()
-        self.show_monster()
+        # パーティーにモンスターが1体以上いる
+        if len(self.friend_tmp)>=1:
+            # パーティーを確定する
+            user_info.friend = deepcopy(self.friend_tmp)
+            # 「パーティー編成へ」のボタンを表示
+            self.make_party_edit_button()
+            # モンスターを1ページ分表示
+            self.show_monster()
     
     def update_text_monster_box_mode(self) -> None:
         """
@@ -323,6 +340,10 @@ class UI:
             self.party_edit_end_button = None
         # モンスターボックスモードを設定
         self.monster_box_mode = "all"
+        # 「パーティー編成へ」のボタンを削除
+        if self.party_edit_button is not None:
+            self.party_edit_button.destroy()
+            self.party_edit_button = None
         # 「パーティー編成へ」のボタンを表示
         self.party_edit_button = tk.Button(
             self.app,
@@ -365,8 +386,7 @@ class UI:
         self.update_text_monster_box_mode()
         # 仮の味方パーティーを設定
         self.friend_tmp = deepcopy(user_info.friend)
-        
-        # debug
+        # 編成されているモンスターのボタンの状態をtk.DISABLEDにする
         for i in range(self.page*12, min((self.page+1)*12, len(json_data.save_data["monster"]))):
             if self.monster_button_state[i]==tk.NORMAL:
                 self.button_monster[i%12]["state"] = tk.NORMAL
@@ -393,14 +413,18 @@ class UI:
         """
         キー入力を処理する
         """
-        # eでモンスターボックスを閉じる
         if event.keysym=="e":
-            self.close_monster_box()
+            # eでモンスターボックスを閉じる
+            if self.monster_box_mode=="all":
+                self.close_monster_box()
+            # eでモンスター情報を閉じる
+            elif self.monster_box_mode=="detail":
+                self.close_monster_detail()
         # →でモンスターボックスの次ページを表示
-        elif self.monster_box_mode=="all" and event.keysym=="Right" and self.page<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Right" and self.page<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
             self.show_next_page()
         # ←でモンスターボックスの前ページを表示
-        elif event.keysym=="Left" and self.page>0:
+        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Left" and self.page>0:
             self.show_previous_page()
     
     def show_party_image(self) -> None:
@@ -416,6 +440,8 @@ class UI:
         """
         # モンスターボックスのページ数を初期化
         self.page = 0
+        # すべてのボタンを初期化
+        self.init_all_button()
         # 仮の味方パーティーを初期化
         self.friend_tmp = deepcopy(user_info.friend)
         # モンスターの名前のボタンの状態を初期化
@@ -433,7 +459,9 @@ class UI:
         # Tkinterのウィンドウを表示
         self.make_tk_window("モンスターボックス")
         # 画面を閉じるボタンを表示
-        self.make_close_button()
+        self.make_close_button_monster_box()
+        # 「パーティー編成へ」のボタンを表示
+        self.make_party_edit_button()
         # モンスターボックスの1ページ目を表示
         self.show_monster()
 
@@ -443,9 +471,6 @@ class UI:
         """
         # 既存のUIを削除
         self.delete_all_ui()
-        # パーティー編成モードに切り替えるボタンを表示
-        if self.monster_box_mode=="all":
-            self.make_party_edit_button()
         # モンスターボックスのモードの文字を更新
         self.update_text_monster_box_mode()
         # 「モンスターボックス」の文字を表示
@@ -516,7 +541,9 @@ class UI:
             self.button_page_next.place(x=1140, y=240)
         # 最後のページだったら進むボタンを削除
         elif (self.page+1)*12>=len(json_data.save_data["monster"]) and self.button_page_next is not None:
-            self.button_page_next.destroy()
+            if self.button_page_next is not None:
+                self.button_page_next.destroy()
+                self.button_page_next = None
         # 前のページに戻るボタンを表示
         if 0<self.page*12<len(json_data.save_data["monster"]):
             self.button_page_back = tk.Button(
@@ -541,6 +568,9 @@ class UI:
         次のページを表示する
         """
         self.page += 1
+        # 「パーティー編成へ」のボタンを表示
+        if self.monster_box_mode=="all":
+            self.make_party_edit_button()
         self.show_monster()
     
     def show_previous_page(self) -> None:
@@ -548,6 +578,9 @@ class UI:
         前のページを表示する
         """
         self.page -= 1
+        # 「パーティー編成へ」のボタンを表示
+        if self.monster_box_mode=="all":
+            self.make_party_edit_button()
         self.show_monster()
 
     def get_monster_info(self, event) -> dict:
@@ -566,8 +599,10 @@ class UI:
         
         # モンスター情報モードのとき
         if self.monster_box_mode=="all":
-            # モンスターの詳細情報を表示
+            # モンスター情報を表示
             self.show_monster_info(mons_info)
+            # モンスター情報を閉じるボタンを表示
+            self.make_close_button_monster_detail()
         
         # パーティー編集モードのとき
         elif self.monster_box_mode=="edit":
@@ -626,7 +661,7 @@ class UI:
             text = f"Lv. {level}"
         )
         # 使うデータを選択
-        data = json_data.monster[name].copy()
+        data = deepcopy(json_data.monster[name])
         data.pop("name")
         data.pop("skill_select_probability")
         data.pop("attribute_damage_rate")
@@ -663,6 +698,27 @@ class UI:
             )
             i += 1
     
+    def make_close_button_monster_detail(self) -> None:
+        """
+        モンスター情報の画面を閉じるボタンを表示する
+        """
+        # モンスターボックスを閉じるボタンを削除する
+        if self.close_button_monster_box is not None:
+            self.close_button_monster_box.destroy()
+            self.close_button_monster_box = None
+        # モンスター情報の画面を閉じるボタンを表示する
+        self.close_button_monster_detail = tk.Button(
+            self.app,
+            text="x",
+            font=("", 18),
+            width=2,
+            height=1,
+            bg="#f44",
+            command=self.close_monster_detail
+        )
+        x, y = 0, 0
+        self.close_button_monster_detail.place(x=x, y=y)
+    
     def show_monster_info(self, mons_info) -> None:
         """
         モンスターの詳細情報を表示する
@@ -670,8 +726,12 @@ class UI:
         """
         # UIを削除する
         self.delete_all_ui()
-        self.party_edit_button.destroy()
-        self.party_edit_button = None
+        # いらないかも
+        if self.party_edit_button is not None:
+            self.party_edit_button.destroy()
+            self.party_edit_button = None
+        # モンスターボックスのモードを変更する
+        self.monster_box_mode = "detail"
         # モンスターの画像を表示する
         self.plot_image_monster_detail(mons_info["name"])
         # モンスターのパラメータを表示する
@@ -702,13 +762,36 @@ class UI:
         """
         モンスターボックスを閉じる
         """
-        self.delete_all_ui()
-        if self.party_edit_button is not None:
-            self.party_edit_button.destroy()
-            self.party_edit_button = None
-        if self.party_edit_end_button is not None:
-            self.party_edit_end_button.destroy()
-            self.party_edit_end_button = None
-        self.app.destroy()
+        # モンスター一覧を表示しているときだけ、閉じることができる
+        if self.monster_box_mode=="all":
+            # UIを削除する
+            self.delete_all_ui()
+            if self.party_edit_button is not None:
+                self.party_edit_button.destroy()
+                self.party_edit_button = None
+            if self.party_edit_end_button is not None:
+                self.party_edit_end_button.destroy()
+                self.party_edit_end_button = None
+            # Tkinterのインスタンスを削除する
+            if self.app is not None:
+                self.app.destroy()
+                self.app = None
+
+    def close_monster_detail(self) -> None:
+        """
+        モンスター情報を閉じる
+        """
+        # モンスター情報を閉じるボタンを削除する
+        if self.close_button_monster_detail is not None:
+            self.close_button_monster_detail.destroy()
+            self.close_button_monster_detail = None
+        # モンスターボックスのモードを変更する
+        self.monster_box_mode = "all"
+        # モンスターボックスを閉じるボタンを表示する
+        self.make_close_button_monster_box()
+        # 「パーティー編成へ」のボタンを表示
+        self.make_party_edit_button()
+        # モンスターを1ページ分表示する
+        self.show_monster()
 
 ui = UI()
