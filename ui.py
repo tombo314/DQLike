@@ -306,6 +306,9 @@ class UI:
             user_info.friend = deepcopy(self.friend_tmp)
             # 「パーティー編成へ」のボタンを表示
             self.make_party_edit_button()
+            # ウィンドウを閉じるボタンの色を変えて、状態をtk.NORMALにする
+            self.close_button_monster_box["state"] = tk.NORMAL
+            self.close_button_monster_box["bg"] = "#f44"
             # モンスターを1ページ分表示
             self.show_monster()
     
@@ -392,6 +395,9 @@ class UI:
                 self.button_monster[i%12]["state"] = tk.NORMAL
             elif self.monster_button_state[i]==tk.DISABLED:
                 self.button_monster[i%12]["state"] = tk.DISABLED
+        # ウィンドウを閉じるボタンの色を変えて、状態をtk.DISABLEDにする
+        self.close_button_monster_box["state"] = tk.DISABLED
+        self.close_button_monster_box["bg"] = "#ddd"
 
     def make_party_edit_frame(self) -> None:
         """
