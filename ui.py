@@ -640,6 +640,7 @@ class UI:
         """
         # モンスター情報の文字のインスタンスのdictを初期化する
         self.text_monster_param_detail.clear()
+
         # 文字の座標
         x, y = 150, 250
         # 文字の大きさ
@@ -650,6 +651,7 @@ class UI:
             font = ("helvetica", font_size),
             text = name
         )
+        
         # 文字の座標
         x, y = 250, 250
         # 文字の大きさ
@@ -660,6 +662,7 @@ class UI:
             font = ("helvetica", font_size),
             text = f"Lv. {level}"
         )
+        
         # 使うデータを選択
         data = deepcopy(json_data.monster[name])
         data.pop("name")
@@ -672,32 +675,134 @@ class UI:
         x, y = 160, 280
         # 文字の大きさ
         font_size = 18
-        # 各パラメータを表示
-        for key,val in data.items():
-            if key=="hp":
-                content_key = "HP"
-            elif key=="mp":
-                content_key = "MP"
-            elif key=="attack":
-                content_key = "攻撃力"
-            elif key=="magic_attack":
-                content_key = "賢さ"
-            elif key=="defense":
-                content_key = "守備力"
-            elif key=="agility":
-                content_key = "素早さ"
-            self.text_monster_param_detail[f"{key}_key"] = self.canvas.create_text(
+        # パラメータに合わせて文字を設定
+        for param, val in data.items():
+            if param=="hp":
+                key_content = "HP"
+            elif param=="mp":
+                key_content = "MP"
+            elif param=="attack":
+                key_content = "攻撃力"
+            elif param=="magic_attack":
+                key_content = "賢さ"
+            elif param=="defense":
+                key_content = "守備力"
+            elif param=="agility":
+                key_content = "素早さ"
+            # パラメータを表示
+            self.text_monster_param_detail[f"{param}_key"] = self.canvas.create_text(
                 x, y+30*i,
                 font = ("helvetica", font_size),
-                text = content_key
+                text = key_content
             )
-            self.text_monster_param_detail[f"{val}_val"] = self.canvas.create_text(
+            self.text_monster_param_detail[f"{param}_val"] = self.canvas.create_text(
                 x+100, y+30*i,
                 font = ("helvetica", font_size-2),
                 text = val
             )
             i += 1
-    
+        
+        # 使うデータを選択
+        data = deepcopy(json_data.monster[name])["skill_select_probability"]["friend"]
+        # ループ変数
+        i = 0
+        # 「スキル」の文字を表示
+        x, y = 450, 130
+        self.text_monster_param_detail["スキル"] = self.canvas.create_text(
+            x, y,
+            font = ("helvetica", font_size),
+            text = "スキル"
+        )
+        # 覚えているスキルを表示
+        for skill_name, prob in data.items():
+            # 使う可能性のあるスキルだけを表示
+            if prob>0:
+                # 文字の座標
+                x, y = 450, 50*i+200
+                # 覚えているスキルを表示
+                self.text_monster_param_detail[skill_name] = self.canvas.create_text(
+                    x, y,
+                    font = ("helvetica", font_size),
+                    text = skill_name
+                )
+                i += 1
+        
+        # 使うデータを選択
+        data = deepcopy(json_data.monster[name])["attribute_damage_rate"]
+        # ループ変数
+        i = 0
+        # 文字の大きさ
+        font_size = 18
+        # 文字の座標
+        x, y = 830, 100
+        # 「耐性」の文字を表示
+        self.text_monster_param_detail["耐性"] = self.canvas.create_text(
+            x, y,
+            font = ("helvetica", font_size),
+            text = "耐性"
+        )
+        # 属性耐性を表示
+        for attribute, damage_rate in data.items():
+            if damage_rate<=0:
+                val_content = "無効"
+            elif 0<damage_rate<0.4:
+                val_content = "激減"
+            elif 0.4<=damage_rate<=0.6:
+                val_content = "半減"
+            elif 0.6<damage_rate<=0.9:
+                val_content = "軽減"
+            elif 0.9<damage_rate<1.1:
+                val_content = "普通"
+            elif 1.1<=damage_rate:
+                val_content = "弱点"
+            # 文字の座標
+            x, y = 650, 40*i+150
+            # 属性耐性を表示
+            self.text_monster_param_detail[f"{attribute}_key"] = self.canvas.create_text(
+                x, y,
+                font = ("helvetica", font_size),
+                text = attribute
+            )
+            self.text_monster_param_detail[f"{attribute}_val"] = self.canvas.create_text(
+                x+100, y,
+                font = ("helvetica", font_size),
+                text = val_content
+            )
+            i += 1
+        
+        # 使うデータを選択
+        data = deepcopy(json_data.monster[name])["status_ailment_probability"]
+        # ループ変数
+        i = 0
+        # 状態異常耐性を表示
+        for ailment, prob in data.items():
+            if prob<=0:
+                val_content = "無効"
+            elif 0<prob<0.3:
+                val_content = "激減"
+            elif 0.3<=prob<0.5:
+                val_content = "半減"
+            elif 0.5<=prob<0.7:
+                val_content = "軽減"
+            elif 0.7<=prob<0.9:
+                val_content = "普通"
+            elif 0.9<=prob:
+                val_content = "弱点"
+            # 文字の座標
+            x, y = 930, 40*i+150
+            # 状態異常を表示
+            self.text_monster_param_detail[f"{ailment}_key"] = self.canvas.create_text(
+                x, y,
+                font = ("helvetica", font_size),
+                text = ailment
+            )
+            self.text_monster_param_detail[f"{ailment}_val"] = self.canvas.create_text(
+                x+130, y,
+                font = ("helvetica", font_size),
+                text = val_content
+            )
+            i += 1
+                
     def make_close_button_monster_detail(self) -> None:
         """
         モンスター情報の画面を閉じるボタンを表示する
