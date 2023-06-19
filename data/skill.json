@@ -11,7 +11,7 @@
         "miss_probability": 0.1,
         "critical_probability": 0.05,
         "message": "の攻撃！",
-        "description": "通常攻撃を行う。"
+        "description": "敵1体に通常攻撃を行う。"
     },
     "ミス": {
         "type": null,
@@ -24,7 +24,7 @@
         "miss_probability": 1,
         "critical_probability": 0,
         "message": "の攻撃！",
-        "description": "通常攻撃を行い、必ずミスになる。"
+        "description": "敵1体に通常攻撃を行い、必ずミスになる。"
     },
     "会心の一撃": {
         "type": "physics",
@@ -37,7 +37,7 @@
         "miss_probability": 0,
         "critical_probability": 1,
         "message": "の攻撃！会心の一撃！",
-        "description": "通常攻撃を行い、必ず会心の一撃になる。"
+        "description": "敵1体に通常攻撃を行い、必ず会心の一撃になる。"
     },
     "痛恨の一撃": {
         "type": "physics",
@@ -50,7 +50,7 @@
         "miss_probability": 0,
         "critical_probability": 1,
         "message": "の攻撃！",
-        "description": "通常攻撃を行い、必ず痛恨の一撃になる。"
+        "description": "敵1体に通常攻撃を行い、必ず痛恨の一撃になる。"
     },
     "大きくなぎ払う": {
         "type": "physics",
@@ -63,7 +63,7 @@
         "miss_probability": 0.1,
         "critical_probability": 0,
         "message": "は大きくなぎ払った！",
-        "description": "左から順に、通常攻撃の100%、75%、50%のダメージを与える。"
+        "description": "敵全体に攻撃する。左から順に、通常攻撃の1倍、0.75倍、0.5倍のダメージを与える。"
     },
     "もろば斬り": {
         "type": "physics",
@@ -76,7 +76,7 @@
         "miss_probability": 0.1,
         "critical_probability": 0,
         "message": "は危険をかえりみず斬りかかった！",
-        "description": "通常攻撃の150%のダメージを与えて、自分も与えたダメージの30%を受ける。"
+        "description": "敵1体に通常攻撃の1.5倍のダメージを与えて、自分も与えたダメージの30%を受ける。"
     },
     "魔神斬り": {
         "type": "physics",
@@ -89,7 +89,7 @@
         "critical_probability": 1,
         "miss_probability": 0.5,
         "message": "は魔神のごとく斬りかかった！",
-        "description": "50%の確率で会心の一撃になり、そうでなければミスになる。"
+        "description": "敵1体に攻撃する。2分の1の確率で会心の一撃になり、そうでなければミスになる。"
     },
     "さみだれ斬り": {
         "type": "physics",
@@ -102,13 +102,13 @@
         "miss_probability": 0.1,
         "critical_probability": 0,
         "message": "はさみだれ斬りを放った！",
-        "description": "左から順に、通常攻撃の100%、75%、50%のダメージを与える。"
+        "description": "敵全体に攻撃する。左から順に、通常攻撃の1倍、0.75倍、0.5倍のダメージを与える。"
     },
     "メラ属性": "",
     "メラ": {
         "type": "magic",
         "attribute": "メラ",
-        "damage_rate": 1.1,
+        "damage_rate": 1.2,
         "self_damage_ratio_to_calc_damage": 0,
         "mp_consumption": 3,
         "range": "single",
@@ -116,7 +116,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はメラを唱えた！",
-        "description": "小さな火の玉で攻撃する。"
+        "description": "敵1体に賢さの1.2倍のダメージを与える。"
     },
     "メラミ": {
         "type": "magic",
@@ -129,7 +129,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はメラミを唱えた！",
-        "description": ""
+        "description": "敵1体に賢さの1.4倍のダメージを与える。"
     },
     "火炎斬り": {
         "type": "physics",
@@ -141,7 +141,8 @@
         "is_decreasing": false,
         "miss_probability": 0.1,
         "critical_probability": 0.05,
-        "message": "は火炎斬りを放った！"
+        "message": "は火炎斬りを放った！",
+        "description": "敵1体に通常攻撃の1.3倍のダメージを与える。"
     },
     "ヒャド属性": "",
     "ヒャド": {
@@ -154,7 +155,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0.05,
-        "message": "はヒャドを唱えた！"
+        "message": "はヒャドを唱えた！",
+        "description": "敵1体に賢さの1倍のダメージを与える。"
     },
     "ヒャダルコ": {
         "type": "magic",
@@ -166,7 +168,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0.05,
-        "message": "はヒャダルコを唱えた！"
+        "message": "はヒャダルコを唱えた！",
+        "description": "敵全体に賢さの1.3倍のダメージを与える。"
     },
     "マヒャド斬り": {
         "type": "physics",
@@ -178,20 +181,22 @@
         "is_decreasing": false,
         "miss_probability": 0.1,
         "critical_probability": 0.05,
-        "message": "はマヒャド斬りを放った！"
+        "message": "はマヒャド斬りを放った！",
+        "description": "敵1体に通常攻撃の1.3倍のダメージを与える。"
     },
     "バギ属性": "",
     "バギ": {
         "type": "magic",
         "attribute": "バギ",
-        "damage_rate": 1.2,
+        "damage_rate": 1.1,
         "self_damage_ratio_to_calc_damage": 0,
         "mp_consumption": 3,
         "range": "all",
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0.05,
-        "message": "はバギを唱えた！"
+        "message": "はバギを唱えた！",
+        "description": "敵1体に賢さの1.1倍のダメージを与える。"
     },
     "イオ属性": "",
     "デイン属性": "",
@@ -199,14 +204,15 @@
     "ドルマ": {
         "type": "magic",
         "attribute_damage_rate": "ドルマ",
-        "damage_rate": 1.1,
+        "damage_rate": 1.2,
         "self_damage_ratio_to_calc_damage": 0,
         "mp_consumption": 4,
         "range": "single",
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0.05,
-        "message": "はドルマを唱えた！"
+        "message": "はドルマを唱えた！",
+        "description": "敵1体に賢さの1.2倍のダメージを与える。"
     },
     "毒属性": "",
     "眠り属性": "",
@@ -220,7 +226,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0,
-        "message": "はあまい息を吐いた！"
+        "message": "はあまい息を吐いた！",
+        "description": "敵全体を眠らせる。"
     },
     "マヒ属性": "",
     "休み属性": "",
@@ -235,7 +242,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0.05,
-        "message": "はルカナンを唱えた！"
+        "message": "はルカナンを唱えた！",
+        "description": "敵全体の守備力を1段階下げる。"
     },
     "耐性ダウン属性": "",
     "即死属性": ""
