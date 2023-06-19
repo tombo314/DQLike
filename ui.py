@@ -344,6 +344,10 @@ class UI:
         if self.party_edit_end_button is not None:
             self.party_edit_end_button.destroy()
             self.party_edit_end_button = None
+        # モンスター情報のスキル（と特性（今はない））のボタンを削除
+        for skill_name, id_ in self.button_monster_detail.items():
+            id_.destroy()
+        self.button_monster_detail = {}
         # モンスターボックスモードを設定
         self.monster_box_mode = "all"
         # 「パーティー編成へ」のボタンを削除
@@ -731,13 +735,13 @@ class UI:
                     self.app,
                     text=skill_name,
                     font=("", 18),
-                    width=6,
-                    height=1,
-                    command=lambda: self.show_skill_description(skill_name)
+                    width=12,
+                    height=1
                 )
-                # 文字の座標
-                x, y = 450, 40*i+170
+                # ボタンの座標
+                x, y = 360, 50*i+150
                 self.button_monster_detail[skill_name].place(x=x, y=y)
+                self.button_monster_detail[skill_name].bind("<ButtonPress>", self.show_skill_description)
                 i += 1
         
         # 使うデータを選択
@@ -816,24 +820,35 @@ class UI:
             )
             i += 1
 
-    def show_skill_description(self, skill_name: str) -> None:
+    def show_skill_description(self, event) -> None:
         """
         スキルの説明を表示する
-        skill_name: スキルの名前
         """
+        # スキルの名前を取得する
+        skill_name = event.widget["text"]
         # 前の表示を削除する
         if self.text_skill_description is not None:
             self.canvas.delete(self.text_skill_description)
             self.text_skill_description = None
         # 文字のxy座標
-        x, y = 460, 480
+        x, y = 350, 480
         # 文字の大きさ
         font_size = 18
+        # 文を改行する
+        content = list(json_data.skill[skill_name]["description"])
+        chars_per_line = 30
+        tmp = []
+        for idx, char in enumerate(content):
+            tmp.append(char)
+            if idx%chars_per_line==0 and idx>0:
+                tmp.append("\n")
+        content = "".join(tmp)
         # スキルの説明を表示する
         self.text_skill_description = self.canvas.create_text(
             x, y,
             font = ("helvetica", font_size),
-            text = json_data.skill[skill_name]["description"]
+            text = content,
+            anchor=tk.NW
         )
 
     def make_close_button_monster_detail(self) -> None:
@@ -861,8 +876,8 @@ class UI:
         """
         スキル説明の枠を表示する
         """
-        start_x, start_y = 350, 470
-        width, height = 700, 100
+        start_x, start_y = 340, 470
+        width, height = 730, 100
         end_x, end_y = start_x+width, start_y+height
         self.skill_description_box = self.canvas.create_rectangle(
             start_x, start_y,
