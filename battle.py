@@ -374,13 +374,13 @@ class Battle:
         if enemy_or_friend=="enemy":
             # 死んでいたら攻撃の対象にならない
             mons_name = [mons["name"] for mons in self.enemy]
-            while mons==None or self.dead[0][mons]==True:
+            while mons is None or self.dead[0][mons]==True:
                 mons = rd.choice(mons_name)
             return mons
         elif enemy_or_friend=="friend":
             # 死んでいたら攻撃の対象にならない
             mons_name = [mons["name"] for mons in self.friend]
-            while mons==None or self.dead[1][mons]==True:
+            while mons is None or self.dead[1][mons]==True:
                 mons = rd.choice(mons_name)
             return mons
 
@@ -445,7 +445,7 @@ class Battle:
         # 全体攻撃かどうか
         if using_skill["range"]=="all":
             is_all = True
-        elif using_skill["range"]=="single" or using_skill["range"]==None:
+        elif using_skill["range"]=="single":
             is_all = False
         # ダメージが逓減するかどうか
         if using_skill["is_decreasing"]==True:
@@ -562,9 +562,9 @@ class Battle:
                 self.kill_monster(defending_monster["name"], defense_is_friend)
             is_first_attack = False
             # ダメージを減少させる
-            decreasing_rate_of_decreasing_rate = 0.25
+            decreasing_num_of_decreasing_rate = 0.25
             if is_decreasing==True:
-                damage_decreasing_rate -= decreasing_rate_of_decreasing_rate
+                damage_decreasing_rate -= decreasing_num_of_decreasing_rate
         if is_all==True:
             sleep(SHOW_DURATION*0.7)
         # 自傷ダメージ
@@ -625,7 +625,7 @@ class Battle:
                     offense_is_friend = True
                 skill_name = self.select_skill(json_data.monster[offensing_monster]["skill_select_probability"][offense_enemy_or_friend])
                 # 単体攻撃
-                if json_data.skill[skill_name]["range"]=="single" or json_data.skill[skill_name]["range"] is None:
+                if json_data.skill[skill_name]["range"]=="single":
                     defending_monster = self.select_monster_at_random(deffense_enemy_or_friend)
                     # 防御側のパーティーが全滅したかどうか
                     continue_ = self.attack_on_monster(
