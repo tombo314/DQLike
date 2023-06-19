@@ -148,7 +148,7 @@
     "ヒャド": {
         "type": "magic",
         "attribute": "ヒャド",
-        "damage_rate": 1.0,
+        "damage_rate": 1,
         "self_damage_ratio_to_calc_damage": 0,
         "mp_consumption": 2,
         "range": "single",
