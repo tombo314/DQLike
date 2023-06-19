@@ -116,7 +116,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はメラを唱えた！",
-        "description": "敵1体に賢さの1.2倍のダメージを与える。"
+        "description": "敵1体に賢さの1.2倍のメラ系ダメージを与える。"
     },
     "メラミ": {
         "type": "magic",
@@ -129,7 +129,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はメラミを唱えた！",
-        "description": "敵1体に賢さの1.4倍のダメージを与える。"
+        "description": "敵1体に賢さの1.4倍のメラ系ダメージを与える。"
     },
     "火炎斬り": {
         "type": "physics",
@@ -142,7 +142,7 @@
         "miss_probability": 0.1,
         "critical_probability": 0.05,
         "message": "は火炎斬りを放った！",
-        "description": "敵1体に通常攻撃の1.3倍のダメージを与える。"
+        "description": "敵1体に通常攻撃の1.3倍のメラ系ダメージを与える。"
     },
     "ヒャド属性": "",
     "ヒャド": {
@@ -156,7 +156,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はヒャドを唱えた！",
-        "description": "敵1体に賢さの1倍のダメージを与える。"
+        "description": "敵1体に賢さの1倍のヒャド系ダメージを与える。"
     },
     "ヒャダルコ": {
         "type": "magic",
@@ -169,7 +169,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はヒャダルコを唱えた！",
-        "description": "敵全体に賢さの1.3倍のダメージを与える。"
+        "description": "敵全体に賢さの1.3倍のヒャド系ダメージを与える。"
     },
     "マヒャド斬り": {
         "type": "physics",
@@ -182,7 +182,7 @@
         "miss_probability": 0.1,
         "critical_probability": 0.05,
         "message": "はマヒャド斬りを放った！",
-        "description": "敵1体に通常攻撃の1.3倍のダメージを与える。"
+        "description": "敵1体に通常攻撃の1.3倍のヒャド系ダメージを与える。"
     },
     "バギ属性": "",
     "バギ": {
@@ -196,7 +196,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はバギを唱えた！",
-        "description": "敵1体に賢さの1.1倍のダメージを与える。"
+        "description": "敵1体に賢さの1.1倍のバギ系ダメージを与える。"
     },
     "イオ属性": "",
     "デイン属性": "",
@@ -212,7 +212,7 @@
         "miss_probability": 0,
         "critical_probability": 0.05,
         "message": "はドルマを唱えた！",
-        "description": "敵1体に賢さの1.2倍のダメージを与える。"
+        "description": "敵1体に賢さの1.2倍のドルマ系ダメージを与える。"
     },
     "毒属性": "",
     "眠り属性": "",
