@@ -10,7 +10,8 @@
         "is_decreasing": false,
         "miss_probability": 0.1,
         "critical_probability": 0.05,
-        "message": "の攻撃！"
+        "message": "の攻撃！",
+        "description": "通常攻撃を行う。"
     },
     "ミス": {
         "type": null,
@@ -18,11 +19,12 @@
         "damage_rate": 0,
         "self_damage_ratio_to_calc_damage": 0,
         "mp_consumption": 0,
-        "range": null,
+        "range": "single",
         "is_decreasing": false,
         "miss_probability": 1,
         "critical_probability": 0,
-        "message": "の攻撃！"
+        "message": "の攻撃！",
+        "description": "通常攻撃を行い、必ずミスになる。"
     },
     "会心の一撃": {
         "type": "physics",
@@ -34,7 +36,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 1,
-        "message": "の攻撃！会心の一撃！"
+        "message": "の攻撃！会心の一撃！",
+        "description": "通常攻撃を行い、必ず会心の一撃になる。"
     },
     "痛恨の一撃": {
         "type": "physics",
@@ -46,7 +49,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 1,
-        "message": "の攻撃！"
+        "message": "の攻撃！",
+        "description": "通常攻撃を行い、必ず痛恨の一撃になる。"
     },
     "大きくなぎ払う": {
         "type": "physics",
@@ -58,7 +62,8 @@
         "is_decreasing": true,
         "miss_probability": 0.1,
         "critical_probability": 0,
-        "message": "は大きくなぎ払った！"
+        "message": "は大きくなぎ払った！",
+        "description": "左から順に、通常攻撃の100%、75%、50%のダメージを与える。"
     },
     "もろば斬り": {
         "type": "physics",
@@ -70,7 +75,8 @@
         "is_decreasing": false,
         "miss_probability": 0.1,
         "critical_probability": 0,
-        "message": "は危険をかえりみず斬りかかった！"
+        "message": "は危険をかえりみず斬りかかった！",
+        "description": "通常攻撃の150%のダメージを与えて、自分も与えたダメージの30%を受ける。"
     },
     "魔神斬り": {
         "type": "physics",
@@ -82,7 +88,8 @@
         "is_decreasing": false,
         "critical_probability": 1,
         "miss_probability": 0.5,
-        "message": "は魔神のごとく斬りかかった！"
+        "message": "は魔神のごとく斬りかかった！",
+        "description": "50%の確率で会心の一撃になり、そうでなければミスになる。"
     },
     "さみだれ斬り": {
         "type": "physics",
@@ -94,7 +101,8 @@
         "is_decreasing": true,
         "miss_probability": 0.1,
         "critical_probability": 0,
-        "message": "はさみだれ斬りを放った！"
+        "message": "はさみだれ斬りを放った！",
+        "description": "左から順に、通常攻撃の100%、75%、50%のダメージを与える。"
     },
     "メラ属性": "",
     "メラ": {
@@ -107,7 +115,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0.05,
-        "message": "はメラを唱えた！"
+        "message": "はメラを唱えた！",
+        "description": "小さな火の玉で攻撃する。"
     },
     "メラミ": {
         "type": "magic",
@@ -119,7 +128,8 @@
         "is_decreasing": false,
         "miss_probability": 0,
         "critical_probability": 0.05,
-        "message": "はメラミを唱えた！"
+        "message": "はメラミを唱えた！",
+        "description": ""
     },
     "火炎斬り": {
         "type": "physics",
