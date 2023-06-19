@@ -1,6 +1,3 @@
-# debug
-from pprint import pprint
-
 # ライブラリをインポート
 from time import sleep
 from copy import deepcopy
@@ -64,12 +61,18 @@ class UI:
         self.friend_tmp = []
         # モンスターの名前ボタンのNORMAL・DISABLED
         self.monster_button_state = [tk.NORMAL]*1000
-        # モンスターの詳細画面の画像
+        # モンスター情報の画像
         self.monster_image_detail = None
-        # モンスターの詳細画面のパラメータの文字のインスタンス
-        self.text_monster_param_detail = {}
+        # モンスター情報のパラメータの文字のインスタンス
+        self.text_monster_detail = {}
+        # モンスター情報のスキルと特性のボタン
+        self.button_monster_detail = {}
+        # モンスタのー情報のスキル説明の文字のインスタンス
+        self.text_skill_description = None
         # モンスター情報の画面を閉じるボタンのインスタンス
         self.close_button_monster_detail = None
+        # スキル説明の枠
+        self.skill_description_box = None
     
     def init_all_button(self) -> None:
         """
@@ -638,32 +641,32 @@ class UI:
                 event.widget["state"] = tk.NORMAL
                 self.monster_button_state[mons_info["id"]-1] = tk.NORMAL
     
-    def show_monster_param_detail(self, name: str, level: int) -> None:
+    def show_monster_detail(self, name: str, level: int) -> None:
         """
         モンスター情報でモンスターのパラメータを表示する
         name: モンスターの名前
         level: モンスターのレベル
         """
         # モンスター情報の文字のインスタンスのdictを初期化する
-        self.text_monster_param_detail.clear()
+        self.text_monster_detail.clear()
 
         # 文字の座標
-        x, y = 150, 250
+        x, y = 150, 240
         # 文字の大きさ
         font_size = 18
         # 名前を表示
-        self.text_monster_param_detail["name"] = self.canvas.create_text(
+        self.text_monster_detail["name"] = self.canvas.create_text(
             x, y,
             font = ("helvetica", font_size),
             text = name
         )
         
         # 文字の座標
-        x, y = 250, 250
+        x, y = 250, 240
         # 文字の大きさ
         font_size = 16
         # レベルを表示
-        self.text_monster_param_detail["level"] = self.canvas.create_text(
+        self.text_monster_detail["level"] = self.canvas.create_text(
             x+len(name)*5, y,
             font = ("helvetica", font_size),
             text = f"Lv. {level}"
@@ -678,7 +681,7 @@ class UI:
         # ループ変数
         i = 0
         # 文字の座標
-        x, y = 160, 280
+        x, y = 160, 290
         # 文字の大きさ
         font_size = 18
         # パラメータに合わせて文字を設定
@@ -696,13 +699,13 @@ class UI:
             elif param=="agility":
                 key_content = "素早さ"
             # パラメータを表示
-            self.text_monster_param_detail[f"{param}_key"] = self.canvas.create_text(
-                x, y+30*i,
+            self.text_monster_detail[f"{param}_key"] = self.canvas.create_text(
+                x, y+35*i,
                 font = ("helvetica", font_size),
                 text = key_content
             )
-            self.text_monster_param_detail[f"{param}_val"] = self.canvas.create_text(
-                x+100, y+30*i,
+            self.text_monster_detail[f"{param}_val"] = self.canvas.create_text(
+                x+100, y+35*i,
                 font = ("helvetica", font_size-2),
                 text = val
             )
@@ -713,8 +716,8 @@ class UI:
         # ループ変数
         i = 0
         # 「スキル」の文字を表示
-        x, y = 450, 130
-        self.text_monster_param_detail["スキル"] = self.canvas.create_text(
+        x, y = 450, 100
+        self.text_monster_detail["スキル"] = self.canvas.create_text(
             x, y,
             font = ("helvetica", font_size),
             text = "スキル"
@@ -723,14 +726,18 @@ class UI:
         for skill_name, prob in data.items():
             # 使う可能性のあるスキルだけを表示
             if prob>0:
-                # 文字の座標
-                x, y = 450, 50*i+200
                 # 覚えているスキルを表示
-                self.text_monster_param_detail[skill_name] = self.canvas.create_text(
-                    x, y,
-                    font = ("helvetica", font_size),
-                    text = skill_name
+                self.button_monster_detail[skill_name] = tk.Button(
+                    self.app,
+                    text=skill_name,
+                    font=("", 18),
+                    width=6,
+                    height=1,
+                    command=lambda: self.show_skill_description(skill_name)
                 )
+                # 文字の座標
+                x, y = 450, 40*i+170
+                self.button_monster_detail[skill_name].place(x=x, y=y)
                 i += 1
         
         # 使うデータを選択
@@ -742,7 +749,7 @@ class UI:
         # 文字の座標
         x, y = 830, 100
         # 「耐性」の文字を表示
-        self.text_monster_param_detail["耐性"] = self.canvas.create_text(
+        self.text_monster_detail["耐性"] = self.canvas.create_text(
             x, y,
             font = ("helvetica", font_size),
             text = "耐性"
@@ -764,12 +771,12 @@ class UI:
             # 文字の座標
             x, y = 650, 40*i+150
             # 属性耐性を表示
-            self.text_monster_param_detail[f"{attribute}_key"] = self.canvas.create_text(
+            self.text_monster_detail[f"{attribute}_key"] = self.canvas.create_text(
                 x, y,
                 font = ("helvetica", font_size),
                 text = attribute
             )
-            self.text_monster_param_detail[f"{attribute}_val"] = self.canvas.create_text(
+            self.text_monster_detail[f"{attribute}_val"] = self.canvas.create_text(
                 x+100, y,
                 font = ("helvetica", font_size),
                 text = val_content
@@ -797,18 +804,38 @@ class UI:
             # 文字の座標
             x, y = 930, 40*i+150
             # 状態異常を表示
-            self.text_monster_param_detail[f"{ailment}_key"] = self.canvas.create_text(
+            self.text_monster_detail[f"{ailment}_key"] = self.canvas.create_text(
                 x, y,
                 font = ("helvetica", font_size),
                 text = ailment
             )
-            self.text_monster_param_detail[f"{ailment}_val"] = self.canvas.create_text(
+            self.text_monster_detail[f"{ailment}_val"] = self.canvas.create_text(
                 x+130, y,
                 font = ("helvetica", font_size),
                 text = val_content
             )
             i += 1
-                
+
+    def show_skill_description(self, skill_name: str) -> None:
+        """
+        スキルの説明を表示する
+        skill_name: スキルの名前
+        """
+        # 前の表示を削除する
+        if self.text_skill_description is not None:
+            self.canvas.delete(self.text_skill_description)
+            self.text_skill_description = None
+        # 文字のxy座標
+        x, y = 460, 480
+        # 文字の大きさ
+        font_size = 18
+        # スキルの説明を表示する
+        self.text_skill_description = self.canvas.create_text(
+            x, y,
+            font = ("helvetica", font_size),
+            text = json_data.skill[skill_name]["description"]
+        )
+
     def make_close_button_monster_detail(self) -> None:
         """
         モンスター情報の画面を閉じるボタンを表示する
@@ -830,6 +857,21 @@ class UI:
         x, y = 0, 0
         self.close_button_monster_detail.place(x=x, y=y)
     
+    def make_skill_description_box(self) -> None:
+        """
+        スキル説明の枠を表示する
+        """
+        start_x, start_y = 350, 470
+        width, height = 700, 100
+        end_x, end_y = start_x+width, start_y+height
+        self.skill_description_box = self.canvas.create_rectangle(
+            start_x, start_y,
+            end_x, end_y,
+            fill = "#eee",
+            outline = "#777",
+            width=3
+        )
+    
     def show_monster_info(self, mons_info) -> None:
         """
         モンスターの詳細情報を表示する
@@ -846,7 +888,9 @@ class UI:
         # モンスターの画像を表示する
         self.plot_image_monster_detail(mons_info["name"])
         # モンスターのパラメータを表示する
-        self.show_monster_param_detail(mons_info["name"], mons_info["level"])
+        self.show_monster_detail(mons_info["name"], mons_info["level"])
+        # スキル説明の枠を表示する
+        self.make_skill_description_box()
     
     def add_or_remove_monster(self, mons: dict, add_or_remove: str) -> None:
         """
@@ -863,12 +907,6 @@ class UI:
             self.remove_image_party_all()
             self.show_party_image()
     
-    def show_user_info(self) -> None:
-        """
-        自分の情報を表示する
-        """
-        # self.delete_all_ui()
-
     def close_monster_box(self) -> None:
         """
         モンスターボックスを閉じる
