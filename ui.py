@@ -1,13 +1,13 @@
 # ライブラリをインポート
 from time import sleep
 from copy import deepcopy
+from numpy import base_repr
 import tkinter as tk
 
 # クラスをインポート
 from config import *
 from json_data import json_data
 from user_info import user_info
-from numpy import base_repr
 
 class UI:
     """
@@ -921,6 +921,21 @@ class UI:
             self.friend_tmp.remove(mons)
             self.remove_image_party_all()
             self.show_party_image()
+    
+    def get_makable_monster(self, name: str) -> dict:
+        """
+        配合先のモンスターの候補を表示する
+        name: モンスターの名前
+        """
+        return json_data.fusion_tree[name]
+    
+    def show_fusion_screen(self) -> None:
+        """
+        配合画面を表示する
+        """
+        self.make_tk_window("配合")
+        self.
+        self.app.mainloop()
     
     def close_monster_box(self) -> None:
         """
