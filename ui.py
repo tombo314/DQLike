@@ -55,13 +55,13 @@ class UI:
         self.page = None
         # パーティーの枠
         self.party_frame = [None]*3
-        # パーティーの画像
+        # パーティーのモンスターの画像
         self.image_friend = [None]*3
         # 仮の味方パーティー
         self.friend_tmp = []
         # モンスターの名前ボタンのNORMAL・DISABLED
         self.monster_button_state = [tk.NORMAL]*1000
-        # モンスター情報の画像
+        # モンスター情報のモンスターの画像
         self.monster_image_detail = None
         # モンスター情報のパラメータの文字のインスタンス
         self.text_monster_detail = {}
@@ -73,6 +73,14 @@ class UI:
         self.close_button_monster_detail = None
         # スキル説明の枠
         self.skill_description_box = None
+        # 親モンスターの枠
+        self.monster_frame_fusion = {"parent_1": None, "parent_2": None, "child": None}
+        # 配合画面のモンスターの画像
+        self.monster_image_fusion = {"parent_1": None, "parent_2": None, "child": None}
+        # 配合画面の文字
+        self.text_fusion = {"parent_1": None, "parent_2": None, "child": None}
+        # 配合画面の線
+        self.line_fusion = None
     
     def init_all_button(self) -> None:
         """
@@ -148,6 +156,26 @@ class UI:
         self.image_friend[idx] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_friend[idx], anchor=tk.NW)
+    
+    def plot_image_fusion(self, name: str, parent_or_child: str) -> None:
+        """
+        モンスターの画像を表示する（配合画面）
+        name: モンスターの名前
+        parent_or_child: 「parent_1」「parent_2」「child」のどれか
+        """ 
+        # 画像のパス
+        path = f"images/png_resized/{name}_resized.png",
+        # 画像の座標
+        if parent_or_child=="parent_1":
+            x, y = 100, 130
+        elif parent_or_child=="parent_2":
+            x, y = 100, 300
+        elif parent_or_child=="child":
+            x, y = 180, 215
+        # イメージを作成
+        self.monster_image_fusion[parent_or_child].append(tk.PhotoImage(file=path, width=130, height=130))
+        # キャンバスにイメージを表示
+        self.canvas.create_image(x, y, image=self.monster_image_fusion[parent_or_child], anchor=tk.NW)
     
     def plot_image_monster_detail(self, name: str) -> None:
         """
@@ -929,12 +957,69 @@ class UI:
         """
         return json_data.fusion_tree[name]
     
+    def show_text_fusion(self) -> None:
+        """
+        文字を表示する（配合画面）
+        """
+        modes = ["parent_1", "parent_2", "child"]
+        for mode in modes:
+            if mode=="parent_1":
+                x, y = 170, 110
+                content = "親1"
+            elif mode=="parent_2":
+                x, y = 170, 290
+                content = "親2"
+            elif mode=="child":
+                x, y = 470, 195
+                content = "子"
+            # 文字を表示する
+            self.text_fusion[mode] = self.canvas.create_text(
+                x, y,
+                font = ("helvetica", 18),
+                text = content
+            )
+    
+    def show_monster_frame_fusion(self) -> None:
+        """
+        モンスターの枠と線を表示する（配合画面）
+        """
+        # 線を表示する
+        start_x, start_y = 270, 275
+        diff_x, diff_y = 100, 0
+        end_x, end_y = start_x+diff_x, start_y+diff_y
+        self.line_fusion = self.canvas.create_line(
+            start_x, start_y,
+            end_x, end_y,
+            fill="#999",
+            width=5
+        )
+        self.canvas.update()
+        # モンスターの枠を表示する
+        modes = ["parent_1", "parent_2", "child"]
+        for mode in modes:
+            if mode=="parent_1":
+                start_x, start_y = 100, 130
+            elif mode=="parent_2":
+                start_x, start_y = 100, 310
+            elif mode=="child":
+                start_x, start_y = 400, 215
+            width, height = 140, 120
+            end_x, end_y = start_x+width, start_y+height
+            self.monster_frame_fusion[mode] = self.canvas.create_rectangle(
+                start_x, start_y,
+                end_x, end_y,
+                fill="#eee",
+                outline="#777",
+                width=3
+            )
+    
     def show_fusion_screen(self) -> None:
         """
         配合画面を表示する
         """
         self.make_tk_window("配合")
-        self.
+        self.show_monster_frame_fusion()
+        self.show_text_fusion()
         self.app.mainloop()
     
     def close_monster_box(self) -> None:
