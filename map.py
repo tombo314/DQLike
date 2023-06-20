@@ -50,6 +50,8 @@ class Map:
         self.encounter_prob = 0
         # 移動した回数
         self.move_cnt = 0
+        # Tkinterのウィンドウを開いているか
+        self.tk_opening = False
     
     def load_image(self, filename, colorkey=None):
         image = pygame.image.load(filename)
@@ -115,7 +117,9 @@ class Map:
             self.encounter_prob = 0
             self.move_cnt = 0
             # バトルを開始する
+            self.tk_opening = True
             battle.start_battle(enemy)
+            self.tk_opening = False
         # エンカウントしない
         else:
             # 確率を調整する
@@ -187,9 +191,17 @@ class Map:
                     # キーの入力間隔を空ける
                     key_inputted = True
                 # モンスターボックスを開く
-                elif event.type==KEYDOWN and event.key==K_e:
-                    # モンスターボックスを開く
+                elif event.type==KEYDOWN and event.key==K_e and self.tk_opening==False:
+                    # モンスターボックスを表示する
+                    self.tk_opening = True
                     self.show_monster_box()
+                    self.tk_opening = False
+                # 配合
+                elif event.type==KEYDOWN and event.key==K_f and self.tk_opening==False:
+                    # 配合画面を表示する
+                    self.tk_opening = True
+                    ui.show_fusion_screen()
+                    self.tk_opening = False
                 break
 
 map_ = Map()
