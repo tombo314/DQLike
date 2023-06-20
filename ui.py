@@ -81,6 +81,12 @@ class UI:
         self.text_fusion = {"parent_1": None, "parent_2": None, "child": None}
         # 配合画面の線
         self.line_fusion = None
+        # 配合画面のモンスターのボタン
+        self.monster_button_fusion = [None]*30
+        # 配合の親
+        self.fusion_parent = []
+        # 配合先のモンスター
+        self.fusion_child = None
     
     def init_all_button(self) -> None:
         """
@@ -157,7 +163,7 @@ class UI:
         # キャンバスにイメージを表示
         self.canvas.create_image(x, y, image=self.image_friend[idx], anchor=tk.NW)
     
-    def plot_image_fusion(self, name: str, parent_or_child: str) -> None:
+    def plot_image_fusion(self, name: str, mode: str) -> None:
         """
         モンスターの画像を表示する（配合画面）
         name: モンスターの名前
@@ -166,16 +172,18 @@ class UI:
         # 画像のパス
         path = f"images/png_resized/{name}_resized.png",
         # 画像の座標
-        if parent_or_child=="parent_1":
-            x, y = 100, 130
-        elif parent_or_child=="parent_2":
-            x, y = 100, 300
-        elif parent_or_child=="child":
-            x, y = 180, 215
+        if mode=="parent_1":
+            x, y = 125, 145
+        elif mode=="parent_2":
+            x, y = 130, 330
+        elif mode=="child":
+            x, y = 420, 230
+        if name=="ドラキー" or name=="ボストロール":
+            x -= 20
         # イメージを作成
-        self.monster_image_fusion[parent_or_child].append(tk.PhotoImage(file=path, width=130, height=130))
+        self.monster_image_fusion[mode] = tk.PhotoImage(file=path, width=130, height=130)
         # キャンバスにイメージを表示
-        self.canvas.create_image(x, y, image=self.monster_image_fusion[parent_or_child], anchor=tk.NW)
+        self.canvas.create_image(x, y, image=self.monster_image_fusion[mode], anchor=tk.NW)
     
     def plot_image_monster_detail(self, name: str) -> None:
         """
@@ -1013,13 +1021,43 @@ class UI:
                 width=3
             )
     
+    def set_parent_fusion(self, event) -> None:
+        """
+        配合の親を設定する
+        """
+        name = event.widget["text"].split()[0]
+        self.fusion_parent = []
+        # 配合の親を追加する
+        self.fusion_parent.append(name)
+        for name in self.fusion_parent:
+            self.plot_image_fusion(name, "parent_1")
+    
+    def show_monster_fusion(self) -> None:
+        """
+        モンスターの一覧を表示する
+        """
+        for i in range(min(10, len(json_data.save_data["monster"]))):
+            mons = json_data.save_data["monster"][str(i+1)]
+            self.monster_button_fusion[i] = tk.Button(
+                self.app,
+                text=f"{mons['name']} Lv.{mons['level']}",
+                font=("", 18),
+                width=16,
+                height=2
+            )
+            mons_per_line = 2
+            x, y = 250*(i%mons_per_line)+600, 100*(i//mons_per_line)+100
+            self.monster_button_fusion[i].place(x=x, y=y)
+            self.monster_button_fusion[i].bind("<ButtonPress>", self.set_parent_fusion)
+    
     def show_fusion_screen(self) -> None:
         """
         配合画面を表示する
         """
-        self.make_tk_window("配合")
+        self.make_tk_window("モンスター配合所")
         self.show_monster_frame_fusion()
         self.show_text_fusion()
+        self.show_monster_fusion()
         self.app.mainloop()
     
     def close_monster_box(self) -> None:
