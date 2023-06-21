@@ -253,6 +253,7 @@ class UI:
             height = height
         )
         self.canvas.pack()
+        self.canvas.update()
 
     def delete_all_ui(self) -> None:
         """
