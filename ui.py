@@ -28,11 +28,11 @@ class UI:
         # モンスターの詳細に遷移するボタン
         self.button_monster = [None]*12
         # 次のページに進むボタン
-        self.button_page_next = None
+        self.button_page_next_monster_box = None
         # モンスターボックスのテキスト
         self.text_monster_box = None
         # 前のページに戻るボタン
-        self.button_page_back = None
+        self.button_page_back_monster_box = None
         # モンスターボックスを閉じるボタン
         self.close_button_monster_box = None
         # 「パーティー編成」のボタン
@@ -51,8 +51,8 @@ class UI:
         self.monster_box_mode = None
         # モンスターボックスのモードの文字
         self.text_monster_box_mode = None
-        # モンスターボックスのページ数
-        self.page = None
+        # モンスターボックスのページ数（0-indexed）
+        self.page_monster_box = None
         # パーティーの枠
         self.party_frame = [None]*3
         # パーティーのモンスターの画像
@@ -87,6 +87,12 @@ class UI:
         self.fusion_parent = []
         # 配合先のモンスター
         self.fusion_child = None
+        # 配合画面で次のページに進むボタン
+        self.button_page_next_fusion = None
+        # 配合画面で前のページに戻るボタン
+        self.button_page_back_fusion = None
+        # 配合画面のページ数（0-indexed）
+        self.page_fusion = None
     
     def init_all_button(self) -> None:
         """
@@ -94,8 +100,8 @@ class UI:
         """
         self.party_edit_button = None
         self.party_edit_end_button = None
-        self.button_page_next = None
-        self.button_page_back = None
+        self.button_page_next_monster_box = None
+        self.button_page_back_monster_box = None
         self.close_button_monster_box = None
         self.close_button_monster_detail = None
         self.button_monster = [None]*12
@@ -248,12 +254,12 @@ class UI:
         すべてのUIを削除する
         """
         self.canvas.delete("all")
-        if self.button_page_next is not None:
-            self.button_page_next.destroy()
-            self.button_page_next = None
-        if self.button_page_back is not None:
-            self.button_page_back.destroy()
-            self.button_page_back = None
+        if self.button_page_next_monster_box is not None:
+            self.button_page_next_monster_box.destroy()
+            self.button_page_next_monster_box = None
+        if self.button_page_back_monster_box is not None:
+            self.button_page_back_monster_box.destroy()
+            self.button_page_back_monster_box = None
         for i in range(12):
             if self.button_monster[i] is not None:
                 self.button_monster[i].destroy()
@@ -433,7 +439,7 @@ class UI:
         # 仮の味方パーティーを設定
         self.friend_tmp = deepcopy(user_info.friend)
         # 編成されているモンスターのボタンの状態をtk.DISABLEDにする
-        for i in range(self.page*12, min((self.page+1)*12, len(json_data.save_data["monster"]))):
+        for i in range(self.page_monster_box*12, min((self.page_monster_box+1)*12, len(json_data.save_data["monster"]))):
             if self.monster_button_state[i]==tk.NORMAL:
                 self.button_monster[i%12]["state"] = tk.NORMAL
             elif self.monster_button_state[i]==tk.DISABLED:
@@ -470,11 +476,11 @@ class UI:
             elif self.monster_box_mode=="detail":
                 self.close_monster_detail()
         # →でモンスターボックスの次ページを表示
-        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Right" and self.page<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
-            self.show_next_page()
+        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Right" and self.page_monster_box<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+            self.show_next_page_monster_box()
         # ←でモンスターボックスの前ページを表示
-        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Left" and self.page>0:
-            self.show_previous_page()
+        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Left" and self.page_monster_box>0:
+            self.show_previous_page_monster_box()
     
     def show_party_image(self) -> None:
         """
@@ -488,7 +494,7 @@ class UI:
         自分が持っているモンスターを表示する
         """
         # モンスターボックスのページ数を初期化
-        self.page = 0
+        self.page_monster_box = 0
         # すべてのボタンを初期化
         self.init_all_button()
         # 仮の味方パーティーを初期化
@@ -536,7 +542,7 @@ class UI:
         # 「モンスターボックス」の文字とページ数を表示
         self.text_monster_box = self.canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
-            text = f"モンスターボックス（{self.page+1}／{page_all}）",
+            text = f"モンスターボックス（{self.page_monster_box+1}／{page_all}）",
             font = ("", 22)
         )
         # パーティーの枠を表示
@@ -544,7 +550,7 @@ class UI:
         # パーティーの画像を表示
         self.show_party_image()
         # モンスターの画像と詳細ボタンを表示
-        for i in range(self.page*12, min((self.page+1)*12, len(json_data.save_data["monster"]))):
+        for i in range(self.page_monster_box*12, min((self.page_monster_box+1)*12, len(json_data.save_data["monster"]))):
             name = json_data.save_data["monster"][str(i+1)]["name"]
             # 画像を表示
             width = 247*(i%4)+190
@@ -577,56 +583,56 @@ class UI:
             # ボタンを押したときの処理
             self.button_monster[i%12].bind("<ButtonPress>", self.press_monster_name_button)
         # 次のページに進むボタンを表示
-        if (self.page+1)*12<len(json_data.save_data["monster"]):
-            self.button_page_next = tk.Button(
+        if (self.page_monster_box+1)*12<len(json_data.save_data["monster"]):
+            self.button_page_next_monster_box = tk.Button(
                 self.app,
                 text = ">",
                 font=("", 18),
                 width=2,
                 height=7,
-                command=self.show_next_page
+                command=self.show_next_page_monster_box
             )
-            self.button_page_next.pack()
-            self.button_page_next.place(x=1140, y=240)
+            self.button_page_next_monster_box.pack()
+            self.button_page_next_monster_box.place(x=1140, y=240)
         # 最後のページだったら進むボタンを削除
-        elif (self.page+1)*12>=len(json_data.save_data["monster"]) and self.button_page_next is not None:
-            if self.button_page_next is not None:
-                self.button_page_next.destroy()
-                self.button_page_next = None
+        elif (self.page_monster_box+1)*12>=len(json_data.save_data["monster"]) and self.button_page_next_monster_box is not None:
+            if self.button_page_next_monster_box is not None:
+                self.button_page_next_monster_box.destroy()
+                self.button_page_next_monster_box = None
         # 前のページに戻るボタンを表示
-        if 0<self.page*12<len(json_data.save_data["monster"]):
-            self.button_page_back = tk.Button(
+        if 0<self.page_monster_box*12<len(json_data.save_data["monster"]):
+            self.button_page_back_monster_box = tk.Button(
                 self.app,
                 text = "<",
                 font=("", 18),
                 width=2,
                 height=7,
-                command=self.show_previous_page
+                command=self.show_previous_page_monster_box
             )
-            self.button_page_back.pack()
-            self.button_page_back.place(x=20, y=240)
+            self.button_page_back_monster_box.pack()
+            self.button_page_back_monster_box.place(x=20, y=240)
         # 最初のページだったら進むボタンを削除
-        elif self.page==0:
-            if self.button_page_back is not None:
-                self.button_page_back.destroy()
-                self.button_page_back = None
+        elif self.page_monster_box==0:
+            if self.button_page_back_monster_box is not None:
+                self.button_page_back_monster_box.destroy()
+                self.button_page_back_monster_box = None
         self.app.mainloop()
 
-    def show_next_page(self) -> None:
+    def show_next_page_monster_box(self) -> None:
         """
         次のページを表示する
         """
-        self.page += 1
+        self.page_monster_box += 1
         # 「パーティー編成へ」のボタンを表示
         if self.monster_box_mode=="all":
             self.make_party_edit_button()
         self.show_monster()
     
-    def show_previous_page(self) -> None:
+    def show_previous_page_monster_box(self) -> None:
         """
         前のページを表示する
         """
-        self.page -= 1
+        self.page_monster_box -= 1
         # 「パーティー編成へ」のボタンを表示
         if self.monster_box_mode=="all":
             self.make_party_edit_button()
@@ -637,7 +643,7 @@ class UI:
         押したボタンからモンスターの情報を得る
         event: ボタンを押したときのeventインスタンス
         """
-        return json_data.save_data["monster"][str(int(event.widget["bg"][6], 16)+1+12*self.page)]
+        return json_data.save_data["monster"][str(int(event.widget["bg"][6], 16)+1+12*self.page_monster_box)]
 
     def press_monster_name_button(self, event) -> None:
         """
@@ -978,7 +984,7 @@ class UI:
                 x, y = 170, 290
                 content = "親2"
             elif mode=="child":
-                x, y = 470, 195
+                x, y = 450, 195
                 content = "子"
             # 文字を表示する
             self.text_fusion[mode] = self.canvas.create_text(
@@ -992,7 +998,7 @@ class UI:
         モンスターの枠と線を表示する（配合画面）
         """
         # 線を表示する
-        start_x, start_y = 270, 275
+        start_x, start_y = 255, 280
         diff_x, diff_y = 100, 0
         end_x, end_y = start_x+diff_x, start_y+diff_y
         self.line_fusion = self.canvas.create_line(
@@ -1010,7 +1016,7 @@ class UI:
             elif mode=="parent_2":
                 start_x, start_y = 100, 310
             elif mode=="child":
-                start_x, start_y = 400, 215
+                start_x, start_y = 380, 215
             width, height = 140, 120
             end_x, end_y = start_x+width, start_y+height
             self.monster_frame_fusion[mode] = self.canvas.create_rectangle(
@@ -1046,18 +1052,73 @@ class UI:
                 height=2
             )
             mons_per_line = 2
-            x, y = 250*(i%mons_per_line)+600, 100*(i//mons_per_line)+100
+            x, y = 250*(i%mons_per_line)+630, 100*(i//mons_per_line)+100
             self.monster_button_fusion[i].place(x=x, y=y)
             self.monster_button_fusion[i].bind("<ButtonPress>", self.set_parent_fusion)
+    
+    def show_next_page_button_fusion(self) -> None:
+        """
+        次のページに進むボタンを表示する（配合画面）
+        """
+        self.button_page_next_fusion = tk.Button(
+            self.app,
+            text = ">",
+            font=("", 18),
+            width=2,
+            height=7,
+            command=self.show_next_page_fusion
+        )
+        x, y = 1140, 240
+        self.button_page_next_fusion.place(x=x, y=y)
+
+    def show_next_page_fusion(self) -> None:
+        """
+        次のページに進む（配合画面）
+        """
+        self.page_fusion += 1
+        self.show_monster_fusion()
+
+    def show_previous_page_button_fusion(self) -> None:
+        """
+        前のページに戻るボタンを表示する（配合画面）
+        """
+        self.button_page_back_fusion = tk.Button(
+            self.app,
+            text = "<",
+            font=("", 18),
+            width=2,
+            height=7,
+            command=self.show_previous_page_fusion
+        )
+        x, y = 550, 240
+        self.button_page_back_fusion.place(x=x, y=y)
+    
+    def show_previous_page_fusion(self) -> None:
+        """
+        前のページに戻る（配合画面）
+        """
+        self.page_fusion -= 1
+        self.show_monster_fusion()
     
     def show_fusion_screen(self) -> None:
         """
         配合画面を表示する
         """
+        # ページ数を初期化
+        self.page_fusion = 0
+        # Tkinterのインスタンスを作る
         self.make_tk_window("モンスター配合所")
+        # モンスターの親と子の枠を作る
         self.show_monster_frame_fusion()
+        # 「親1」「親2」「子」の文字を表示する
         self.show_text_fusion()
+        # モンスター一覧を表示する
         self.show_monster_fusion()
+        # 次のページに進むボタンを表示する
+        self.show_next_page_button_fusion()
+        # 前のページに戻るボタンを表示する
+        self.show_previous_page_button_fusion()
+        # 画面を表示する
         self.app.mainloop()
     
     def close_monster_box(self) -> None:
