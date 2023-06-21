@@ -1,5 +1,6 @@
 {
     "username": "tombo314",
+    "max_num_fusion_parent": 2,
     "monster": {
         "1": {
             "id": 1,
