@@ -93,6 +93,10 @@ class UI:
         self.button_page_back_fusion = None
         # 配合画面のページ数（0-indexed）
         self.page_fusion = None
+        # 配合画面かどうか
+        self.is_fusion_screen = False
+        # 配合画面を閉じるボタン
+        self.close_button_fusion = None
     
     def init_all_button(self) -> None:
         """
@@ -477,11 +481,17 @@ class UI:
             elif self.monster_box_mode=="detail":
                 self.close_monster_detail()
         # →でモンスターボックスの次ページを表示
-        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Right" and self.page_monster_box<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+        elif event.keysym=="Right" and (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and self.page_monster_box<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
             self.show_next_page_monster_box()
         # ←でモンスターボックスの前ページを表示
-        elif (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and event.keysym=="Left" and self.page_monster_box>0:
+        elif event.keysym=="Left" and (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and self.page_monster_box>0:
             self.show_previous_page_monster_box()
+        # →でモンスター配合所の次ページを表示
+        elif event.keysym=="Right" and self.is_fusion_screen==True and self.page_fusion<len(json_data.save_data["monster"])//10 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+            self.show_next_page_fusion()
+        # ←でモンスター配合所の前ページを表示
+        elif event.keysym=="Left" and self.is_fusion_screen==True and self.page_fusion>0:
+            self.show_previous_page_fusion()
     
     def show_party_image(self) -> None:
         """
@@ -1181,18 +1191,54 @@ class UI:
         """
         # ページ数を初期化する
         self.page_fusion = 0
+        # 配合画面であることのbool値を更新する
+        self.is_fusion_screen = True
         # ボタンを初期化する
         self.init_all_button_fusion()
         # Tkinterのインスタンスを作る
         self.make_tk_window("モンスター配合所")
+        # キー入力を受け付ける
+        self.app.bind("<KeyPress>", self.listen_key)
         # モンスターの親と子の枠を作る
         self.show_monster_frame_fusion()
         # 「親1」「親2」「子」の文字を表示する
         self.show_text_fusion()
         # モンスターを1ページ分表示する
         self.show_monster_fusion()
+        # 閉じるボタンを表示する
+        self.make_close_button_fusion()
         # 画面を表示する
         self.app.mainloop()
+    
+    def make_close_button_fusion(self) -> None:
+        """
+        閉じるボタンを表示する（配合画面）
+        """
+        # モンスターボックスを閉じるボタンを削除する
+        if self.close_button_fusion is not None:
+            self.close_button_fusion.destroy()
+            self.close_button_fusion = None
+        # モンスター情報の画面を閉じるボタンを表示する
+        self.close_button_fusion = tk.Button(
+            self.app,
+            text="x",
+            font=("", 18),
+            width=2,
+            height=1,
+            bg="#f44",
+            command=self.close_fusion_screen
+        )
+        x, y = 0, 0
+        self.close_button_fusion.place(x=x, y=y)
+    
+    def close_fusion_screen(self) -> None:
+        """
+        モンスター配合所を閉じる
+        """
+        self.canvas.destroy()
+        self.app.destroy()
+        self.canvas = None
+        self.app = None
     
     def close_monster_box(self) -> None:
         """
