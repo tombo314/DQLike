@@ -198,11 +198,12 @@ class Map:
                     self.tk_opening = False
                 # モンスター配合所を開く
                 elif event.type==KEYDOWN and event.key==K_f and self.tk_opening==False:
-                    # 配合画面を表示する
                     self.tk_opening = True
+                    # 配合画面を表示する
                     ui.show_fusion_screen()
                     self.tk_opening = False
-                    ui.is_fusion_screen = False
+                    # ウィンドウモードを更新する
+                    ui.window_mode = None
                 break
 
 map_ = Map()
