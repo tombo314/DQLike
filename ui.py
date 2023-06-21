@@ -82,7 +82,7 @@ class UI:
         # 配合画面の線
         self.line_fusion = None
         # 配合画面のモンスターのボタン
-        self.monster_button_fusion = [None]*30
+        self.monster_button_fusion = [None]*10
         # 配合の親
         self.fusion_parent = []
         # 配合先のモンスター
@@ -232,6 +232,7 @@ class UI:
         window_title: 画面の左上に表示するタイトル
         """
         self.app = tk.Tk()
+        # ウィンドウをアクティブにする
         self.app.focus_force()
         self.app.title(window_title)
         width = 1200
@@ -1031,6 +1032,7 @@ class UI:
         """
         配合の親を設定する
         """
+        # モンスターの名前を取得する
         name = event.widget["text"].split()[0]
         self.fusion_parent = []
         # 配合の親を追加する
@@ -1038,13 +1040,49 @@ class UI:
         for name in self.fusion_parent:
             self.plot_image_fusion(name, "parent_1")
     
+    def delete_monster_button_fusion(self) -> None:
+        """
+        モンスターのボタンが表示されているときに、モンスターのボタンを削除する（配合画面）
+        """
+        for i in range(10):
+            if self.monster_button_fusion[i] is not None:
+                self.monster_button_fusion[i].destroy()
+                self.monster_button_fusion[i] = None
+    
+    def init_all_button_fusion(self) -> None:
+        """
+        すべてのボタンを初期化する（配合画面）
+        """
+        self.monster_button_fusion = [None]*10
+        self.button_page_next_fusion = None
+        self.button_page_back_fusion = None
+    
     def show_monster_fusion(self) -> None:
         """
-        モンスターの一覧を表示する
+        モンスターを1ページ分表示する（配合画面）
         """
-        for i in range(min(10, len(json_data.save_data["monster"]))):
+        # 1ページに表示するモンスターの数
+        mons_per_page = 10
+        # モンスターのボタンを削除する
+        self.delete_monster_button_fusion()
+        # 次のページに進むボタンを削除する
+        if self.button_page_next_fusion is not None:
+            self.button_page_next_fusion.destroy()
+            self.button_page_next_fusion = None
+        # 前のページに戻るボタンを削除する
+        if self.button_page_back_fusion is not None:
+            self.button_page_back_fusion.destroy()
+            self.button_page_back_fusion = None
+        # 次のページに進むボタンを表示する
+        if self.page_fusion<len(json_data.save_data["monster"])//mons_per_page:
+            self.show_next_page_button_fusion()
+        # 前のページに戻るボタンを表示する
+        if self.page_fusion>0:
+            self.show_previous_page_button_fusion()
+        # モンスターを1ページ分表示する
+        for i in range(self.page_fusion*mons_per_page, min(self.page_fusion*mons_per_page+10, len(json_data.save_data["monster"]))):
             mons = json_data.save_data["monster"][str(i+1)]
-            self.monster_button_fusion[i] = tk.Button(
+            self.monster_button_fusion[i%mons_per_page] = tk.Button(
                 self.app,
                 text=f"{mons['name']} Lv.{mons['level']}",
                 font=("", 18),
@@ -1052,9 +1090,9 @@ class UI:
                 height=2
             )
             mons_per_line = 2
-            x, y = 250*(i%mons_per_line)+630, 100*(i//mons_per_line)+100
-            self.monster_button_fusion[i].place(x=x, y=y)
-            self.monster_button_fusion[i].bind("<ButtonPress>", self.set_parent_fusion)
+            x, y = 250*((i%mons_per_page)%mons_per_line)+630, 100*((i%mons_per_page)//mons_per_line)+100
+            self.monster_button_fusion[i%mons_per_page].place(x=x, y=y)
+            self.monster_button_fusion[i%mons_per_page].bind("<ButtonPress>", self.set_parent_fusion)
     
     def show_next_page_button_fusion(self) -> None:
         """
@@ -1104,20 +1142,18 @@ class UI:
         """
         配合画面を表示する
         """
-        # ページ数を初期化
+        # ページ数を初期化する
         self.page_fusion = 0
+        # ボタンを初期化する
+        self.init_all_button()
         # Tkinterのインスタンスを作る
         self.make_tk_window("モンスター配合所")
         # モンスターの親と子の枠を作る
         self.show_monster_frame_fusion()
         # 「親1」「親2」「子」の文字を表示する
         self.show_text_fusion()
-        # モンスター一覧を表示する
+        # モンスターを1ページ分表示する
         self.show_monster_fusion()
-        # 次のページに進むボタンを表示する
-        self.show_next_page_button_fusion()
-        # 前のページに戻るボタンを表示する
-        self.show_previous_page_button_fusion()
         # 画面を表示する
         self.app.mainloop()
     
