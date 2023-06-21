@@ -473,18 +473,21 @@ class UI:
         """
         キー入力を処理する
         """
-        if event.keysym=="e":
+        if event.keysym=="e" and self.is_fusion_screen==False:
             # eでモンスターボックスを閉じる
             if self.monster_box_mode=="all":
                 self.close_monster_box()
             # eでモンスター情報を閉じる
             elif self.monster_box_mode=="detail":
                 self.close_monster_detail()
+        # fでモンスター配合所を閉じる
+        if event.keysym=="f" and self.is_fusion_screen==True:
+            self.close_fusion_screen()
         # →でモンスターボックスの次ページを表示
-        elif event.keysym=="Right" and (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and self.page_monster_box<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+        elif event.keysym=="Right" and self.is_fusion_screen==False and (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and self.page_monster_box<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
             self.show_next_page_monster_box()
         # ←でモンスターボックスの前ページを表示
-        elif event.keysym=="Left" and (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and self.page_monster_box>0:
+        elif event.keysym=="Left" and self.is_fusion_screen==False and (self.monster_box_mode=="all" or self.monster_box_mode=="edit") and self.page_monster_box>0:
             self.show_previous_page_monster_box()
         # →でモンスター配合所の次ページを表示
         elif event.keysym=="Right" and self.is_fusion_screen==True and self.page_fusion<len(json_data.save_data["monster"])//10 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
@@ -1191,6 +1194,8 @@ class UI:
         """
         # ページ数を初期化する
         self.page_fusion = 0
+        # 配合の親を初期化する
+        self.fusion_parent = []
         # 配合画面であることのbool値を更新する
         self.is_fusion_screen = True
         # ボタンを初期化する
@@ -1214,11 +1219,11 @@ class UI:
         """
         閉じるボタンを表示する（配合画面）
         """
-        # モンスターボックスを閉じるボタンを削除する
+        # モンスター配合所を閉じるボタンを削除する
         if self.close_button_fusion is not None:
             self.close_button_fusion.destroy()
             self.close_button_fusion = None
-        # モンスター情報の画面を閉じるボタンを表示する
+        # モンスター配合所を閉じるボタンを表示する
         self.close_button_fusion = tk.Button(
             self.app,
             text="x",
@@ -1235,10 +1240,18 @@ class UI:
         """
         モンスター配合所を閉じる
         """
-        self.canvas.destroy()
-        self.app.destroy()
-        self.canvas = None
-        self.app = None
+        # モンスター配合所を閉じるボタンを削除する
+        if self.close_button_fusion is not None:
+            self.close_button_fusion.destroy()
+            self.close_button_fusion = None
+        # canvasを削除する
+        if self.canvas is not None:
+            self.canvas.destroy()
+            self.canvas = None
+        # appを削除する
+        if self.app is not None:
+            self.app.destroy()
+            self.app = None
     
     def close_monster_box(self) -> None:
         """
