@@ -1149,8 +1149,12 @@ class UI:
             elif idx==2:
                 mode = "child"
             self.plot_image_fusion(name, mode)
+        # 子モンスターの候補を取得する
+        parents = []
+        for id_ in self.fusion_parent_id:
+            parents.append(json_data.save_data["monster"][str(id_)]["name"])
         # 「候補を見る」のボタンのstateを更新する
-        if len(self.fusion_parent_id)>=2:
+        if len(self.fusion_parent_id)>=2 and len(self.get_makable_monster(parents))>0:
             self.button_show_child_candidate_fusion["state"] = tk.NORMAL
         else:
             self.button_show_child_candidate_fusion["state"] = tk.DISABLED
@@ -1366,6 +1370,10 @@ class UI:
         if self.close_button_fusion is not None:
             self.close_button_fusion.destroy()
             self.close_button_fusion = None
+        # 配合ボタンを削除する
+        if self.button_fusion is not None:
+            self.button_fusion.destroy()
+            self.button_fusion = None
         # 子モンスター候補を閉じるボタンを表示する
         self.make_close_button_child_all()
         # 状態がtk.DISABLEDなら候補を表示しない
