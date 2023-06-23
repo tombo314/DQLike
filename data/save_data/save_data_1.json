@@ -157,6 +157,12 @@
             "name": "スライム",
             "level": 1,
             "gear": null
+        },
+        "27": {
+            "id": 27,
+            "name": "スライムベス",
+            "level": 1,
+            "gear": null
         }
     }
 }
