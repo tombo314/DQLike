@@ -73,7 +73,7 @@ class UI:
         self.close_button_monster_detail = None
         # スキル説明の枠
         self.skill_description_box = None
-        # 親モンスターの枠
+        # 配合画面のモンスターの枠
         self.monster_frame_fusion = {"parent_1": None, "parent_2": None, "child": None}
         # 配合画面のモンスターの画像
         self.monster_image_fusion = {"parent_1": None, "parent_2": None, "child": None}
@@ -83,6 +83,8 @@ class UI:
         self.line_fusion = None
         # 配合画面のモンスターのボタン
         self.monster_button_fusion = [None]*10
+        # 配合画面の配合ボタン
+        self.button_fusion = None
         # 配合の親モンスターのid
         self.fusion_parent_id = []
         # 配合先の子モンスター
@@ -1267,6 +1269,30 @@ class UI:
         self.page_fusion -= 1
         self.show_monster_fusion()
     
+    def fusion(self) -> None:
+        """
+        配合する
+        """
+        # tk.DISABLEDなら何もしない
+        if self.button_fusion["state"]==tk.DISABLED:
+            return None
+    
+    def show_fusion_button(self) -> None:
+        """
+        配合ボタンを表示する
+        """
+        self.button_fusion = tk.Button(
+            self.app,
+            text="配合する",
+            font=("", 18),
+            width=10,
+            height=3,
+            state=tk.DISABLED,
+            command=self.fusion
+        )
+        x, y = 150, 450
+        self.button_fusion.place(x=x, y=y)
+    
     def show_fusion_screen(self) -> None:
         """
         配合画面を表示する
@@ -1291,6 +1317,8 @@ class UI:
         self.make_close_button_fusion()
         # 「候補を見る」のボタンを表示する
         self.make_show_child_candidate_button_fusion()
+        # 配合ボタンを表示する
+        self.show_fusion_button()
         # 画面を表示する
         self.app.mainloop()
     
