@@ -84,7 +84,7 @@ class UI:
         # 配合画面のモンスターのボタン
         self.monster_button_fusion = [None]*10
         # 配合の親モンスターのid
-        self.fusion_parent = []
+        self.fusion_parent_id = []
         # 配合先の子モンスター
         self.fusion_child = None
         # 配合画面で次のページに進むボタン
@@ -978,12 +978,31 @@ class UI:
             self.remove_image_party_all()
             self.show_party_image()
     
-    def get_makable_monster(self, name: str) -> dict:
+    def get_makable_monster(self, parents: list[str]) -> list:
         """
         配合先のモンスターの候補を表示する
-        name: モンスターの名前
+        parent: 親モンスター
         """
-        return json_data.fusion_tree[name]
+        # 子モンスターの候補
+        candidate = set()
+        # 親モンスターをソートする
+        parents.sort()
+        # 各親モンスターについて
+        for parent in parents:
+            # 子モンスターの候補
+            childs = json_data.fusion_tree[parent]
+            # 子モンスターと、そのモンスターを作るのに必要な親モンスター
+            for child, needed_parents in childs.items():
+                # 必要な親モンスターにparent自身を加える
+                needed_parents.append(parent)
+                # 必要な親モンスターをソートする
+                needed_parents.sort()
+                # 指定した親モンスターと必要なモンスターが一致しているか
+                if needed_parents==parents:
+                    # 子モンスターを候補に加える
+                    candidate.add(child)
+        # 子モンスターの候補を返す
+        return list(candidate)
     
     def show_text_fusion(self) -> None:
         """
@@ -1057,14 +1076,14 @@ class UI:
         monster_id = int("".join(event.widget["bg"][2::2]), 16)+1
         # 配合の親を追加する
         if event.widget["state"]==tk.NORMAL:
-            if len(self.fusion_parent)<json_data.save_data["max_num_fusion_parent"]:
-                self.fusion_parent.append(monster_id)
+            if len(self.fusion_parent_id)<json_data.save_data["max_num_fusion_parent"]:
+                self.fusion_parent_id.append(monster_id)
                 event.widget["state"] = tk.DISABLED
         elif event.widget["state"]==tk.DISABLED:
-            self.fusion_parent.remove(monster_id)
+            self.fusion_parent_id.remove(monster_id)
             event.widget["state"] = tk.NORMAL
         # モンスターの画像を表示する
-        for idx, id_ in enumerate(self.fusion_parent):
+        for idx, id_ in enumerate(self.fusion_parent_id):
             name = json_data.save_data["monster"][str(id_)]["name"]
             if idx==0:
                 mode = "parent_1"
@@ -1121,9 +1140,9 @@ class UI:
             color = "{:03x}".format(int(base_repr(i, 16), 16))
             color = f"#e{color[0]}e{color[1]}e{color[2]}"
             # idからボタンの状態を取得する
-            if i+1 in self.fusion_parent:
+            if i+1 in self.fusion_parent_id:
                 state = tk.DISABLED
-            elif i+1 not in self.fusion_parent:
+            elif i+1 not in self.fusion_parent_id:
                 state = tk.NORMAL
             # モンスターのボタンを表示する
             self.monster_button_fusion[i%mons_per_page] = tk.Button(
@@ -1195,7 +1214,7 @@ class UI:
         # ページ数を初期化する
         self.page_fusion = 0
         # 配合の親を初期化する
-        self.fusion_parent = []
+        self.fusion_parent_id = []
         # ウィンドウモードを更新する
         self.window_mode = "fusion"
         # ボタンを初期化する
@@ -1213,7 +1232,7 @@ class UI:
         # 閉じるボタンを表示する
         self.make_close_button_fusion()
         # 「候補を見る」のボタンを表示する
-        self.make_create_child_button_fusion()
+        self.make_show_child_candidate_button_fusion()
         # 画面を表示する
         self.app.mainloop()
     
@@ -1226,16 +1245,32 @@ class UI:
             if self.monster_button_fusion[i] is not None:
                 self.monster_button_fusion[i].destroy()
                 self.monster_button_fusion[i] = None
+        # 次のページに進むボタンを削除する
+        if self.button_page_next_fusion is not None:
+            self.button_page_next_fusion.destroy()
+            self.button_page_next_fusion = None
+        # 前のページに戻るボタンを削除する
+        if self.button_page_back_fusion is not None:
+            self.button_page_back_fusion.destroy()
+            self.button_page_back_fusion = None
         # 「候補を見る」のボタンを削除する
         if self.button_show_child_candidate_fusion is not None:
             self.button_show_child_candidate_fusion.destroy()
             self.button_show_child_candidate_fusion = None
-        
+        # モンスターの枠と文字を削除する
+        self.canvas.delete("all")
     
     def show_child_candidate_fusion(self) -> None:
         """
         子モンスターの候補を表示する
         """
+        # すべてのUIを削除する
+        self.delete_all_ui_fusion()
+        parents = []
+        for id_ in self.fusion_parent_id:
+            name = json_data.save_data["monster"][str(id_)]["name"]
+            parents.append(name)
+        candidate = self.get_makable_monster(parents)
     
     def make_show_child_candidate_button_fusion(self) -> None:
         """
