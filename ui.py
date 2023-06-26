@@ -105,6 +105,8 @@ class UI:
         self.button_close_child_candidate_fusion = None
         # 子モンスター情報を閉じるボタン
         self.button_close_child_detail_fusion = None
+        # 子モンスターの候補として選ぶボタン
+        self.button_select_child_fusion = None
     
     def init_all_button(self) -> None:
         """
@@ -996,7 +998,7 @@ class UI:
         # スキル説明の枠を表示する
         self.make_skill_description_box()
     
-    def show_monster_info_child(self, mons_info: dict) -> None:
+    def show_monster_detail_child(self, mons_info: dict) -> None:
         """
         モンスター情報を表示する（子モンスターの候補から）
         mons_info: モンスター情報のdict {"name": name, "level": level}
@@ -1006,6 +1008,8 @@ class UI:
         self.delete_all_ui_child_fusion()
         # ウィンドウモードを変更する
         self.window_mode = "child_detail"
+        # 子モンスターとして選ぶ
+        self.fusion_child = mons_info["name"]
         # モンスターの画像を表示する
         self.plot_image_monster_detail(mons_info["name"])
         # モンスターのパラメータを表示する
@@ -1018,6 +1022,45 @@ class UI:
             self.button_close_child_candidate_fusion = None
         # 子モンスター情報を閉じるボタンを表示する
         self.make_close_button_child_detail()
+        # 配合の子として選ぶボタンを削除する
+        if self.button_select_child_fusion is not None:
+            self.button_select_child_fusion.destroy()
+            self.button_fusin_child = None
+        # 配合の子として選ぶボタンを表示する
+        self.make_button_select_child_fusion()
+    
+    def show_parent_child_fusion(self) -> None:
+        """
+        親モンスターと子モンスターを表示する
+        """
+        print(self.fusion_parent_id)
+        print(self.fusion_child)
+    
+    def select_child_fusion(self) -> None:
+        """
+        子モンスターとして選ぶ
+        """
+        # 親モンスターと子モンスターを表示する
+        self.show_parent_child_fusion()
+        # 配合画面に戻る
+        .
+        self.close_monster_detail_child()
+        self.close_monster_candidate_child()
+    
+    def make_button_select_child_fusion(self) -> None:
+        """
+        「選ぶ」ボタンを表示する
+        """
+        self.button_select_child_fusion = self.button_page_next_fusion = tk.Button(
+            self.app,
+            text = "選ぶ",
+            font=("", 18),
+            width=12,
+            height=2,
+            command=self.select_child_fusion
+        )
+        x, y = 550, 50
+        self.button_select_child_fusion.place(x=x, y=y)
     
     def add_or_remove_monster(self, mons: dict, add_or_remove: str) -> None:
         """
@@ -1049,8 +1092,8 @@ class UI:
             childs = json_data.fusion_tree[parent]
             # 子モンスターと、そのモンスターを作るのに必要な親モンスター
             for child, needed_parents in childs.items():
-                # 必要な親モンスターにparent自身を加える
                 needed_parents = needed_parents.copy()
+                # 必要な親モンスターにparent自身を加える
                 needed_parents.append(parent)
                 # 必要な親モンスターをソートする
                 needed_parents.sort()
@@ -1362,7 +1405,7 @@ class UI:
     
     def show_child_candidate_fusion(self) -> None:
         """
-        子モンスターの候補を表示する
+        子モンスター候補を表示する
         """
         # ウィンドウモードを更新する
         self.window_mode = "child_all"
@@ -1406,7 +1449,7 @@ class UI:
                 font=("", 18),
                 width=16,
                 height=1,
-                command=lambda: self.show_monster_info_child({"name": name, "level": 1})
+                command=lambda: self.show_monster_detail_child({"name": name, "level": 1})
             )
             self.button_child_candidate_fusion[idx].pack()
             left = 0.21*(idx%4)+0.1
@@ -1508,7 +1551,7 @@ class UI:
         """
         モンスターボックスを閉じる
         """
-        # モンスター一覧を表示しているときだけ、閉じることができる
+        # モンスター候補を表示しているときだけ、閉じることができる
         if self.window_mode=="all":
             # UIを削除する
             self.delete_all_ui()
