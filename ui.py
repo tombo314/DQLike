@@ -197,7 +197,7 @@ class UI:
         elif mode=="parent_2":
             x, y = 130, 330
         elif mode=="child":
-            x, y = 420, 230
+            x, y = 405, 230
         if name=="ドラキー" or name=="ボストロール":
             x -= 20
         # イメージを作成
@@ -513,9 +513,11 @@ class UI:
             elif self.window_mode=="child_all":
                 # 親モンスター選択からのとき
                 self.close_monster_candidate_child()
+                self.show_fusion_screen()
             elif self.window_mode=="child_detail":
                 # 子モンスター候補からのとき
                 self.close_monster_detail_child()
+                self.show_child_candidate_fusion()
         # fでモンスター配合所を閉じる
         if event.keysym=="f" and self.window_mode=="fusion":
             self.close_fusion_screen()
@@ -1031,21 +1033,28 @@ class UI:
     
     def show_parent_child_fusion(self) -> None:
         """
-        親モンスターと子モンスターを表示する
+        親モンスターと子モンスターの画像を表示する
         """
-        print(self.fusion_parent_id)
-        print(self.fusion_child)
+        for idx, id_ in enumerate(self.fusion_parent_id):
+            name = json_data.save_data["monster"][str(id_)]["name"]
+            self.plot_image_fusion(name, f"parent_{idx+1}")
+        self.plot_image_fusion(self.fusion_child, "child")
     
     def select_child_fusion(self) -> None:
         """
         子モンスターとして選ぶ
         """
-        # 親モンスターと子モンスターを表示する
-        self.show_parent_child_fusion()
         # 配合画面に戻る
-        .
         self.close_monster_detail_child()
         self.close_monster_candidate_child()
+        # 親モンスターと子モンスターを表示する
+        self.show_parent_child_fusion()
+        # 「選ぶ」ボタンを削除する
+        if self.button_select_child_fusion is not None:
+            self.button_select_child_fusion.destroy()
+            self.button_select_child_fusion = None
+        # 配合画面を表示する
+        self.show_fusion_screen()
     
     def make_button_select_child_fusion(self) -> None:
         """
@@ -1159,6 +1168,8 @@ class UI:
                 outline="#777",
                 width=3
             )
+            # 最背面に移動する
+            self.canvas.lower(self.monster_frame_fusion[mode])
     
     def delete_monster_image_fusion(self) -> None:
         """
@@ -1347,7 +1358,8 @@ class UI:
         # ページ数を初期化する
         self.page_fusion = 0
         # 配合の親を初期化する
-        self.fusion_parent_id = []
+        if self.fusion_child is None:
+            self.fusion_parent_id = []
         # ウィンドウモードを更新する
         self.window_mode = "fusion"
         # ボタンを初期化する
@@ -1590,8 +1602,6 @@ class UI:
         # すべてのUIを削除する
         self.delete_all_ui_detail()
         self.delete_all_ui_child_all()
-        # 配合画面を表示する
-        self.show_fusion_screen()
 
     def close_monster_detail_child(self) -> None:
         """
@@ -1599,7 +1609,5 @@ class UI:
         """
         # すべてのUIを削除する
         self.delete_all_ui_detail()
-        # 子モンスターの候補を表示する
-        self.show_child_candidate_fusion()
 
 ui = UI()
