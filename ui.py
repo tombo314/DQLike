@@ -3,6 +3,7 @@ from time import sleep
 from copy import deepcopy
 from numpy import base_repr
 import tkinter as tk
+import json
 
 # クラスをインポート
 from config import *
@@ -60,7 +61,7 @@ class UI:
         # モンスターボックスの仮の味方パーティー
         self.friend_tmp = []
         # モンスターボックスのモンスターの名前ボタンのNORMAL・DISABLED
-        self.monster_button_state = [tk.NORMAL]*3000
+        self.monster_button_state = [tk.NORMAL]*12
         # モンスター情報のモンスターの画像
         self.monster_image_detail = None
         # モンスター情報のパラメータの文字のインスタンス
@@ -473,11 +474,13 @@ class UI:
         # 仮の味方パーティーを設定
         self.friend_tmp = deepcopy(user_info.friend)
         # 編成されているモンスターのボタンの状態をtk.DISABLEDにする
-        for i in range(self.page_monster_box*12, min((self.page_monster_box+1)*12, len(json_data.save_data["monster"]))):
+        i = 0
+        while i<min(12, self.get_valid_monster_num()):
             if self.monster_button_state[i]==tk.NORMAL:
-                self.button_monster[i%12]["state"] = tk.NORMAL
+                self.button_monster[i]["state"] = tk.NORMAL
             elif self.monster_button_state[i]==tk.DISABLED:
-                self.button_monster[i%12]["state"] = tk.DISABLED
+                self.button_monster[i]["state"] = tk.DISABLED
+            i += 1
         # ウィンドウを閉じるボタンの色を変えて、状態をtk.DISABLEDにする
         self.close_button_monster_box["state"] = tk.DISABLED
         self.close_button_monster_box["bg"] = "#ddd"
@@ -498,10 +501,23 @@ class UI:
                 width=3
             )
     
+    def get_valid_monster_num(self) -> int:
+        """
+        有効なモンスターの数を得る
+        """
+        valid_cnt = 0
+        for id_ in json_data.save_data["monster"]:
+            if json_data.save_data["monster"][id_]["valid"]==True:
+                valid_cnt += 1
+        return valid_cnt
+    
     def listen_key(self, event) -> None:
         """
         キー入力を受け取る
         """
+        # 有効なモンスターの数を取得する
+        valid_cnt = self.get_valid_monster_num()
+        # キー入力を受け取る
         if event.keysym=="e":
             # eでモンスターボックスを閉じる
             if self.window_mode=="all":
@@ -521,16 +537,16 @@ class UI:
         # fでモンスター配合所を閉じる
         if event.keysym=="f" and self.window_mode=="fusion":
             self.close_fusion_screen()
-        # →でモンスターボックスの次ページを表示
-        elif event.keysym=="Right" and (self.window_mode=="all" or self.window_mode=="edit") and self.page_monster_box<len(json_data.save_data["monster"])//12 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+        # →でモンスターボックスの次ページを表示する
+        elif event.keysym=="Right" and (self.window_mode=="all" or self.window_mode=="edit") and self.page_monster_box<valid_cnt//12 and valid_cnt//12!=valid_cnt/12:
             self.show_next_page_monster_box()
-        # ←でモンスターボックスの前ページを表示
+        # ←でモンスターボックスの前ページを表示する
         elif event.keysym=="Left" and (self.window_mode=="all" or self.window_mode=="edit") and self.page_monster_box>0:
             self.show_previous_page_monster_box()
-        # →でモンスター配合所の次ページを表示
-        elif event.keysym=="Right" and self.window_mode=="fusion" and self.page_fusion<len(json_data.save_data["monster"])//10 and len(json_data.save_data["monster"])//12!=len(json_data.save_data["monster"])/12:
+        # →でモンスター配合所の次ページを表示する
+        elif event.keysym=="Right" and self.window_mode=="fusion" and self.page_fusion<valid_cnt//10 and valid_cnt//12!=valid_cnt/12:
             self.show_next_page_fusion()
-        # ←でモンスター配合所の前ページを表示
+        # ←でモンスター配合所の前ページを表示する
         elif event.keysym=="Left" and self.window_mode=="fusion" and self.page_fusion>0:
             self.show_previous_page_fusion()
     
@@ -545,51 +561,61 @@ class UI:
         """
         自分が持っているモンスターを表示する
         """
-        # モンスターボックスのページ数を初期化
+        # モンスターボックスのページ数を初期化する
         self.page_monster_box = 0
-        # すべてのボタンを初期化
+        # すべてのボタンを初期化する
         self.init_all_button()
-        # 仮の味方パーティーを初期化
+        # 仮の味方パーティーを初期化する
         self.friend_tmp = deepcopy(user_info.friend)
-        # モンスターの名前のボタンの状態を初期化
+        # モンスターの名前のボタンの状態を初期化する
+        j = 0
         for idx in json_data.save_data["monster"]:
+            # 1ページに12体まで表示する
+            if j>=12:
+                break
+            # モンスターの情報を取得する
             mons = json_data.save_data["monster"][idx]
+            # モンスターが無効だったら使わない
+            if mons["valid"]==False:
+                continue
             # そのモンスターがパーティーに含まれていたら
             if mons in self.friend_tmp:
-                self.monster_button_state[int(idx)-1] = tk.DISABLED
+                self.monster_button_state[j] = tk.DISABLED
             # そのモンスターがパーティーに含まれていなかったら
             else:
-                self.monster_button_state[int(idx)-1] = tk.NORMAL
-        # モンスターボックスのモードを設定
+                self.monster_button_state[j] = tk.NORMAL
+            j += 1
+        # モンスターボックスのモードを設定する
         self.window_mode = "all"
-        # Tkinterのウィンドウを表示
+        # Tkinterのウィンドウを表示する
         self.make_tk_window("モンスターボックス")
-        # 画面を閉じるボタンを表示
+        # 画面を閉じるボタンを表示する
         self.make_close_button_monster_box()
-        # 「パーティー編成へ」のボタンを表示
+        # 「パーティー編成へ」のボタンを表示する
         self.make_party_edit_button()
-        # モンスターボックスの1ページ目を表示
+        # モンスターボックスの1ページ目を表示する
         self.show_monster()
 
     def show_monster(self) -> None:
         """
         モンスターを1ページ分表示する
         """
-        # 既存のUIを削除
+        # 既存のUIを削除する
         self.delete_all_ui()
-        # モンスターボックスのモードの文字を更新
+        # モンスターボックスのモードの文字を更新する
         self.update_text_monster_box_mode()
-        # 「モンスターボックス」の文字を表示
+        # 「モンスターボックス」の文字を表示する
         start_x, start_y = 60, 30
         width, height = 300, 60
         end_x, end_y = start_x+width, start_y+height
         # 文字が設定してあれば削除する
         if self.text_monster_box is not None:
             self.canvas.delete(self.text_monster_box)
-        if len(json_data.save_data["monster"])//12==len(json_data.save_data["monster"])/12:
-            page_all = len(json_data.save_data["monster"])//12
+        valid_cnt = self.get_valid_monster_num()
+        if valid_cnt//12==valid_cnt/12:
+            page_all = valid_cnt//12
         else:
-            page_all = len(json_data.save_data["monster"])//12+1
+            page_all = valid_cnt//12+1
         # 「モンスターボックス」の文字とページ数を表示
         self.text_monster_box = self.canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
@@ -601,40 +627,51 @@ class UI:
         # パーティーの画像を表示
         self.show_party_image()
         # モンスターの画像と詳細ボタンを表示
-        for i in range(self.page_monster_box*12, min((self.page_monster_box+1)*12, len(json_data.save_data["monster"]))):
-            name = json_data.save_data["monster"][str(i+1)]["name"]
+        i = 0
+        j = 0
+        while j<12 and self.page_monster_box*12+i<len(json_data.save_data["monster"]):
+            id_ = self.page_monster_box*12+i+1
+            mons = json_data.save_data["monster"][str(id_)]
+            if mons["valid"]==False:
+                i += 1
+                continue
+            name = mons["name"]
             # 画像を表示
-            width = 247*(i%4)+190
+            width = 247*(j%4)+190
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
-            height = (150*(i//4)+140)%450+10
+            height = (150*(j//4)+140)%450+10
             self.plot_image_monster_box(name, width, height)
-            # モンスターの名前のボタンを表示
             # ボタンの色によってボタンを区別する
-            color = f"#eeeee{base_repr(i%12, 16)}"
+            color = f"#eeeee{base_repr(j%12, 16)}"
             # モンスターの名前ボタンのNORMAL・DISABLED
             if self.window_mode=="all":
                 button_state = tk.NORMAL
             else:
-                button_state = self.monster_button_state[i]
-            self.button_monster[i%12] = tk.Button(
+                button_state = self.monster_button_state[j]
+            # モンスターの名前のボタンを表示
+            self.button_monster[j%12] = tk.Button(
                 self.app,
-                text=f"{name} Lv.{json_data.save_data['monster'][str(i+1)]['level']}",
+                text=f"{name} Lv.{json_data.save_data['monster'][str(id_)]['level']}",
                 font=("", 18),
                 width=16,
                 height=1,
                 bg=color,
                 state=button_state
             )
-            self.button_monster[i%12].pack()
-            left = 0.21*(i%4)+0.1
-            top = (0.24*(i//4))%0.72+0.4
+            self.button_monster[j%12].pack()
+            left = 0.21*(j%4)+0.1
+            top = (0.24*(j//4))%0.72+0.4
             # ボタンを配置
-            self.button_monster[i%12].place(relx=left, rely=top)
+            self.button_monster[j%12].place(relx=left, rely=top)
             # ボタンを押したときの処理
-            self.button_monster[i%12].bind("<ButtonPress>", self.press_monster_name_button)
+            self.button_monster[j%12].bind("<ButtonPress>", self.press_monster_name_button)
+            i += 1
+            j += 1
+        # 有効なモンスターの数を取得する
+        valid_cnt = self.get_valid_monster_num()
         # 次のページに進むボタンを表示
-        if (self.page_monster_box+1)*12<len(json_data.save_data["monster"]):
+        if (self.page_monster_box+1)*12<valid_cnt:
             self.button_page_next_monster_box = tk.Button(
                 self.app,
                 text = ">",
@@ -646,12 +683,12 @@ class UI:
             self.button_page_next_monster_box.pack()
             self.button_page_next_monster_box.place(x=1140, y=240)
         # 最後のページだったら進むボタンを削除
-        elif (self.page_monster_box+1)*12>=len(json_data.save_data["monster"]) and self.button_page_next_monster_box is not None:
+        elif (self.page_monster_box+1)*12>=valid_cnt and self.button_page_next_monster_box is not None:
             if self.button_page_next_monster_box is not None:
                 self.button_page_next_monster_box.destroy()
                 self.button_page_next_monster_box = None
         # 前のページに戻るボタンを表示
-        if 0<self.page_monster_box*12<len(json_data.save_data["monster"]):
+        if 0<self.page_monster_box*12<valid_cnt:
             self.button_page_back_monster_box = tk.Button(
                 self.app,
                 text = "<",
@@ -1024,21 +1061,12 @@ class UI:
             self.button_close_child_candidate_fusion = None
         # 子モンスター情報を閉じるボタンを表示する
         self.make_close_button_child_detail()
-        # 配合の子として選ぶボタンを削除する
+        # 「選ぶ」ボタンを削除する
         if self.button_select_child_fusion is not None:
             self.button_select_child_fusion.destroy()
-            self.button_fusin_child = None
+            self.button_select_child = None
         # 配合の子として選ぶボタンを表示する
         self.make_button_select_child_fusion()
-    
-    def show_parent_child_fusion(self) -> None:
-        """
-        親モンスターと子モンスターの画像を表示する
-        """
-        for idx, id_ in enumerate(self.fusion_parent_id):
-            name = json_data.save_data["monster"][str(id_)]["name"]
-            self.plot_image_fusion(name, f"parent_{idx+1}")
-        self.plot_image_fusion(self.fusion_child, "child")
     
     def select_child_fusion(self) -> None:
         """
@@ -1047,8 +1075,6 @@ class UI:
         # 配合画面に戻る
         self.close_monster_detail_child()
         self.close_monster_candidate_child()
-        # 親モンスターと子モンスターを表示する
-        self.show_parent_child_fusion()
         # 「選ぶ」ボタンを削除する
         if self.button_select_child_fusion is not None:
             self.button_select_child_fusion.destroy()
@@ -1177,6 +1203,20 @@ class UI:
         """
         self.monster_image_fusion = {}
     
+    def show_monster_images_fusion(self) -> None:
+        """
+        モンスターの画像を更新する
+        """
+        # モンスターの画像を削除する
+        self.monster_image_fusion = {}
+        # 親モンスターの画像を表示する
+        for idx, id_ in enumerate(self.fusion_parent_id):
+            name = json_data.save_data["monster"][str(id_)]["name"]
+            self.plot_image_fusion(name, f"parent_{idx+1}")
+        # 子モンスターの画像を表示する
+        if self.fusion_child is not None:
+            self.plot_image_fusion(self.fusion_child, "child")
+    
     def add_or_remove_parent_fusion(self, event) -> None:
         """
         配合の親を設定する
@@ -1184,25 +1224,19 @@ class UI:
         # モンスターの画像を削除する
         self.delete_monster_image_fusion()
         # モンスターの名前を取得する
-        monster_id = int("".join(event.widget["bg"][2::2]), 16)+1
+        monster_id = int("".join(event.widget["bg"][2::2]), 16)
         # 配合の親を追加する
         if event.widget["state"]==tk.NORMAL:
             if len(self.fusion_parent_id)<json_data.save_data["max_num_fusion_parent"]:
                 self.fusion_parent_id.append(monster_id)
                 event.widget["state"] = tk.DISABLED
+        # 配合の親を削除する
         elif event.widget["state"]==tk.DISABLED:
             self.fusion_parent_id.remove(monster_id)
             event.widget["state"] = tk.NORMAL
-        # モンスターの画像を表示する
-        for idx, id_ in enumerate(self.fusion_parent_id):
-            name = json_data.save_data["monster"][str(id_)]["name"]
-            if idx==0:
-                mode = "parent_1"
-            elif idx==1:
-                mode = "parent_2"
-            elif idx==2:
-                mode = "child"
-            self.plot_image_fusion(name, mode)
+            self.button_fusion["state"] = tk.DISABLED
+        # モンスターの画像を更新する
+        self.show_monster_images_fusion()
         # 子モンスターの候補を取得する
         parents = []
         for id_ in self.fusion_parent_id:
@@ -1226,9 +1260,19 @@ class UI:
         """
         すべてのボタンを初期化する（配合画面）
         """
-        self.monster_button_fusion = [None]*10
-        self.button_page_next_fusion = None
-        self.button_page_back_fusion = None
+        # モンスターのボタンを削除する
+        for i in range(10):
+            if self.monster_button_fusion[i] is not None:
+                self.monster_button_fusion[i].destroy()
+                self.monster_button_fusion[i] = None
+        # 次のページに進むボタンを削除する
+        if self.button_page_next_fusion is not None:
+            self.button_page_next_fusion.destroy()
+            self.button_page_next_fusion = None
+        # 前のページに戻るボタンを削除する
+        if self.button_page_back_fusion is not None:
+            self.button_page_back_fusion.destroy()
+            self.button_page_back_fusion = None
     
     def show_monster_fusion(self) -> None:
         """
@@ -1247,25 +1291,31 @@ class UI:
             self.button_page_back_fusion.destroy()
             self.button_page_back_fusion = None
         # 次のページに進むボタンを表示する
-        if self.page_fusion<len(json_data.save_data["monster"])//mons_per_page:
+        if self.page_fusion<self.get_valid_monster_num()//mons_per_page:
             self.show_next_page_button_fusion()
         # 前のページに戻るボタンを表示する
         if self.page_fusion>0:
             self.show_previous_page_button_fusion()
         # モンスターを1ページ分表示する
-        for i in range(self.page_fusion*mons_per_page, min(self.page_fusion*mons_per_page+10, len(json_data.save_data["monster"]))):
+        i = 0
+        j = 0
+        while j<10 and self.page_fusion*12+i<len(json_data.save_data["monster"]):
             # モンスターの連想配列を取得する
-            mons = json_data.save_data["monster"][str(i+1)]
+            id_ = self.page_fusion*12+i+1
+            mons = json_data.save_data["monster"][str(id_)]
+            if mons["valid"]==False:
+                i += 1
+                continue
             # 背景色にidの役割を持たせる
-            color = "{:03x}".format(int(base_repr(i, 16), 16))
+            color = "{:03x}".format(int(base_repr(id_, 16), 16))
             color = f"#e{color[0]}e{color[1]}e{color[2]}"
             # idからボタンの状態を取得する
-            if i+1 in self.fusion_parent_id:
+            if id_ in self.fusion_parent_id:
                 state = tk.DISABLED
-            elif i+1 not in self.fusion_parent_id:
+            elif id_ not in self.fusion_parent_id:
                 state = tk.NORMAL
             # モンスターのボタンを表示する
-            self.monster_button_fusion[i%mons_per_page] = tk.Button(
+            self.monster_button_fusion[j%mons_per_page] = tk.Button(
                 self.app,
                 text=f"{mons['name']} Lv.{mons['level']}",
                 font=("", 18),
@@ -1277,11 +1327,13 @@ class UI:
             # 1行に表示するモンスターの数
             mons_per_line = 2
             # ボタンのxy座標
-            x, y = 250*((i%mons_per_page)%mons_per_line)+630, 100*((i%mons_per_page)//mons_per_line)+100
+            x, y = 250*((j%mons_per_page)%mons_per_line)+630, 100*((j%mons_per_page)//mons_per_line)+100
             # ボタンを表示する
-            self.monster_button_fusion[i%mons_per_page].place(x=x, y=y)
+            self.monster_button_fusion[j%mons_per_page].place(x=x, y=y)
             # ボタンにイベントを設定する
-            self.monster_button_fusion[i%mons_per_page].bind("<ButtonPress>", self.add_or_remove_parent_fusion)
+            self.monster_button_fusion[j%mons_per_page].bind("<ButtonPress>", self.add_or_remove_parent_fusion)
+            i += 1
+            j += 1
     
     def show_next_page_button_fusion(self) -> None:
         """
@@ -1334,18 +1386,45 @@ class UI:
         # tk.DISABLEDなら何もしない
         if self.button_fusion["state"]==tk.DISABLED:
             return None
+        # 配合する
+        elif self.button_fusion["state"]==tk.NORMAL:
+            # 親を無効にする
+            for id_ in self.fusion_parent_id:
+                json_data.save_data["monster"][str(id_)]["valid"] = False
+            # 子モンスターのidを取得する
+            json_data.save_data["latest_monster_id"] += 1
+            new_id = json_data.save_data["latest_monster_id"]
+            # 子モンスターをデータに追加する
+            json_data.save_data["monster"][str(new_id)] = {
+                "id": new_id,
+                "name": self.fusion_child,
+                "level": 1,
+                "gear": None,
+                "valid": True
+            }
+            # 親モンスターを初期化する
+            self.fusion_parent_id = []
+            # 子モンスターを初期化する
+            self.fusion_child = None
+            # 配合画面を表示する
+            self.show_fusion_screen()
     
     def show_fusion_button(self) -> None:
         """
         配合ボタンを表示する
         """
+        # ボタンの状態を設定する
+        if self.fusion_child is None:
+            state = tk.DISABLED
+        else:
+            state = tk.NORMAL
         self.button_fusion = tk.Button(
             self.app,
             text="配合する",
             font=("", 18),
             width=10,
             height=3,
-            state=tk.DISABLED,
+            state=state,
             command=self.fusion
         )
         x, y = 150, 450
@@ -1355,11 +1434,15 @@ class UI:
         """
         配合画面を表示する
         """
+        # Tkinterのウィンドウを表示する
+        self.make_tk_window("モンスター配合所")
         # ページ数を初期化する
         self.page_fusion = 0
         # 配合の親を初期化する
         if self.fusion_child is None:
             self.fusion_parent_id = []
+        # モンスターの画像を更新する
+        self.show_monster_images_fusion()
         # ウィンドウモードを更新する
         self.window_mode = "fusion"
         # ボタンを初期化する
