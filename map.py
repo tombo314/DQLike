@@ -41,8 +41,11 @@ class Map:
         self.screen = pygame.display.set_mode(self.scr_rect.size)
         pygame.display.set_caption("フィールドマップ")
         # イメージロード
-        self.playerImg = self.load_image("images/character.png", -1)  # プレイヤー
+        # プレイヤー
+        self.playerImg = self.load_image("images/character.png", -1)
+        # 草
         self.grassImg = self.load_image("images/grass.png", -1)
+        # 土
         self.sabakuImg = self.load_image("images/dirt.png", -1)
         # プレイヤーの位置（単位：マス）
         self.x, self.y = 0, 0
