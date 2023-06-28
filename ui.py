@@ -580,7 +580,8 @@ class UI:
         # モンスターボックスのモードを設定する
         self.window_mode = "all"
         # Tkinterのウィンドウを表示する
-        self.make_tk_window("モンスターボックス")
+        if self.app is None:
+            self.make_tk_window("モンスターボックス")
         # 画面を閉じるボタンを表示する
         self.make_close_button_monster_box()
         # 「パーティー編成へ」のボタンを表示する
@@ -1533,6 +1534,10 @@ class UI:
         if self.button_show_child_candidate_fusion is not None:
             self.button_show_child_candidate_fusion.destroy()
             self.button_show_child_candidate_fusion = None
+        # 「配合」のボタンを削除する
+        if self.button_fusion is not None:
+            self.button_fusion.destroy()
+            self.button_fusion = None
     
     def delete_all_ui_child_fusion(self) -> None:
         """
@@ -1684,7 +1689,7 @@ class UI:
         """
         # UIを削除する
         self.delete_all_ui_fusion()
-        # appを削除する
+        # Tkinterのインスタンスを削除する
         if self.app is not None:
             self.app.destroy()
             self.app = None
