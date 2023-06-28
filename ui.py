@@ -1437,13 +1437,18 @@ class UI:
     
     def show_fusion_button(self) -> None:
         """
-        配合ボタンを表示する
+        「配合」のボタンを表示する
         """
+        # 「配合」のボタンを削除する
+        if self.button_fusion is not None:
+            self.button_fusion.destroy()
+            self.button_fusion = None
         # ボタンの状態を設定する
         if self.fusion_child is None:
             state = tk.DISABLED
         else:
             state = tk.NORMAL
+        # 「配合」のボタンを表示する
         self.button_fusion = tk.Button(
             self.app,
             text="配合する",
@@ -1597,6 +1602,11 @@ class UI:
         """
         「候補を見る」のボタンを表示する
         """
+        # 「候補を見る」のボタンを削除する
+        if self.button_show_child_candidate_fusion is not None:
+            self.button_show_child_candidate_fusion.destroy()
+            self.button_show_child_candidate_fusion = None
+        # 「候補を見る」のボタンを表示する
         self.button_show_child_candidate_fusion = tk.Button(
             self.app,
             text="候補を見る",
