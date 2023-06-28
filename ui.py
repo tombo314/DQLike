@@ -90,6 +90,8 @@ class UI:
         self.fusion_parent_id = []
         # 配合先の子モンスター
         self.fusion_child = None
+        # 配合先の子モンスターのtmp
+        self.fusion_child_tmp = None
         # 配合画面で次のページに進むボタン
         self.button_page_next_fusion = None
         # 配合画面で前のページに戻るボタン
@@ -266,17 +268,21 @@ class UI:
         self.canvas.pack()
         self.canvas.update()
 
-    def delete_all_ui(self) -> None:
+    def delete_all_ui_monster_box(self) -> None:
         """
         すべてのUIを削除する
         """
+        # canvasのUIを削除する
         self.canvas.delete("all")
+        # 次のページに進むボタンを削除する
         if self.button_page_next_monster_box is not None:
             self.button_page_next_monster_box.destroy()
             self.button_page_next_monster_box = None
+        # 前のページに戻るボタンを削除する
         if self.button_page_back_monster_box is not None:
             self.button_page_back_monster_box.destroy()
             self.button_page_back_monster_box = None
+        # モンスターの名前ボタンを削除する
         for i in range(12):
             if self.button_monster[i] is not None:
                 self.button_monster[i].destroy()
@@ -528,23 +534,23 @@ class UI:
                 self.close_monster_detail()
             elif self.window_mode=="child_all":
                 # 親モンスター選択からのとき
-                self.close_monster_candidate_child()
-                self.show_fusion_screen()
+                self.close_monster_candidate_child(None)
+                self.show_fusion_screen(None)
             elif self.window_mode=="child_detail":
-                # 子モンスター候補からのとき
-                self.close_monster_detail_child()
-                self.show_child_candidate_fusion()
+                # 子モンスター情報からのとき
+                self.close_monster_detail_child(None)
+                self.show_child_candidate_fusion(None)
         # fでモンスター配合所を閉じる
-        if event.keysym=="f" and self.window_mode=="fusion":
+        elif event.keysym=="f" and self.window_mode=="fusion":
             self.close_fusion_screen()
         # →でモンスターボックスの次ページを表示する
-        elif event.keysym=="Right" and (self.window_mode=="all" or self.window_mode=="edit") and self.page_monster_box<valid_cnt//12 and valid_cnt//12!=valid_cnt/12:
+        elif event.keysym=="Right" and (self.window_mode=="all" or self.window_mode=="edit") and ((valid_cnt//12==valid_cnt/12 and self.page_monster_box<valid_cnt//12-1) or (valid_cnt//12!=valid_cnt/12 and self.page_monster_box<valid_cnt//12)):
             self.show_next_page_monster_box()
         # ←でモンスターボックスの前ページを表示する
         elif event.keysym=="Left" and (self.window_mode=="all" or self.window_mode=="edit") and self.page_monster_box>0:
             self.show_previous_page_monster_box()
         # →でモンスター配合所の次ページを表示する
-        elif event.keysym=="Right" and self.window_mode=="fusion" and self.page_fusion<valid_cnt//10 and valid_cnt//12!=valid_cnt/12:
+        elif event.keysym=="Right" and self.window_mode=="fusion" and ((valid_cnt//10==valid_cnt/10 and self.page_fusion<valid_cnt//10-1) or (valid_cnt//10!=valid_cnt/10 and self.page_fusion<valid_cnt//10)):
             self.show_next_page_fusion()
         # ←でモンスター配合所の前ページを表示する
         elif event.keysym=="Left" and self.window_mode=="fusion" and self.page_fusion>0:
@@ -601,32 +607,31 @@ class UI:
         モンスターを1ページ分表示する
         """
         # 既存のUIを削除する
-        self.delete_all_ui()
+        self.delete_all_ui_monster_box()
         # モンスターボックスのモードの文字を更新する
         self.update_text_monster_box_mode()
-        # 「モンスターボックス」の文字を表示する
-        start_x, start_y = 60, 30
-        width, height = 300, 60
-        end_x, end_y = start_x+width, start_y+height
-        # 文字が設定してあれば削除する
-        if self.text_monster_box is not None:
-            self.canvas.delete(self.text_monster_box)
+        # 有効なモンスターの数を取得する
         valid_cnt = self.get_valid_monster_num()
+        # 総ページ数を取得する
         if valid_cnt//12==valid_cnt/12:
             page_all = valid_cnt//12
         else:
             page_all = valid_cnt//12+1
-        # 「モンスターボックス」の文字とページ数を表示
+        # 「モンスターボックス」の文字とページ数の座標
+        start_x, start_y = 60, 30
+        width, height = 300, 60
+        end_x, end_y = start_x+width, start_y+height
+        # 「モンスターボックス」の文字とページ数を表示する
         self.text_monster_box = self.canvas.create_text(
             (start_x+end_x)/2, (start_y+end_y)/2,
             text = f"モンスターボックス（{self.page_monster_box+1}／{page_all}）",
             font = ("", 22)
         )
-        # パーティーの枠を表示
+        # パーティーの枠を表示する
         self.make_party_edit_frame()
-        # パーティーの画像を表示
+        # パーティーの画像を表示する
         self.show_party_image()
-        # モンスターの画像と詳細ボタンを表示
+        # モンスターの画像と詳細ボタンを表示する
         i = 0
         j = 0
         while j<12 and self.page_monster_box*12+i<len(json_data.save_data["monster"]):
@@ -636,7 +641,7 @@ class UI:
                 i += 1
                 continue
             name = mons["name"]
-            # 画像を表示
+            # 画像を表示する
             width = 247*(j%4)+190
             if name=="ドラキー" or name=="ボストロール":
                 width -= 13
@@ -649,7 +654,7 @@ class UI:
                 button_state = tk.NORMAL
             else:
                 button_state = self.monster_button_state[j]
-            # モンスターの名前のボタンを表示
+            # モンスターの名前ボタンを表示する
             self.button_monster[j%12] = tk.Button(
                 self.app,
                 text=f"{name} Lv.{json_data.save_data['monster'][str(id_)]['level']}",
@@ -662,16 +667,16 @@ class UI:
             self.button_monster[j%12].pack()
             left = 0.21*(j%4)+0.1
             top = (0.24*(j//4))%0.72+0.4
-            # ボタンを配置
+            # ボタンを配置する
             self.button_monster[j%12].place(relx=left, rely=top)
-            # ボタンを押したときの処理
+            # モンスターの名前ボタンを押したとき
             self.button_monster[j%12].bind("<ButtonPress>", self.press_monster_name_button)
             i += 1
             j += 1
         # 有効なモンスターの数を取得する
         valid_cnt = self.get_valid_monster_num()
-        # 次のページに進むボタンを表示
-        if (self.page_monster_box+1)*12<valid_cnt:
+        # 次のページに進むボタンを表示する
+        if (valid_cnt//12==valid_cnt/12 and self.page_monster_box<valid_cnt//12-1) or (valid_cnt//12!=valid_cnt/12 and self.page_monster_box<valid_cnt//12):
             self.button_page_next_monster_box = tk.Button(
                 self.app,
                 text = ">",
@@ -682,12 +687,12 @@ class UI:
             )
             self.button_page_next_monster_box.pack()
             self.button_page_next_monster_box.place(x=1140, y=240)
-        # 最後のページだったら進むボタンを削除
+        # 最後のページだったら進むボタンを削除する
         elif (self.page_monster_box+1)*12>=valid_cnt and self.button_page_next_monster_box is not None:
             if self.button_page_next_monster_box is not None:
                 self.button_page_next_monster_box.destroy()
                 self.button_page_next_monster_box = None
-        # 前のページに戻るボタンを表示
+        # 前のページに戻るボタンを表示する
         if 0<self.page_monster_box*12<valid_cnt:
             self.button_page_back_monster_box = tk.Button(
                 self.app,
@@ -699,7 +704,7 @@ class UI:
             )
             self.button_page_back_monster_box.pack()
             self.button_page_back_monster_box.place(x=20, y=240)
-        # 最初のページだったら進むボタンを削除
+        # 最初のページだったら進むボタンを削除する
         elif self.page_monster_box==0:
             if self.button_page_back_monster_box is not None:
                 self.button_page_back_monster_box.destroy()
@@ -742,9 +747,9 @@ class UI:
         
         # モンスター情報モードのとき
         if self.window_mode=="all":
-            # モンスター情報を表示
+            # モンスター情報を表示する
             self.show_monster_info(mons_info)
-            # モンスター情報を閉じるボタンを表示
+            # モンスター情報を閉じるボタンを表示する
             self.make_close_button_monster_detail()
         
         # パーティー編集モードのとき
@@ -759,7 +764,7 @@ class UI:
                         ok = False
                 if not ok:
                     return None
-                # モンスターの枠が空いているなら、モンスターを追加できる
+                # モンスターの枠が空いているなら、モンスターを追加する
                 if len(self.friend_tmp)<=2:
                     # そのモンスターをパーティーに追加する
                     self.add_or_remove_monster(mons_info, "add")
@@ -1023,7 +1028,7 @@ class UI:
         mons_info: モンスター情報のdict {"name": name, "level": level}
         """
         # UIを削除する
-        self.delete_all_ui()
+        self.delete_all_ui_monster_box()
         # 「パーティー編成へ」のボタンを削除する
         if self.party_edit_button is not None:
             self.party_edit_button.destroy()
@@ -1043,12 +1048,12 @@ class UI:
         mons_info: モンスター情報のdict {"name": name, "level": level}
         """
         # UIを削除する
-        self.delete_all_ui()
+        self.delete_all_ui_monster_box()
         self.delete_all_ui_child_fusion()
         # ウィンドウモードを変更する
         self.window_mode = "child_detail"
-        # 子モンスターとして選ぶ
-        self.fusion_child = mons_info["name"]
+        # 子モンスターのtmpを設定する
+        self.fusion_child_tmp = mons_info["name"]
         # モンスターの画像を表示する
         self.plot_image_monster_detail(mons_info["name"])
         # モンスターのパラメータを表示する
@@ -1072,15 +1077,17 @@ class UI:
         """
         子モンスターとして選ぶ
         """
+        # 子モンスターを設定する
+        self.fusion_child = self.fusion_child_tmp
         # 配合画面に戻る
-        self.close_monster_detail_child()
-        self.close_monster_candidate_child()
+        self.close_monster_detail_child(None)
+        self.close_monster_candidate_child(None)
         # 「選ぶ」ボタンを削除する
         if self.button_select_child_fusion is not None:
             self.button_select_child_fusion.destroy()
             self.button_select_child_fusion = None
         # 配合画面を表示する
-        self.show_fusion_screen()
+        self.show_fusion_screen(None)
     
     def make_button_select_child_fusion(self) -> None:
         """
@@ -1290,8 +1297,10 @@ class UI:
         if self.button_page_back_fusion is not None:
             self.button_page_back_fusion.destroy()
             self.button_page_back_fusion = None
+        # 有効なモンスターの数を取得する
+        valid_cnt = self.get_valid_monster_num()
         # 次のページに進むボタンを表示する
-        if self.page_fusion<self.get_valid_monster_num()//mons_per_page:
+        if (valid_cnt//mons_per_page==valid_cnt/mons_per_page and self.page_fusion<valid_cnt//mons_per_page-1) or (valid_cnt//mons_per_page!=valid_cnt/mons_per_page and self.page_fusion<valid_cnt//mons_per_page):
             self.show_next_page_button_fusion()
         # 前のページに戻るボタンを表示する
         if self.page_fusion>0:
@@ -1388,7 +1397,7 @@ class UI:
             return None
         # 配合する
         elif self.button_fusion["state"]==tk.NORMAL:
-            # 親を無効にする
+            # 親モンスターを無効にする
             for id_ in self.fusion_parent_id:
                 json_data.save_data["monster"][str(id_)]["valid"] = False
             # 子モンスターのidを取得する
@@ -1407,7 +1416,7 @@ class UI:
             # 子モンスターを初期化する
             self.fusion_child = None
             # 配合画面を表示する
-            self.show_fusion_screen()
+            self.show_fusion_screen(None)
     
     def show_fusion_button(self) -> None:
         """
@@ -1430,12 +1439,21 @@ class UI:
         x, y = 150, 450
         self.button_fusion.place(x=x, y=y)
     
-    def show_fusion_screen(self) -> None:
+    def init_parent_child(self) -> None:
+        """
+        配合の親モンスターと子モンスターを初期化する
+        """
+        self.fusion_child = None
+        self.fusion_child_tmp = None
+        self.fusion_parent_id = []
+    
+    def show_fusion_screen(self, event) -> None:
         """
         配合画面を表示する
         """
         # Tkinterのウィンドウを表示する
-        self.make_tk_window("モンスター配合所")
+        if self.app is None:
+            self.make_tk_window("モンスター配合所")
         # ページ数を初期化する
         self.page_fusion = 0
         # 配合の親を初期化する
@@ -1468,11 +1486,19 @@ class UI:
         """
         すべてのUIを削除する（子モンスターの候補を表示する）
         """
+        # モンスターの枠と文字を削除する
+        self.canvas.delete("all")
         # モンスターのボタンを削除する
         for i in range(10):
             if self.monster_button_fusion[i] is not None:
                 self.monster_button_fusion[i].destroy()
                 self.monster_button_fusion[i] = None
+        # モンスター配合所を閉じるボタンを削除する
+        if self.close_button_fusion is not None:
+            self.close_button_fusion.destroy()
+            self.close_button_fusion = None
+        # モンスターの画像を削除する
+        self.monster_image_fusion = {"parent_1": None, "parent_2": None, "child": None}
         # 次のページに進むボタンを削除する
         if self.button_page_next_fusion is not None:
             self.button_page_next_fusion.destroy()
@@ -1485,8 +1511,6 @@ class UI:
         if self.button_show_child_candidate_fusion is not None:
             self.button_show_child_candidate_fusion.destroy()
             self.button_show_child_candidate_fusion = None
-        # モンスターの枠と文字を削除する
-        self.canvas.delete("all")
     
     def delete_all_ui_child_fusion(self) -> None:
         """
@@ -1498,7 +1522,7 @@ class UI:
                 self.button_child_candidate_fusion[i].destroy()
                 self.button_child_candidate_fusion[i] = None
     
-    def show_child_candidate_fusion(self) -> None:
+    def show_child_candidate_fusion(self, event) -> None:
         """
         子モンスター候補を表示する
         """
@@ -1562,11 +1586,11 @@ class UI:
             font=("", 18),
             width=10,
             height=3,
-            state=tk.DISABLED,
-            command=self.show_child_candidate_fusion
+            state=tk.DISABLED
         )
         x, y = 350, 450
         self.button_show_child_candidate_fusion.place(x=x, y=y)
+        self.button_show_child_candidate_fusion.bind("<ButtonPress>", self.show_child_candidate_fusion)
     
     def make_close_button_fusion(self) -> None:
         """
@@ -1599,13 +1623,14 @@ class UI:
             font=("", 18),
             width=2,
             height=1,
-            bg="#f44",
-            command=self.close_monster_candidate_child
+            bg="#f44"
         )
         # ボタンのxy座標
         x, y = 0, 0
         # ボタンを表示する
         self.button_close_child_candidate_fusion.place(x=x, y=y)
+        self.button_close_child_candidate_fusion.bind("<ButtonPress>", self.close_monster_candidate_child, "+")
+        self.button_close_child_candidate_fusion.bind("<ButtonPress>", self.show_fusion_screen, "+")
     
     def make_close_button_child_detail(self) -> None:
         """
@@ -1617,26 +1642,21 @@ class UI:
             font=("", 18),
             width=2,
             height=1,
-            bg="#f44",
-            command=self.close_monster_detail_child
+            bg="#f44"
         )
         # ボタンのxy座標
         x, y = 0, 0
         # ボタンを表示する
         self.button_close_child_detail_fusion.place(x=x, y=y)
+        self.button_close_child_detail_fusion.bind("<ButtonPress>", self.close_monster_detail_child, "+")
+        self.button_close_child_detail_fusion.bind("<ButtonPress>", self.show_child_candidate_fusion, "+")
     
     def close_fusion_screen(self) -> None:
         """
         モンスター配合所を閉じる
         """
-        # モンスター配合所を閉じるボタンを削除する
-        if self.close_button_fusion is not None:
-            self.close_button_fusion.destroy()
-            self.close_button_fusion = None
-        # canvasを削除する
-        if self.canvas is not None:
-            self.canvas.destroy()
-            self.canvas = None
+        # UIを削除する
+        self.delete_all_ui_fusion()
         # appを削除する
         if self.app is not None:
             self.app.destroy()
@@ -1649,10 +1669,12 @@ class UI:
         # モンスター候補を表示しているときだけ、閉じることができる
         if self.window_mode=="all":
             # UIを削除する
-            self.delete_all_ui()
+            self.delete_all_ui_monster_box()
+            # 「パーティー編成へ」のボタンを削除する
             if self.party_edit_button is not None:
                 self.party_edit_button.destroy()
                 self.party_edit_button = None
+            # 「決定」のボタンを削除する
             if self.party_edit_end_button is not None:
                 self.party_edit_end_button.destroy()
                 self.party_edit_end_button = None
@@ -1678,7 +1700,7 @@ class UI:
         # モンスターを1ページ分表示する
         self.show_monster()
 
-    def close_monster_candidate_child(self) -> None:
+    def close_monster_candidate_child(self, event) -> None:
         """
         子モンスター候補を閉じる
         """
@@ -1686,7 +1708,7 @@ class UI:
         self.delete_all_ui_detail()
         self.delete_all_ui_child_all()
 
-    def close_monster_detail_child(self) -> None:
+    def close_monster_detail_child(self, event) -> None:
         """
         子モンスター情報を閉じる
         """
