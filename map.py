@@ -200,7 +200,8 @@ class Map:
                 elif event.type==KEYDOWN and event.key==K_f and self.tk_opening==False:
                     self.tk_opening = True
                     # 配合画面を表示する
-                    ui.show_fusion_screen()
+                    ui.init_parent_child()
+                    ui.show_fusion_screen(None)
                     self.tk_opening = False
                     # ウィンドウモードを更新する
                     ui.window_mode = None
