@@ -4,3 +4,4 @@ dist/*
 *.spec
 MyApp/*
 save_data_*.json
+tmp.*
