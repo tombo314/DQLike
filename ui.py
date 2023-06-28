@@ -266,7 +266,6 @@ class UI:
             height = height
         )
         self.canvas.pack()
-        self.canvas.update()
 
     def delete_all_ui_monster_box(self) -> None:
         """
@@ -319,7 +318,6 @@ class UI:
             fill = "#eee",
             outline = "#777"
         )
-        self.canvas.update()
     
     def show_message(self, message: str, is_fast: bool, log_list: list[str]) -> None:
         """
@@ -612,6 +610,8 @@ class UI:
         self.update_text_monster_box_mode()
         # 有効なモンスターの数を取得する
         valid_cnt = self.get_valid_monster_num()
+        # 1ページに表示するモンスターの数
+        mons_per_page = 12
         # 総ページ数を取得する
         if valid_cnt//12==valid_cnt/12:
             page_all = valid_cnt//12
@@ -631,14 +631,21 @@ class UI:
         self.make_party_edit_frame()
         # パーティーの画像を表示する
         self.show_party_image()
-        # モンスターの画像と詳細ボタンを表示する
-        i = 0
+        # モンスターのidを初期化する
+        cnt = 0
+        for id_ in json_data.save_data["monster"]:
+            if json_data.save_data["monster"][id_]["valid"]==True:
+                cnt += 1
+                if cnt>self.page_monster_box*mons_per_page:
+                    next_id = int(id_)
+                    break
+        id_ = next_id
         j = 0
-        while j<12 and self.page_monster_box*12+i<len(json_data.save_data["monster"]):
-            id_ = self.page_monster_box*12+i+1
+        # モンスターを1ページ分表示する
+        while j<mons_per_page and id_<=len(json_data.save_data["monster"]):
             mons = json_data.save_data["monster"][str(id_)]
             if mons["valid"]==False:
-                i += 1
+                id_ += 1
                 continue
             name = mons["name"]
             # 画像を表示する
@@ -671,7 +678,7 @@ class UI:
             self.button_monster[j%12].place(relx=left, rely=top)
             # モンスターの名前ボタンを押したとき
             self.button_monster[j%12].bind("<ButtonPress>", self.press_monster_name_button)
-            i += 1
+            id_ += 1
             j += 1
         # 有効なモンスターの数を取得する
         valid_cnt = self.get_valid_monster_num()
@@ -1182,7 +1189,6 @@ class UI:
             fill="#999",
             width=5
         )
-        self.canvas.update()
         # モンスターの枠を表示する
         modes = ["parent_1", "parent_2", "child"]
         for mode in modes:
@@ -1305,20 +1311,27 @@ class UI:
         # 前のページに戻るボタンを表示する
         if self.page_fusion>0:
             self.show_previous_page_button_fusion()
-        # モンスターを1ページ分表示する
-        i = 0
+        # モンスターのidを初期化する
+        cnt = 0
+        for id_ in json_data.save_data["monster"]:
+            if json_data.save_data["monster"][id_]["valid"]==True:
+                cnt += 1
+                if cnt>self.page_fusion*mons_per_page:
+                    next_id = int(id_)
+                    break
+        id_ = next_id
         j = 0
-        while j<10 and self.page_fusion*12+i<len(json_data.save_data["monster"]):
+        # モンスターを1ページ分表示する
+        while j<mons_per_page and id_<=len(json_data.save_data["monster"]):
             # モンスターの連想配列を取得する
-            id_ = self.page_fusion*12+i+1
             mons = json_data.save_data["monster"][str(id_)]
             if mons["valid"]==False:
-                i += 1
+                id_ += 1
                 continue
             # 背景色にidの役割を持たせる
             color = "{:03x}".format(int(base_repr(id_, 16), 16))
             color = f"#e{color[0]}e{color[1]}e{color[2]}"
-            # idからボタンの状態を取得する
+            # モンスターのidからボタンの状態を取得する
             if id_ in self.fusion_parent_id:
                 state = tk.DISABLED
             elif id_ not in self.fusion_parent_id:
@@ -1341,7 +1354,7 @@ class UI:
             self.monster_button_fusion[j%mons_per_page].place(x=x, y=y)
             # ボタンにイベントを設定する
             self.monster_button_fusion[j%mons_per_page].bind("<ButtonPress>", self.add_or_remove_parent_fusion)
-            i += 1
+            id_ += 1
             j += 1
     
     def show_next_page_button_fusion(self) -> None:
