@@ -3,7 +3,6 @@ from time import sleep
 from copy import deepcopy
 from numpy import base_repr
 import tkinter as tk
-import json
 
 # クラスをインポート
 from config import *
@@ -42,10 +41,6 @@ class UI:
         self.party_edit_end_button = None
         # モンスターボックスの画像データ
         self.image_monster_box = {name: [] for name in json_data.monster}
-        # バトル時の敵パーティー
-        self.enemy = None
-        # バトル時の味方パーティー
-        self.friend = None
         # バトル時の画像データ
         self.image_battle = None
         # 「all」でモンスター一覧モード、「detail」でモンスター詳細モード、「edit」でパーティー編成モード、「fusion」で配合モード
@@ -58,10 +53,12 @@ class UI:
         self.party_frame = [None]*3
         # モンスターボックスのパーティーのモンスターの画像
         self.image_friend = [None]*3
-        # モンスターボックスの仮の味方パーティー
-        self.friend_tmp = []
-        # モンスターボックスのモンスターの名前ボタンのNORMAL・DISABLED
-        self.monster_button_state = [tk.NORMAL]*12
+        # 味方パーティー
+        self.friend = []
+        # 味方パーティーのid
+        self.friend_id = []
+        # 名前ボタンのstateがDISABLEDであるような、モンスターのid
+        self.monster_button_state_disabled = set()
         # モンスター情報のモンスターの画像
         self.monster_image_detail = None
         # モンスター情報のパラメータの文字のインスタンス
@@ -111,9 +108,9 @@ class UI:
         # 子モンスターの候補として選ぶボタン
         self.button_select_child_fusion = None
     
-    def init_all_button(self) -> None:
+    def init_all_button_monster_box(self) -> None:
         """
-        すべてのボタンをNoneで初期化する
+        すべてのボタンをNoneで初期化する（モンスターボックス）
         """
         self.party_edit_button = None
         self.party_edit_end_button = None
@@ -129,14 +126,10 @@ class UI:
         enemy: 敵パーティー
         friend: 味方パーティー
         """
-        # 敵パーティー
-        self.enemy = enemy
-        # 味方パーティー
-        self.friend = friend
         # 画像データ（バトル）
         self.image_battle = [
-            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.enemy},
-            {json_data.monster[mons["name"]]["name"]: 0 for mons in self.friend},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in enemy},
+            {json_data.monster[mons["name"]]["name"]: 0 for mons in friend},
         ]
     
     def plot_image_monster_box(self, name: str, x: int, y: int) -> None:
@@ -230,7 +223,7 @@ class UI:
         モンスターの画像を削除する（パーティー）
         name: モンスターの名前
         """
-        for idx, mons in enumerate(self.friend_tmp):
+        for idx, mons in enumerate(self.friend):
             if mons["name"]==name:
                 self.image_friend[idx] = None
         self.canvas.update()
@@ -385,9 +378,9 @@ class UI:
         パーティー編集モードを終了する
         """
         # パーティーにモンスターが1体以上いる
-        if len(self.friend_tmp)>=1:
+        if len(self.friend)>=1:
             # パーティーを確定する
-            user_info.friend = deepcopy(self.friend_tmp)
+            user_info.friend = deepcopy(self.friend)
             # 「パーティー編成へ」のボタンを表示
             self.make_party_edit_button()
             # ウィンドウを閉じるボタンの色を変えて、状態をtk.NORMALにする
@@ -426,8 +419,8 @@ class UI:
             self.party_edit_end_button.destroy()
             self.party_edit_end_button = None
         # モンスター情報のスキル（と特性（今はない））のボタンを削除
-        for skill_name, id_ in self.button_monster_detail.items():
-            id_.destroy()
+        for skill_name, button_id in self.button_monster_detail.items():
+            button_id.destroy()
         self.button_monster_detail = {}
         # モンスターボックスモードを設定
         self.window_mode = "all"
@@ -455,6 +448,8 @@ class UI:
         「決定」のボタンを表示
         パーティー編成モードに移行する
         """
+        # 1ページに表示するモンスターの数
+        mons_per_page = 12
         # 「パーティー編成へ」のボタンを削除
         if self.party_edit_button is not None:
             self.party_edit_button.destroy()
@@ -476,14 +471,15 @@ class UI:
         # モンスターボックスのモードの文字を更新
         self.update_text_monster_box_mode()
         # 仮の味方パーティーを設定
-        self.friend_tmp = deepcopy(user_info.friend)
+        self.friend = deepcopy(user_info.friend)
         # 編成されているモンスターのボタンの状態をtk.DISABLEDにする
         i = 0
-        while i<min(12, self.get_valid_monster_num()):
-            if self.monster_button_state[i]==tk.NORMAL:
-                self.button_monster[i]["state"] = tk.NORMAL
-            elif self.monster_button_state[i]==tk.DISABLED:
-                self.button_monster[i]["state"] = tk.DISABLED
+        while i<min(mons_per_page, self.get_valid_monster_num()):
+            id_ = mons_per_page*self.page_monster_box+i+1
+            if id_ not in self.monster_button_state_disabled:
+                self.button_monster[id_%mons_per_page-1]["state"] = tk.NORMAL
+            elif id_ in self.monster_button_state_disabled:
+                self.button_monster[id_%mons_per_page-1]["state"] = tk.DISABLED
             i += 1
         # ウィンドウを閉じるボタンの色を変えて、状態をtk.DISABLEDにする
         self.close_button_monster_box["state"] = tk.DISABLED
@@ -558,7 +554,7 @@ class UI:
         """
         パーティーの画像を表示する
         """
-        for idx, mons in enumerate(self.friend_tmp):
+        for idx, mons in enumerate(self.friend):
             self.plot_image_party(mons["name"], idx)
     
     def open_monster_box(self) -> None:
@@ -568,27 +564,19 @@ class UI:
         # モンスターボックスのページ数を初期化する
         self.page_monster_box = 0
         # すべてのボタンを初期化する
-        self.init_all_button()
+        self.init_all_button_monster_box()
         # 仮の味方パーティーを初期化する
-        self.friend_tmp = deepcopy(user_info.friend)
+        self.friend = deepcopy(user_info.friend)
         # モンスターの名前のボタンの状態を初期化する
-        j = 0
-        for idx in json_data.save_data["monster"]:
-            # 1ページに12体まで表示する
-            if j>=12:
-                break
+        for id_ in json_data.save_data["monster"]:
             # モンスターの情報を取得する
-            mons = json_data.save_data["monster"][idx]
-            # モンスターが無効だったら使わない
-            if mons["valid"]==False:
-                continue
+            mons = json_data.save_data["monster"][id_]
             # そのモンスターがパーティーに含まれていたら
-            if mons in self.friend_tmp:
-                self.monster_button_state[j] = tk.DISABLED
+            if mons in self.friend:
+                self.monster_button_state_disabled.add(mons["id"])
             # そのモンスターがパーティーに含まれていなかったら
-            else:
-                self.monster_button_state[j] = tk.NORMAL
-            j += 1
+            elif mons["id"] in self.monster_button_state_disabled:
+                self.monster_button_state_disabled.remove(mons["id"])
         # モンスターボックスのモードを設定する
         self.window_mode = "all"
         # Tkinterのウィンドウを表示する
@@ -656,11 +644,15 @@ class UI:
             self.plot_image_monster_box(name, width, height)
             # ボタンの色によってボタンを区別する
             color = f"#eeeee{base_repr(j%12, 16)}"
-            # モンスターの名前ボタンのNORMAL・DISABLED
+            # モンスター一覧のとき、すべてのボタンをtk.NORMALにする
             if self.window_mode=="all":
                 button_state = tk.NORMAL
+            # パーティー編成モードのとき、ボタンごとにstateを更新する
             else:
-                button_state = self.monster_button_state[j]
+                if mons["id"] in self.monster_button_state_disabled:
+                    button_state = tk.DISABLED
+                elif mons["id"] not in self.monster_button_state_disabled:
+                    button_state = tk.NORMAL
             # モンスターの名前ボタンを表示する
             self.button_monster[j%12] = tk.Button(
                 self.app,
@@ -738,7 +730,7 @@ class UI:
             self.make_party_edit_button()
         self.show_monster()
 
-    def get_monster_info(self, event) -> dict:
+    def get_monster_info_monster_box(self, event) -> dict:
         """
         押したボタンからモンスターの情報を得る
         event: ボタンを押したときのeventインスタンス
@@ -750,7 +742,7 @@ class UI:
         モンスターの名前が書かれたボタンを押す
         """
         # モンスターの情報のdict
-        mons_info = self.get_monster_info(event)
+        mons_info = self.get_monster_info_monster_box(event)
         
         # モンスター情報モードのとき
         if self.window_mode=="all":
@@ -766,26 +758,29 @@ class UI:
                 # 同じ種類のモンスターを、2体以上パーティに入れることはできない
                 ok = True
                 name = event.widget["text"].split()[0]
-                for mons in self.friend_tmp:
+                for mons in self.friend:
                     if mons["name"]==name:
                         ok = False
                 if not ok:
                     return None
                 # モンスターの枠が空いているなら、モンスターを追加する
-                if len(self.friend_tmp)<=2:
+                if len(self.friend)<=2:
                     # そのモンスターをパーティーに追加する
                     self.add_or_remove_monster(mons_info, "add")
-                    # ボタンの有効・無効を切り替える
+                    # ボタンのstateを切り替える
                     event.widget["state"] = tk.DISABLED
-                    self.monster_button_state[mons_info["id"]-1] = tk.DISABLED
+                    # ボタンのstateをモンスターのidで保持しておく
+                    self.monster_button_state_disabled.add(mons_info["id"])
                 
             # そのモンスターが既に選択されているとき
             elif event.widget["state"]==tk.DISABLED:
                 # そのモンスターをパーティーから削除する
                 self.add_or_remove_monster(mons_info, "remove")
-                # ボタンの有効・無効を切り替える
+                # ボタンのstateを切り替える
                 event.widget["state"] = tk.NORMAL
-                self.monster_button_state[mons_info["id"]-1] = tk.NORMAL
+                # ボタンのstateをモンスターのidで保持しておく
+                if mons_info["id"] in self.monster_button_state_disabled:
+                    self.monster_button_state_disabled.remove(mons_info["id"])
     
     def show_monster_detail(self, name: str, level: int) -> None:
         """
@@ -795,7 +790,6 @@ class UI:
         """
         # モンスター情報の文字のインスタンスのdictを初期化する
         self.text_monster_detail.clear()
-
         # 文字の座標
         x, y = 150, 240
         # 文字の大きさ
@@ -806,7 +800,6 @@ class UI:
             font = ("helvetica", font_size),
             text = name
         )
-        
         # 文字の座標
         x, y = 250, 240
         # 文字の大きさ
@@ -817,7 +810,6 @@ class UI:
             font = ("helvetica", font_size),
             text = f"Lv. {level}"
         )
-        
         # 使うデータを選択
         data = deepcopy(json_data.monster[name])
         data.pop("name")
@@ -856,7 +848,6 @@ class UI:
                 text = val
             )
             i += 1
-        
         # 使うデータを選択
         data = deepcopy(json_data.monster[name])["skill_select_probability"]["friend"]
         # ループ変数
@@ -885,7 +876,6 @@ class UI:
                 self.button_monster_detail[skill_name].place(x=x, y=y)
                 self.button_monster_detail[skill_name].bind("<ButtonPress>", self.show_skill_description)
                 i += 1
-        
         # 使うデータを選択
         data = deepcopy(json_data.monster[name])["attribute_damage_rate"]
         # ループ変数
@@ -928,7 +918,6 @@ class UI:
                 text = val_content
             )
             i += 1
-        
         # 使うデータを選択
         data = deepcopy(json_data.monster[name])["status_ailment_probability"]
         # ループ変数
@@ -1118,11 +1107,11 @@ class UI:
         add_or_remove: 「add」「remove」のいずれか
         """
         if add_or_remove=="add":
-            self.plot_image_party(mons["name"], len(self.friend_tmp))
-            self.friend_tmp.append(mons)
+            self.plot_image_party(mons["name"], len(self.friend))
+            self.friend.append(mons)
         elif add_or_remove=="remove":
             self.remove_image_party(mons["name"])
-            self.friend_tmp.remove(mons)
+            self.friend.remove(mons)
             self.remove_image_party_all()
             self.show_party_image()
     
@@ -1238,6 +1227,9 @@ class UI:
         self.delete_monster_image_fusion()
         # モンスターの名前を取得する
         monster_id = int("".join(event.widget["bg"][2::2]), 16)
+        # モンスターが自分のチームに編成されている場合は、そのモンスターを配合の親とすることはできない
+        if monster_id in self.friend_id:
+            return None
         # 配合の親を追加する
         if event.widget["state"]==tk.NORMAL:
             if len(self.fusion_parent_id)<json_data.save_data["max_num_fusion_parent"]:
@@ -1321,18 +1313,30 @@ class UI:
                     break
         id_ = next_id
         j = 0
+        # 味方パーティーを取得する
+        self.friend = deepcopy(user_info.friend)
+        # 味方パーティーのidを取得する
+        self.friend_id = []
+        for mons in self.friend:
+            self.friend_id.append(mons["id"])
         # モンスターを1ページ分表示する
         while j<mons_per_page and id_<=len(json_data.save_data["monster"]):
-            # モンスターの連想配列を取得する
+            # そのモンスターの連想配列を取得する
             mons = json_data.save_data["monster"][str(id_)]
+            # そのモンスターが無効の場合は使わない
             if mons["valid"]==False:
                 id_ += 1
                 continue
             # 背景色にidの役割を持たせる
             color = "{:03x}".format(int(base_repr(id_, 16), 16))
             color = f"#e{color[0]}e{color[1]}e{color[2]}"
+            # そのモンスターがパーティーに編成されているかどうか
+            if mons["id"] in self.friend_id:
+                is_in_friend = True
+            else:
+                is_in_friend = False
             # モンスターのidからボタンの状態を取得する
-            if id_ in self.fusion_parent_id:
+            if id_ in self.fusion_parent_id or is_in_friend:
                 state = tk.DISABLED
             elif id_ not in self.fusion_parent_id:
                 state = tk.NORMAL
