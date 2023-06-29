@@ -1,5 +1,6 @@
 # ライブラリのインポート
 from pygame.locals import *
+from PIL import Image
 import pygame
 import random as rd
 from time import sleep
@@ -42,21 +43,32 @@ class Map:
         pygame.display.set_caption("フィールドマップ")
         # イメージロード
         # プレイヤー
-        self.playerImg = self.load_image("images/character.png", -1)
+        self.playerImg = self.load_image("images/character_split/character_front_1.png", -1)
         # 草
-        self.grassImg = self.load_image("images/grass.png", -1)
+        self.grassImg = self.load_image("images/grass_split/grass.png", -1)
         # 土
-        self.sabakuImg = self.load_image("images/dirt.png", -1)
+        self.sabakuImg = self.load_image("images/dirt_split/dirt.png", -1)
         # プレイヤーの位置（単位：マス）
         self.x, self.y = 0, 0
         # エンカウントする確率
         self.encounter_prob = 0
-        # 移動した回数
+        # 移動した回数（エンカウントしたら初期化）
         self.move_cnt = 0
         # Tkinterのウィンドウを開いているか
         self.tk_opening = False
+        # キャラクターがその向きに移動した回数（向きを変えたら初期化）
+        self.move_cnt_direct = 0
     
-    def load_image(self, filename, colorkey=None):
+    def update_player_image(self, direct: str) -> None:
+        """
+        プレイヤーの画像を更新する
+        direct: プレイヤーの向き 「front」「back」「left」「right」のいずれか
+        """
+        self.playerImg = self.load_image(f"images/character_split/character_{direct}_{self.move_cnt_direct+1}.png", -1)
+        self.move_cnt_direct += 1
+        self.move_cnt_direct %= 4
+    
+    def load_image(self, filename, colorkey=None) -> pygame.surface.Surface:
         image = pygame.image.load(filename)
         image = image.convert()
         if colorkey is not None:
@@ -171,25 +183,41 @@ class Map:
                 # プレイヤーが移動する
                 # 下
                 elif event.type==KEYDOWN and (event.key==K_DOWN or event.key==K_s) and self.can_move_to("y+"):
+                    # プレイヤーの座標を更新する
                     self.y += 1
+                    # プレイヤーの画像を更新する
+                    self.update_player_image("front")
+                    # エンカウントの判定をする
                     self.encounter_judge(enemy)
                     # キーの入力間隔を空ける
                     key_inputted = True
                 # 左
                 elif event.type==KEYDOWN and (event.key==K_LEFT or event.key==K_a) and self.can_move_to("x-"):
+                    # プレイヤーの座標を更新する
                     self.x -= 1
+                    # プレイヤーの画像を更新する
+                    self.update_player_image("left")
+                    # エンカウントの判定をする
                     self.encounter_judge(enemy)
                     # キーの入力間隔を空ける
                     key_inputted = True
                 # 右
                 elif event.type==KEYDOWN and (event.key==K_RIGHT or event.key==K_d) and self.can_move_to("x+"):
+                    # プレイヤーの座標を更新する
                     self.x += 1
+                    # プレイヤーの画像を更新する
+                    self.update_player_image("right")
+                    # エンカウントの判定をする
                     self.encounter_judge(enemy)
                     # キーの入力間隔を空ける
                     key_inputted = True
                 # 上
                 elif event.type==KEYDOWN and (event.key==K_UP or event.key==K_w) and self.can_move_to("y-"):
+                    # プレイヤーの座標を更新する
                     self.y -= 1
+                    # プレイヤーの画像を更新する
+                    self.update_player_image("back")
+                    # エンカウントの判定をする
                     self.encounter_judge(enemy)
                     # キーの入力間隔を空ける
                     key_inputted = True
