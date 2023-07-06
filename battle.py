@@ -711,6 +711,8 @@ class Battle:
         # ターンを開始する
         self.turns_process()
         # Tkinterのインスタンスを削除する
-        ui.app.destroy()
+        if ui.app is not None:
+            ui.app.destroy()
+            ui.app = None
 
 battle = Battle()
