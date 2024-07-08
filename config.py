@@ -1,5 +1,5 @@
 # バトル時の表示速度を設定
-is_fast = 1
+is_fast = 0
 
 if is_fast==0:
     SHOW_DURATION = 1.7
